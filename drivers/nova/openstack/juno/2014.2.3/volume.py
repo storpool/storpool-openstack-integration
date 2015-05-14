@@ -1218,6 +1218,7 @@ class LibvirtStorPoolVolumeDriver(LibvirtBaseVolumeDriver):
             'volsnap': False
         })
         self._attach.sync(req_id, None)
+        return self.get_config(connection_info, disk_info)
 
     def disconnect_volume(self, connection_info, disk_dev):
         volume_id = connection_info['serial']
