@@ -33,6 +33,7 @@ LOG = logging.getLogger(__name__)
 storpool = importutils.try_import('storpool')
 if storpool:
     from storpool import spapi
+    from storpool import spconfig
     from storpool import spopenstack
     from storpool import sptypes
 
@@ -53,10 +54,19 @@ CONF = cfg.CONF
 CONF.register_opts(storpool_opts)
 
 
-class StorPoolDriver(driver.VolumeDriver):
-    """The StorPool block device driver using the StorPool API"""
+class StorPoolDriver(driver.TransferVD, driver.ExtendVD, driver.CloneableVD,
+                     driver.SnapshotVD, driver.RetypeVD, driver.BaseVD):
+    """The StorPool block device driver using the StorPool API.
 
-    VERSION = '0.1.0'
+    Version history:
+        0.1.0   - Initial driver
+        0.2.0   - Bring the driver up to date with Kilo and Liberty:
+                  - implement volume retyping and migrations
+                  - use the driver.*VD ABC metaclasses
+                  - bugfix: fall back to the configured StorPool template
+    """
+
+    VERSION = '0.2.0'
 
     def __init__(self, *args, **kwargs):
         super(StorPoolDriver, self).__init__(*args, **kwargs)
@@ -99,11 +109,30 @@ class StorPoolDriver(driver.VolumeDriver):
         except spapi.ApiError as e:
             raise self._backendException(e)
 
+    def _storpool_client_id(self, connector):
+        try:
+            hostname = connector['host']
+        except Exception as e:
+            raise exception.InvalidConnectorException(missing='host')
+        try:
+            cfg = spconfig.SPConfig(section=hostname)
+            return int(cfg['SP_OURID'])
+        except KeyError:
+            raise exception.StorPoolConfigurationMissing(
+                section=hostname, param='SP_OURID')
+        except Exception as e:
+            raise exception.StorPoolConfigurationInvalid(
+                section=hostname, param='SP_OURID', error=e)
+
     def validate_connector(self, connector):
-        pass
+        return self._storpool_client_id(connector) >= 0
 
     def initialize_connection(self, volume, connector):
-        return {'driver_volume_type': 'storpool', 'data': {}}
+        return {'driver_volume_type': 'storpool',
+                'data': {
+                    'client_id': self._storpool_client_id(connector),
+                    'volume': volume['id']
+                }}
 
     def terminate_connection(self, volume, connector, **kwargs):
         pass
@@ -250,18 +279,39 @@ class StorPoolDriver(driver.VolumeDriver):
         }
 
     def _attach_volume(self, context, volume, properties, remote=False):
+        if remote:
+            return super(StorPoolDriver, self)._attach_volume(
+                context, volume, properties, remote=remote)
         req_id = context.request_id
-        req = self._attach.get()[req_id]
+        req = self._attach.get().get(req_id, None)
+        if req is None:
+            req = {
+                'volume': self._attach.volumeName(volume['id']),
+                'type': 'cinder-attach',
+                'id': context.request_id,
+                'rights': 2,
+                'volsnap': False,
+                'remove_on_detach': True
+            }
+            self._attach.add(req_id, req)
         name = req['volume']
         self._attach.sync(req_id, None)
-        return {'device': {'path': '/dev/storpool/{v}'.format(v=name)}}, volume
+        return {'device': {'path': '/dev/storpool/{v}'.format(v=name),
+                'storpool_attach_req': req_id}}, volume
 
     def _detach_volume(self, context, attach_info, volume, properties,
                        force=False, remote=False):
-        req_id = context.request_id
+        if remote:
+            return super(StorPoolDriver, self)._detach_volume(
+                context, attach_info, volume, properties,
+                force=force, remote=remote)
+        req_id = attach_info.get('device', {}).get(
+            'storpool_attach_req', context.request_id)
         req = self._attach.get()[req_id]
         name = req['volume']
-        return self._attach.sync(req_id, name)
+        self._attach.sync(req_id, name)
+        if req.get('remove_on_detach', False):
+            self._attach.remove(req_id)
 
     def backup_volume(self, context, backup, backup_service):
         volume = self.db.volume_get(context, backup['volume_id'])
@@ -348,3 +398,62 @@ class StorPoolDriver(driver.VolumeDriver):
         # Already handled by Nova's AttachDB, we hope.
         # Maybe it should move here, but oh well.
         pass
+
+    def retype(self, context, volume, new_type, diff, host):
+        update = {}
+
+        if diff['encryption']:
+            LOG.error(_LE('Retype of encryption type not supported'))
+            return False
+
+        templ = self.configuration.storpool_template
+        repl = self.configuration.storpool_replication
+        if diff['extra_specs']:
+            for (k, v) in diff['extra_specs'].iteritems():
+                if k == 'volume_backend_name':
+                    if v[0] != v[1]:
+                        # Retype of a volume backend not supported yet,
+                        # the volume needs to be migrated.
+                        return False
+                elif k == 'storpool_template':
+                    if v[0] != v[1]:
+                        if v[1] is not None:
+                            update['template'] = v[1]
+                        elif templ is not None:
+                            update['template'] = templ
+                        else:
+                            update['replication'] = repl
+                elif v[0] != v[1]:
+                    LOG.error(_LE('FIXME: Retype of extra_specs "%s" not '
+                                  'supported yet') % (k))
+                    return False
+
+        if update:
+            name = self._attach.volumeName(volume['id'])
+            try:
+                upd = sptypes.VolumeUpdateDesc(**update)
+                self._attach.api().volumeUpdate(name, upd)
+            except spapi.ApiError as e:
+                raise self._backendException(e)
+
+        return True
+
+    def update_migrated_volume(self, context, volume, new_volume):
+        orig_id = volume['id']
+        orig_name = self._attach.volumeName(orig_id)
+        temp_id = new_volume['id']
+        temp_name = self._attach.volumeName(temp_id)
+        vols = {v.name: True for v in self._attach.api().volumesList()}
+        if temp_name not in vols:
+            LOG.error(_LE('StorPool update_migrated_volume(): it seems '
+                          'that the StorPool volume "%(tid)" was not '
+                          'created as part of the migration from '
+                          '"%(oid)"'), {'tid': temp_id, 'oid': orig_id})
+        elif orig_name in vols:
+            LOG.error(_LE('StorPool update_migrated_volume(): both '
+                          'the original volume "%(oid)" and the migrated '
+                          'StorPool volume "%(tid)" seem to exist on '
+                          'the StorPool cluster'),
+                      {'oid': orig_id, 'tid': temp_id})
+        else:
+            self._attach.api().volumeUpdate(temp_name, {'rename': orig_name})
