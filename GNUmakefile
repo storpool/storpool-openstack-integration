@@ -7,7 +7,11 @@ html=		$(subst .md,.html,${md})
 build=		$(CURDIR)/build
 tools=		$(CURDIR)/tools
 
-all:		${html}
+all:		driver
+
+install:	driver-install
+
+clean:		driver-clean html-clean
 
 driver:		driver-detect driver-update
 
@@ -64,15 +68,19 @@ driver-install:
 		done; \
 		rm -f -- "$$ref"
 
-clean:		driver-clean
-		rm -f ${html}
-
 driver-clean:
 		rm -rf ${build}
 
 .PHONY:		all clean driver-clean driver driver-install driver-detect
 .PHONY:		driver-update driver-update-cinder driver-update-nova
-.PHONY:		driver-diff driver-install
+.PHONY:		install driver-diff
+
+html:		${html}
+
+html-clean:
+		rm -f ${html}
 
 %.html:		%.md
 		markdown "$<" > "$@" || (rm -f "$@"; false)
+
+.PHONY:		html html-clean
