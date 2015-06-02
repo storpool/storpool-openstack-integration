@@ -53,21 +53,17 @@ Preliminary setup
 Set up the Cinder volume backend
 --------------------------------
 
-1. On the controller, find the directory where the Cinder volume drivers
-   reside; it should usually be something like
-   `/usr/lib/python2.7/dist-packages/cinder/volume/drivers/` on
-   Debian-based systems and `.../site-packages/...` on RedHat-based
-   systems:
+1. Let the StorPool OpenStack integration suite find your Cinder drivers
+   and make the necessary modifications in its own work directory:
 
-        # The following command will output the path to a file usually found
-        # within the Cinder volume drivers' directory:
-        #
-        python -c 'import sys; import os.path; print filter(lambda p: os.path.exists(p), map(lambda p: p + "/cinder/volume/drivers/lvm.py", sys.path))'
+        make clean
+        make cinder
 
-2. Place the StorPool Cinder volume driver for your OpenStack version
-   (`juno` or `kilo`), `storpool.py`, within that directory:
+2. Let the StorPool OpenStack integration suite install the updated Cinder
+   drivers:
 
-        install -c -o root -g root -m 644 drivers/cinder/juno/storpool.py /usr/lib/python2.7/dist-packages/cinder/volume/drivers/
+        # As root:
+        make cinder-install
 
 3. Configure Cinder to use the StorPool volume backend.  Edit the
    `/etc/cinder/cinder.conf` file and append the following lines to it:
@@ -232,68 +228,24 @@ Set up the Nova volume attachment driver
    the proper owner, group, and access permissions (see the "Preliminary
    setup" section above).
 
-2. Find the `nova/virt/libvirt/` Python modules directory as for Cinder
-   above:
+2. Let the StorPool OpenStack integration suite find your Nova drivers
+   and make the necessary modifications in its own work directory:
 
-        # The following command will output the path to a file usually found
-        # within the Nova volume drivers' directory:
-        #
-        python -c 'import sys; import os.path; print filter(lambda p: os.path.exists(p), map(lambda p: p + "/nova/virt/libvirt/driver.py", sys.path))'
+        make clean
+        make nova
 
-3. Identify the `driver.py` and `volume.py` files from the StorPool
-   OpenStack integration suite that should be used with your version of
-   OpenStack.
-   
-   Take a look through the `drivers/` directory of the StorPool
-   OpenStack integration suite and check if your OpenStack cluster is
-   installed using one of the distributions found there: the `openstack/`
-   directory is for clusters installed using the upstream OpenStack
-   community edition source, `rdo/` is for RedHat-based distributions
-   using RPM packages from [the RDO project][rdo], `debian/` is for
-   Debian packages, etc.  If you can identify your OpenStack flavor, use
-   the files from the respective subdirectory in the next installation
-   step.
+3. Let the StorPool OpenStack integration suite install the updated Cinder
+   drivers:
 
-   If your cluster is installed using another OpenStack distribution,
-   you have two options: send a copy of your `driver.py` and `volume.py`
-   files to StorPool to get them into the StorPool OpenStack integration
-   suite, or use the `add-storpool-nova-driver` tool to update the files
-   yourself; you will at least need to know whether you are running a
-   cluster based on OpenStack Juno or OpenStack Kilo:
+        # As root:
+        make nova-install
 
-        # Create a new directory for the files:
-        mkdir /tmp/sp-nova /tmp/sp-nova/orig /tmp/sp-nova/storpool
-
-        # Copy your original files into that directory (substitute
-        # the directory name determined in the previous step):
-        #
-        cp /usr/lib/python2.7/dist-packages/nova/virt/libvirt/driver.py /tmp/sp-nova/orig/
-        cp /usr/lib/python2.7/dist-packages/nova/virt/libvirt/volume.py /tmp/sp-nova/orig/
-
-        # Update the files:
-        tools/add-storpool-nova-driver -t drivers/nova/openstack/juno/latest/ /tmp/sp-nova/orig/ /tmp/sp-nova/storpool/
-
-   After performing these steps, use the `/tmp/sp-nova/storpool/`
-   directory as the StorPool OpenStack directory in the following step.
-
-4. Overwrite the `driver.py` and `volume.py` files in the Nova drivers
-   directory with the ones in the StorPool OpenStack integration suite.
-
-        install -c -o root -g root -m 644 drivers/nova/.../driver.py /usr/lib/python2.7/dist-packages/nova/virt/libvirt/
-        install -c -o root -g root -m 644 drivers/nova/.../volume.py /usr/lib/python2.7/dist-packages/nova/virt/libvirt/
-
-   If you needed to modify the files using the
-   `add-storpool-nova-driver` script, use the new files:
-
-        install -c -o root -g root -m 644 /tmp/sp-nova/storpool/driver.py /usr/lib/python2.7/dist-packages/nova/virt/libvirt/
-        install -c -o root -g root -m 644 /tmp/sp-nova/storpool/volume.py /usr/lib/python2.7/dist-packages/nova/virt/libvirt/
-
-5. Edit the `/etc/nova/nova.conf` file; comment out any existing
+4. Edit the `/etc/nova/nova.conf` file; comment out any existing
    `volume_drivers` lines and replace or add the following:
 
         volume_drivers=storpool=nova.virt.libvirt.volume.LibvirtStorPoolVolumeDriver
 
-6. Restart the Nova compute and metadata-api services:
+5. Restart the Nova compute and metadata-api services:
 
         service nova-compute restart
         service nova-api-metadata restart
