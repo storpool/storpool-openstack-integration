@@ -42,6 +42,8 @@ sub update_file($ $ $);
 sub copy_file($ $);
 sub mkdir_p_basedir($ $);
 sub mkdir_p_rec($ $);
+sub pad_with_newlines($ $ $);
+sub count_newlines($);
 
 my %data = (
 	'cinder/brick/initiator/connector.py' => [
@@ -265,7 +267,7 @@ sub update_file($ $ $)
 		}
 	}
 
-	my $last = "";
+	my ($last, $newlines) = ("", 0);
 	while (<$src>) {
 		my ($copy, $in) = (1, 0);
 
@@ -283,12 +285,14 @@ sub update_file($ $ $)
 					} elsif ($_ =~ $d->{to}) {
 						$d->{data}->{done} = 1;
 						print $dst $d->{data}->{res};
+						$newlines = count_newlines $d->{data}->{res};
 					}
 				} else {
 					if ($_ =~ $d->{to}) {
 						$d->{data}->{in} = 0;
 						$d->{data}->{done} = 1;
 						print $dst $d->{data}->{res};
+						$newlines = count_newlines $d->{data}->{res};
 					} else {
 						$copy = 0;
 						$in++;
@@ -311,7 +315,9 @@ sub update_file($ $ $)
 						debug "Outputting class $d->{name} to $dstname";
 						$d->{data}->{in} = 0;
 						$d->{data}->{done} = 1;
-						print $dst "$d->{data}->{res}\n\n";
+						pad_with_newlines $dst, $newlines, 2;
+						print $dst $d->{data}->{res};
+						$newlines = count_newlines $d->{data}->{res};
 					}
 					$copy = 0;
 					$in++;
@@ -323,6 +329,11 @@ sub update_file($ $ $)
 			die "Multiple matches for line $. in $srcname\n";
 		}
 		if ($copy) {
+			if ($_ eq "\n") {
+				$newlines++;
+			} else {
+				$newlines = 0;
+			}
 			print $dst $_;
 		}
 		$last = $_;
@@ -336,7 +347,9 @@ sub update_file($ $ $)
 			die "Unmatched chunk in $srcname:\n$d->{data}->{res}\n";
 		} elsif ($d->{type} eq 'class') {
 			debug "About to add class $d->{name} to the end of $dstname\n";
-			print $dst "\n\n$d->{data}->{res}";
+			pad_with_newlines $dst, $newlines, 2;
+			print $dst $d->{data}->{res};
+			$newlines = count_newlines $d->{data}->{res};
 		}
 	}
 
@@ -428,4 +441,22 @@ sub copy_file($ $)
 	}
 	close $dst or die "Could not close $dstname: $!\n";
 	close $src or die "Could not close $srcname: $!\n";
+}
+
+sub pad_with_newlines($ $ $)
+{
+	my ($f, $current, $wanted) = @_;
+
+	print $f "\n" x ($wanted - $current) if $wanted > $current;
+}
+
+sub count_newlines($)
+{
+	my ($text) = @_;
+
+	if ($text =~ /(\n+)\Z/) {
+		return length($1) - 1;
+	} else {
+		return 0;
+	}
 }
