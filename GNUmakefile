@@ -7,21 +7,50 @@ html=		$(subst .md,.html,${md})
 build=		$(CURDIR)/build
 tools=		$(CURDIR)/tools
 
+rel_cinder=	${build}/os-release-cinder
+rel_nova=	${build}/os-release-nova
+
 all:		driver
 
-install:	driver-install
+install:	cinder-install nova-install
 
 clean:		driver-clean html-clean
 
+cinder:		driver-detect-cinder driver-update-cinder
+
+nova:		driver-detect-nova driver-update-nova
+
+cinder-install:	driver-install-cinder
+
+nova-install:	driver-install-nova
+
 driver:		driver-detect driver-update
 
-driver-detect:	${build}/os-release
+driver-detect:	driver-detect-cinder driver-detect-nova
 
-$(build)/os-release:
-		${tools}/detect-driver.pl -d ${build}
-		@echo "Detected OpenStack release: `cat $@`"
+driver-detect-cinder:	${rel_cinder}
+
+driver-detect-nova:	${rel_nova}
+
+${rel_cinder}:
+		${tools}/detect-driver.pl -f cinder -d ${build} -o "$@"
+		@echo "Detected OpenStack Cinder release: `cat $@`"
 		@echo "Determined Python module directories:"
 		@ls -l ${build}/
+		${MAKE} driver-detect-consistent
+
+${rel_nova}:
+		${tools}/detect-driver.pl -f nova -d ${build} -o "$@"
+		@echo "Detected OpenStack Nova release: `cat $@`"
+		@echo "Determined Python module directories:"
+		@ls -l ${build}/
+		${MAKE} driver-detect-consistent
+
+driver-detect-consistent:
+		if [ -f "${rel_cinder}" ] && [ -f "${rel_nova}" ] && ! cmp -s -- "${rel_cinder}" "${rel_nova}"; then \
+			echo "OpenStack release inconsistency: Cinder: `cat ${rel_cinder}`; Nova: `cat ${rel_nova}`"; \
+			false; \
+		fi
 
 driver-update:	driver-update-cinder driver-update-nova
 
@@ -38,33 +67,57 @@ driver-diff:
 			done; \
 		done
 
-driver-install:
+driver-install:	driver-install-cinder driver-install-nova
+
+driver-install-cinder:
 		set -e; \
 		ref="${build}/install-ref"; \
 		rm -f -- "$$ref"; \
 		touch -- "$$ref"; \
 		unset updated; \
-		for flavor in cinder nova; do \
-			(cd ${build}/build-$$flavor && find ./ -type f) | while read f; do \
-				src="${build}/build-$$flavor/$$f"; \
-				dst="${build}/sys-$$flavor/$$f"; \
-				if [ -e "$$dst" ]; then \
-					${tools}/install-mimic.pl -v "$$src" "$$dst"; \
-					if [ -z "$$updated" ]; then \
-						${tools}/install-mimic.pl -v "$$src" "$$ref"; \
-						updated=1; \
-					fi; \
+		(cd ${build}/build-cinder && find ./ -type f) | while read f; do \
+			src="${build}/build-cinder/$$f"; \
+			dst="${build}/sys-cinder/$$f"; \
+			if [ -e "$$dst" ]; then \
+				${tools}/install-mimic.pl -v "$$src" "$$dst"; \
+				if [ -z "$$updated" ]; then \
+					${tools}/install-mimic.pl -v "$$src" "$$ref"; \
+					updated=1; \
 				fi; \
-			done; \
+			fi; \
 		done; \
-		for flavor in cinder nova; do \
-			(cd ${build}/build-$$flavor && find ./ -type f) | while read f; do \
-				src="${build}/build-$$flavor/$$f"; \
-				dst="${build}/sys-$$flavor/$$f"; \
-				if [ ! -e "$$dst" ]; then \
-					${tools}/install-mimic.pl -v -r "$$ref" "$$src" "$$dst"; \
+		(cd ${build}/build-cinder && find ./ -type f) | while read f; do \
+			src="${build}/build-cinder/$$f"; \
+			dst="${build}/sys-cinder/$$f"; \
+			if [ ! -e "$$dst" ]; then \
+				${tools}/install-mimic.pl -v -r "$$ref" "$$src" "$$dst"; \
+			fi; \
+		done; \
+		rm -f -- "$$ref"
+
+driver-install-nova:
+		set -e; \
+		ref="${build}/install-ref"; \
+		rm -f -- "$$ref"; \
+		touch -- "$$ref"; \
+		unset updated; \
+		(cd ${build}/build-nova && find ./ -type f) | while read f; do \
+			src="${build}/build-nova/$$f"; \
+			dst="${build}/sys-nova/$$f"; \
+			if [ -e "$$dst" ]; then \
+				${tools}/install-mimic.pl -v "$$src" "$$dst"; \
+				if [ -z "$$updated" ]; then \
+					${tools}/install-mimic.pl -v "$$src" "$$ref"; \
+					updated=1; \
 				fi; \
-			done; \
+			fi; \
+		done; \
+		(cd ${build}/build-nova && find ./ -type f) | while read f; do \
+			src="${build}/build-nova/$$f"; \
+			dst="${build}/sys-nova/$$f"; \
+			if [ ! -e "$$dst" ]; then \
+				${tools}/install-mimic.pl -v -r "$$ref" "$$src" "$$dst"; \
+			fi; \
 		done; \
 		rm -f -- "$$ref"
 

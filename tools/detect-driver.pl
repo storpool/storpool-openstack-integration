@@ -34,9 +34,11 @@ use POSIX qw/:sys_wait_h/;
 
 my $debug = 0;
 
+my @all_flavors = qw/cinder nova/;
+
 sub get_python_dirs();
 sub get_flavor_files($);
-sub determine_release($);
+sub determine_release($ $);
 
 sub run_command(@);
 sub check_wait_result($ $ $);
@@ -47,21 +49,27 @@ sub version();
 
 MAIN:
 {
-	my $dir;
-	my @flavors = qw/cinder nova/;
 	my %opts;
 
-	getopts('d:hVv', \%opts) or usage 1;
+	getopts('d:f:o:hVv', \%opts) or usage 1;
 	version() if $opts{V};
 	usage 0 if $opts{h};
 	exit 0 if $opts{V} || $opts{h};
 	$debug = $opts{v};
 
-	if (defined $opts{d}) {
-		$dir = $opts{d};
+	my @flavors;
+	if (defined $opts{f}) {
+		if (!grep $opts{f} eq $_, @all_flavors) {
+			die "Unknown flavor '$opts{f}', ".
+			    "must be one of @all_flavors\n";
+		}
+		@flavors = ($opts{f});
 	} else {
-		$dir = 'build';
+		@flavors = @all_flavors;
 	}
+
+	my $dir = $opts{d} // 'build';
+	my $relfile = $opts{o} // "$dir/os-release";
 
 	if (! -d $dir) {
 		mkdir $dir or die "Could not create $dir: $!\n";
@@ -113,13 +121,13 @@ MAIN:
 	}
 
 	# Okay, now try to figure out which release we're running
-	my $release = determine_release $dir;
+	my $release = determine_release $dir, $flavors[0];
 	{
-		my $fname = "$dir/os-release";
-		open my $f, '>', $fname or die "Could not open $fname: $!\n";
+		open my $f, '>', $relfile or
+		    die "Could not open $relfile: $!\n";
 		say $f $release;
-		close $f or die "Could not close $fname: $!\n";
-		debug "Wrote $release to $fname";
+		close $f or die "Could not close $relfile: $!\n";
+		debug "Wrote $release to $relfile";
 	}
 
 	for my $flavor (@flavors) {
@@ -164,11 +172,14 @@ sub usage($)
 {
 	my ($err) = @_;
 	my $s = <<EOUSAGE
-Usage:	detect-driver [-v] [-d builddir]
+Usage:	detect-driver [-v] [-d builddir] [-f flavor] [-o releasefile]
 	detect-driver -V | -h
 
 	-d	specify the build directory (default: "./build")
+	-f	specify the driver flavor (one of @all_flavors)
 	-h	display program usage information and exit
+	-o	specify the location of the release file to write
+		(default: builddir/os-release)
 	-V	display program version information and exit
 	-v	verbose operation; display diagnostic output
 EOUSAGE
@@ -271,19 +282,28 @@ sub get_python_dirs()
 	return @lines;
 }
 
-sub determine_release($)
+sub determine_release($ $)
 {
-	my ($dir) = @_;
+	my ($dir, $flavor) = @_;
 
-	my $fname = "$dir/sys-cinder/volume/driver.py";
+	my $fname = {
+		cinder => "$dir/sys-cinder/volume/driver.py",
+		nova => "$dir/sys-nova/virt/libvirt/volume.py",
+	}->{$flavor};
+	if (!defined $fname) {
+		die "Internal error: determine_release() cannot handle ".
+		    "flavor '$flavor'\n";
+	}
 	open my $f, '<', $fname or die "Could not open $fname: $!\n";
 	my $found;
 	while (<$f>) {
 		if (/from oslo\.config import/) {
 			return 'juno';
-		} elsif (/_sparse_copy_volume_data/) {
+		} elsif (/_sparse_copy_volume_data/ ||
+		    /from six\.moves import urllib/) {
 			return 'liberty';
-		} elsif (!$found && /^class BaseVD/) {
+		} elsif (!$found &&
+		    (/^class BaseVD/ || /smbfs_mount_point_base/)) {
 			$found = 'kilo';
 		}
 	}
