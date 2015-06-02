@@ -95,18 +95,12 @@ MAIN:
 	);
 	my %opts;
 
-	getopts('f:ht:Vv', \%opts) or usage 1;
+	getopts('f:hLt:Vv', \%opts) or usage 1;
 	version() if $opts{V};
 	usage 0 if $opts{h};
 	exit 0 if $opts{V} || $opts{h};
 	$debug = $opts{v};
 
-	if (!defined $opts{t}) {
-		warn "No template directory (-t) specified!\n";
-		usage 1;
-	} else {
-		$cfg{templdir} = $opts{t};
-	}
 	if (!defined $opts{f}) {
 		warn "No driver flavor (-f) specified!\n";
 		usage 1;
@@ -115,6 +109,28 @@ MAIN:
 		usage 1;
 	} else {
 		$cfg{flavor} = $opts{f};
+	}
+
+	if (defined $opts{L}) {
+		while (my ($fname, $d) = each %data) {
+			if ($fname !~ m{^([^/]+)/(.+)}) {
+				die "Internal error: invalid data key ".
+				    "'$fname'\n";
+			}
+			my ($flavor, $fn) = ($1, $2);
+			next unless $flavor eq $cfg{flavor};
+			
+			say $fname.
+			    (@{$d} == 1 && $d->[0]->{type} eq 'new'? '!': '');
+		}
+		exit 0;
+	}
+
+	if (!defined $opts{t}) {
+		warn "No template directory (-t) specified!\n";
+		usage 1;
+	} else {
+		$cfg{templdir} = $opts{t};
 	}
 	if (@ARGV != 2) {
 		warn "No original and target directory specified\n";
@@ -335,10 +351,12 @@ sub usage($)
 	my ($err) = @_;
 	my $s = <<EOUSAGE
 Usage:	update-driver [-v] -t templatedir -f flavor origdir storpooldir
+	update-driver -L -f flavor
 	update-driver -V | -h
 
 	-f	specify the driver type to update ('cinder' or 'nova')
 	-h	display program usage information and exit
+	-L	list the files for the specified flavor
 	-t	specify the directory to extract the StorPool driver template
 	-V	display program version information and exit
 	-v	verbose operation; display diagnostic output
