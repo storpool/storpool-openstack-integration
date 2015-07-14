@@ -32,24 +32,6 @@ Preliminary setup
         pip install storpool
         pip install storpool.spopenstack
 
-5. On the controller and all the hypervisor nodes, set up the
-   "spopenstack" group, the `/var/lib/openstack-storpool` directory, and
-   a file containing an empty JSON dictionary within it:
-
-        groupadd --system spopenstack
-        
-        # A bit of black magic to add a group to the list of groups a user
-        # belongs to (assuming that the user actually belongs to at least one
-        # group already).
-        #
-        usermod cinder -G "`id -Gn cinder | tr ' ' ','`,spopenstack"
-        usermod nova -G "`id -Gn nova | tr ' ' ','`,spopenstack"
-        
-        install -d -o root -g spopenstack -m 775 /var/spool/openstack-storpool
-        echo '{}' > /var/spool/openstack-storpool/openstack-attach.json
-        chown root:spopenstack /var/spool/openstack-storpool/openstack-attach.json
-        chmod 775 /var/spool/openstack-storpool/openstack-attach.json
-
 Set up the Cinder volume backend
 --------------------------------
 
@@ -217,15 +199,12 @@ Make sure that Cinder can create snapshots of existing volumes and use them:
         #
         storpool volume status
 
-Set up the Nova volume attachment driver
-----------------------------------------
+Set up the Nova volume attachment driver (on each hypevisor node)
+-----------------------------------------------------------------
 
 1. Make sure that the Python modules [`storpool`][py-storpool] and
    [`storpool.spopenstack`][py-spopenstack]
-   have also been installed on all the hypervisor nodes, and that
-   the `/var/spool/openstack-storpool/` directory and
-   the `openstack-attach.json` file within it have been created with
-   the proper owner, group, and access permissions (see the "Preliminary
+   have also been installed on all the hypervisor nodes (see the "Preliminary
    setup" section above).
 
 2. Let the StorPool OpenStack integration suite find your Nova drivers

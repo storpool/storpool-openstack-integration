@@ -10,6 +10,10 @@ tools=		$(CURDIR)/tools
 rel_cinder=	${build}/os-release-cinder
 rel_nova=	${build}/os-release-nova
 
+spopenstack=	spopenstack
+spopenstackdir=	/var/spool/openstack-storpool
+spopenstackfile=	${spopenstackdir}/openstack-attach.json
+
 all:		driver
 
 install:	cinder-install nova-install
@@ -69,7 +73,7 @@ driver-diff:
 
 driver-install:	driver-install-cinder driver-install-nova
 
-driver-install-cinder:
+driver-install-cinder:	spopenstack-cinder
 		set -e; \
 		ref="${build}/install-ref"; \
 		rm -f -- "$$ref"; \
@@ -95,7 +99,7 @@ driver-install-cinder:
 		done; \
 		rm -f -- "$$ref"
 
-driver-install-nova:
+driver-install-nova:	spopenstack-nova
 		set -e; \
 		ref="${build}/install-ref"; \
 		rm -f -- "$$ref"; \
@@ -124,8 +128,42 @@ driver-install-nova:
 driver-clean:
 		rm -rf ${build}
 
+spopenstack-group:
+		if ! getent group "${spopenstack}" > /dev/null; then		\
+			echo "Creating the ${spopenstack} group";		\
+			groupadd --system -- "${spopenstack}";			\
+		fi
+
+spopenstack-file:	spopenstack-group
+		if ! [ -d "${spopenstackdir}" ]; then				\
+			echo "Creating the ${spopenstackdir} directory";	\
+			install -d -o root -g "${spopenstack}" -m 775 -- "${spopenstackdir}";	\
+		fi
+		if ! [ -f "${spopenstackfile}" ]; then				\
+			echo "Creating the ${spopenstackfile} file";		\
+			echo "{}" > "${spopenstackfile}";			\
+			chown root:"${spopenstack}" -- "${spopenstackfile}";	\
+			chmod 775 -- "${spopenstackfile}";				\
+		fi
+
+spopenstack-cinder:	spopenstack-file
+		if id -Gn cinder > /dev/null 2>&1 &&	\
+		   ! id -Gn cinder | tr " " "\n" | fgrep -qxe "${spopenstack}"; then	\
+			echo "Adding the 'cinder' user to the ${spopenstack} group";	\
+        		usermod cinder -G "`id -Gn cinder | tr ' ' ','`,spopenstack";	\
+		fi
+
+spopenstack-nova:	spopenstack-file
+		if id -Gn nova > /dev/null 2>&1 &&	\
+		   ! id -Gn nova | tr " " "\n" | fgrep -qxe "${spopenstack}"; then	\
+			echo "Adding the 'nova' user to the ${spopenstack} group";	\
+        		usermod nova -G "`id -Gn nova | tr ' ' ','`,spopenstack";	\
+		fi
+
 .PHONY:		all clean driver-clean driver driver-install driver-detect
 .PHONY:		driver-update driver-update-cinder driver-update-nova
+.PHONY:		spopenstack-group spopenstack-file
+.PHONY:		spopenstack-cinder spopenstack-nova
 .PHONY:		install driver-diff
 
 html:		${html}
