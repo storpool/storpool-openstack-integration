@@ -1,4 +1,4 @@
-#    Copyright (c) 2014 StorPool
+#    Copyright (c) 2014, 2015 StorPool
 #    All Rights Reserved.
 #
 #    Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -56,7 +56,7 @@ CONF.register_opts(storpool_opts)
 
 class StorPoolDriver(driver.TransferVD, driver.ExtendVD, driver.CloneableVD,
                      driver.SnapshotVD, driver.RetypeVD, driver.BaseVD):
-    """The StorPool block device driver using the StorPool API.
+    """The StorPool block device driver.
 
     Version history:
         0.1.0   - Initial driver
@@ -64,9 +64,10 @@ class StorPoolDriver(driver.TransferVD, driver.ExtendVD, driver.CloneableVD,
                   - implement volume retyping and migrations
                   - use the driver.*VD ABC metaclasses
                   - bugfix: fall back to the configured StorPool template
+        1.0.0   - Imported into OpenStack Liberty with minor fixes
     """
 
-    VERSION = '0.2.0'
+    VERSION = '1.0.0'
 
     def __init__(self, *args, **kwargs):
         super(StorPoolDriver, self).__init__(*args, **kwargs)
@@ -110,10 +111,7 @@ class StorPoolDriver(driver.TransferVD, driver.ExtendVD, driver.CloneableVD,
             raise self._backendException(e)
 
     def _storpool_client_id(self, connector):
-        try:
-            hostname = connector['host']
-        except Exception as e:
-            raise exception.InvalidConnectorException(missing='host')
+        hostname = connector['host']
         try:
             cfg = spconfig.SPConfig(section=hostname)
             return int(cfg['SP_OURID'])
@@ -131,7 +129,7 @@ class StorPoolDriver(driver.TransferVD, driver.ExtendVD, driver.CloneableVD,
         return {'driver_volume_type': 'storpool',
                 'data': {
                     'client_id': self._storpool_client_id(connector),
-                    'volume': volume['id']
+                    'volume': volume['id'],
                 }}
 
     def terminate_connection(self, volume, connector, **kwargs):
@@ -181,8 +179,9 @@ class StorPoolDriver(driver.TransferVD, driver.ExtendVD, driver.CloneableVD,
                 self._attach.api().snapshotDelete(snapname)
             except spapi.ApiError as e:
                 # ARGH!
-                LOG.error(_LE("Could not delete the temp snapshot {n}: {msg}").
-                          format(n=snapname, msg=six.text_type(e)))
+                LOG.error(_LE("Could not delete the temp snapshot %(name)s: "
+                              "%(msg)s"),
+                          {'name': snapname, 'msg': e})
 
     def create_export(self, context, volume):
         pass
@@ -223,8 +222,7 @@ class StorPoolDriver(driver.TransferVD, driver.ExtendVD, driver.CloneableVD,
         try:
             self._attach.api()
         except Exception as e:
-            LOG.error(_LE("StorPoolDriver API initialization failed: {e}").
-                      format(e=e))
+            LOG.error(_LE("StorPoolDriver API initialization failed: %s"), e)
             raise
 
     def get_volume_stats(self, refresh=False):
@@ -243,7 +241,7 @@ class StorPoolDriver(driver.TransferVD, driver.ExtendVD, driver.CloneableVD,
         used = 0
         free = 0
         agSize = 512 * units.Mi
-        for (id, desc) in dl.iteritems():
+        for (id, desc) in dl.items():
             if desc.generationLeft != -1:
                 continue
             total += desc.agCount * agSize
@@ -296,7 +294,7 @@ class StorPoolDriver(driver.TransferVD, driver.ExtendVD, driver.CloneableVD,
             self._attach.add(req_id, req)
         name = req['volume']
         self._attach.sync(req_id, None)
-        return {'device': {'path': '/dev/storpool/{v}'.format(v=name),
+        return {'device': {'path': '/dev/storpool/' + name,
                 'storpool_attach_req': req_id}}, volume
 
     def _detach_volume(self, context, attach_info, volume, properties,
@@ -338,9 +336,9 @@ class StorPoolDriver(driver.TransferVD, driver.ExtendVD, driver.CloneableVD,
                 self._attach.api().snapshotDelete(name)
             except spapi.ApiError as e:
                 LOG.error(
-                    _LE('Could not remove the temp snapshot {n} for {v}: {e}').
-                    format(n=name, v=volname, e=six.text_type(e)))
-                pass
+                    _LE('Could not remove the temp snapshot %(name)s for '
+                        '%(vol)s: %(err)s'),
+                    {'name': name, 'vol': volname, 'err': e})
 
     def copy_volume_to_image(self, context, volume, image_service, image_meta):
         req_id = context.request_id
@@ -366,9 +364,9 @@ class StorPoolDriver(driver.TransferVD, driver.ExtendVD, driver.CloneableVD,
                 self._attach.api().snapshotDelete(name)
             except spapi.ApiError as e:
                 LOG.error(
-                    _LE('Could not remove the temp snapshot {n} for {v}: {e}').
-                    format(n=name, v=volname, e=six.text_type(e)))
-                pass
+                    _LE('Could not remove the temp snapshot %(name)s for '
+                        '%(vol)s: %(err)s'),
+                    {'name': name, 'vol': volname, 'err': e})
 
     def copy_image_to_volume(self, context, volume, image_service, image_id):
         req_id = context.request_id
@@ -403,13 +401,13 @@ class StorPoolDriver(driver.TransferVD, driver.ExtendVD, driver.CloneableVD,
         update = {}
 
         if diff['encryption']:
-            LOG.error(_LE('Retype of encryption type not supported'))
+            LOG.error(_LE('Retype of encryption type not supported.'))
             return False
 
         templ = self.configuration.storpool_template
         repl = self.configuration.storpool_replication
         if diff['extra_specs']:
-            for (k, v) in diff['extra_specs'].iteritems():
+            for (k, v) in diff['extra_specs'].items():
                 if k == 'volume_backend_name':
                     if v[0] != v[1]:
                         # Retype of a volume backend not supported yet,
@@ -424,8 +422,8 @@ class StorPoolDriver(driver.TransferVD, driver.ExtendVD, driver.CloneableVD,
                         else:
                             update['replication'] = repl
                 elif v[0] != v[1]:
-                    LOG.error(_LE('FIXME: Retype of extra_specs "%s" not '
-                                  'supported yet') % (k))
+                    LOG.error(_LE('Retype of extra_specs "%s" not '
+                                  'supported yet.'), k)
                     return False
 
         if update:
@@ -438,7 +436,8 @@ class StorPoolDriver(driver.TransferVD, driver.ExtendVD, driver.CloneableVD,
 
         return True
 
-    def update_migrated_volume(self, context, volume, new_volume):
+    def update_migrated_volume(self, context, volume, new_volume,
+                               original_volume_status):
         orig_id = volume['id']
         orig_name = self._attach.volumeName(orig_id)
         temp_id = new_volume['id']
@@ -446,14 +445,25 @@ class StorPoolDriver(driver.TransferVD, driver.ExtendVD, driver.CloneableVD,
         vols = {v.name: True for v in self._attach.api().volumesList()}
         if temp_name not in vols:
             LOG.error(_LE('StorPool update_migrated_volume(): it seems '
-                          'that the StorPool volume "%(tid)" was not '
+                          'that the StorPool volume "%(tid)s" was not '
                           'created as part of the migration from '
-                          '"%(oid)"'), {'tid': temp_id, 'oid': orig_id})
+                          '"%(oid)s"'), {'tid': temp_id, 'oid': orig_id})
+            return {'_name_id': new_volume['_name_id'] or new_volume['id']}
         elif orig_name in vols:
             LOG.error(_LE('StorPool update_migrated_volume(): both '
-                          'the original volume "%(oid)" and the migrated '
-                          'StorPool volume "%(tid)" seem to exist on '
+                          'the original volume "%(oid)s" and the migrated '
+                          'StorPool volume "%(tid)s" seem to exist on '
                           'the StorPool cluster'),
                       {'oid': orig_id, 'tid': temp_id})
+            return {'_name_id': new_volume['_name_id'] or new_volume['id']}
         else:
-            self._attach.api().volumeUpdate(temp_name, {'rename': orig_name})
+            try:
+                self._attach.api().volumeUpdate(temp_name,
+                                                {'rename': orig_name})
+                return {'_name_id': None}
+            except spapi.ApiError as e:
+                LOG.error(_LE('StorPool update_migrated_volume(): '
+                              'could not rename %(tname)s to %(oname)s: '
+                              '%(err)s'),
+                          {'tname': temp_name, 'oname': orig_name, 'err': e})
+                return {'_name_id': new_volume['_name_id'] or new_volume['id']}
