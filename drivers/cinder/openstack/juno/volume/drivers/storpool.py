@@ -180,8 +180,9 @@ class StorPoolDriver(driver.VolumeDriver):
                 self._attach.api().snapshotDelete(snapname)
             except spapi.ApiError as e:
                 # ARGH!
-                LOG.error(_LE("Could not delete the temp snapshot {n}: {msg}").
-                          format(n=snapname, msg=six.text_type(e)))
+                LOG.error(_LE("Could not delete the temp snapshot %(name)s: "
+                              "%(msg)s"),
+                          {'name': snapname, 'msg': e})
 
     def create_export(self, context, volume):
         pass
@@ -222,8 +223,7 @@ class StorPoolDriver(driver.VolumeDriver):
         try:
             self._attach.api()
         except Exception as e:
-            LOG.error(_LE("StorPoolDriver API initialization failed: {e}").
-                      format(e=e))
+            LOG.error(_LE("StorPoolDriver API initialization failed: %s"), e)
             raise
 
     def get_volume_stats(self, refresh=False):
@@ -295,7 +295,7 @@ class StorPoolDriver(driver.VolumeDriver):
             self._attach.add(req_id, req)
         name = req['volume']
         self._attach.sync(req_id, None)
-        return {'device': {'path': '/dev/storpool/{v}'.format(v=name),
+        return {'device': {'path': '/dev/storpool/' + name,
                 'storpool_attach_req': req_id}}, volume
 
     def _detach_volume(self, context, attach_info, volume, properties,
@@ -337,8 +337,9 @@ class StorPoolDriver(driver.VolumeDriver):
                 self._attach.api().snapshotDelete(name)
             except spapi.ApiError as e:
                 LOG.error(
-                    _LE('Could not remove the temp snapshot {n} for {v}: {e}').
-                    format(n=name, v=volname, e=six.text_type(e)))
+                    _LE('Could not remove the temp snapshot %(name)s for '
+                        '%(vol)s: %(err)s'),
+                    {'name': name, 'vol': volname, 'err': e})
                 pass
 
     def copy_volume_to_image(self, context, volume, image_service, image_meta):
@@ -365,8 +366,9 @@ class StorPoolDriver(driver.VolumeDriver):
                 self._attach.api().snapshotDelete(name)
             except spapi.ApiError as e:
                 LOG.error(
-                    _LE('Could not remove the temp snapshot {n} for {v}: {e}').
-                    format(n=name, v=volname, e=six.text_type(e)))
+                    _LE('Could not remove the temp snapshot %(name)s for '
+                        '%(vol)s: %(err)s'),
+                    {'name': name, 'vol': volname, 'err': e})
                 pass
 
     def copy_image_to_volume(self, context, volume, image_service, image_id):
