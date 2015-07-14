@@ -32,8 +32,18 @@ Preliminary setup
         pip install storpool
         pip install storpool.spopenstack
 
+5. On the controller and all the hypervisor nodes, clone
+   the [StorPool OpenStack Integration][github] Git repository
+   or copy it from some other host where it has been cloned:
+
+        # Clone the StorPool OpenStack Integration repository
+        git clone https://github.com/storpool/storpool-openstack-integration.git
+
 Set up the Cinder volume backend
 --------------------------------
+
+0. Change into the `storpool-openstack-integration/` directory prepared in
+   the last step of the "Preliminary setup" section above.
 
 1. Let the StorPool OpenStack integration suite find your Cinder drivers
    and make the necessary modifications in its own work directory:
@@ -201,6 +211,9 @@ Make sure that Cinder can create snapshots of existing volumes and use them:
 
 Set up the Nova volume attachment driver (on each hypevisor node)
 -----------------------------------------------------------------
+
+0. Change into the `storpool-openstack-integration/` directory prepared in
+   the last step of the "Preliminary setup" section above.
 
 1. Make sure that the Python modules [`storpool`][py-storpool] and
    [`storpool.spopenstack`][py-spopenstack]
