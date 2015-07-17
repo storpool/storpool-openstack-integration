@@ -296,7 +296,7 @@ class StorPoolDriver(driver.VolumeDriver):
         name = req['volume']
         self._attach.sync(req_id, None)
         return {'device': {'path': '/dev/storpool/' + name,
-                'storpool_attach_req': req_id}}, volume
+                'storpool_attach_req': req_id}}
 
     def _detach_volume(self, context, attach_info, volume, properties,
                        force=False, remote=False):
