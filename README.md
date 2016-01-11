@@ -45,19 +45,14 @@ Set up the Cinder volume backend
 0. Change into the `storpool-openstack-integration/` directory prepared in
    the last step of the "Preliminary setup" section above.
 
-1. Let the StorPool OpenStack integration suite find your Cinder drivers
+1. Let the StorPool OpenStack integration suite find your Cinder drivers and
+   apply the StorPool integration changes:
    and make the necessary modifications in its own work directory:
 
-        make clean
-        make cinder
+        ./sp-openstack check
+        ./sp-openstack install cinder os_brick
 
-2. Let the StorPool OpenStack integration suite install the updated Cinder
-   drivers:
-
-        # As root:
-        make cinder-install
-
-3. Configure Cinder to use the StorPool volume backend.  Edit the
+2. Configure Cinder to use the StorPool volume backend.  Edit the
    `/etc/cinder/cinder.conf` file and append the following lines to it:
 
         [storpool]
@@ -69,13 +64,13 @@ Set up the Cinder volume backend
 
         enabled_backends=storpool
 
-4. Restart the Cinder services on the controller node:
+3. Restart the Cinder services on the controller node:
 
         service cinder-volume restart
         service cinder-scheduler restart
         service cinder-api restart
 
-5. Try to create a Cinder volume:
+4. Try to create a Cinder volume:
 
         cinder create --display-name vol1 1
         cinder list
@@ -220,24 +215,18 @@ Set up the Nova volume attachment driver (on each hypevisor node)
    have also been installed on all the hypervisor nodes (see the "Preliminary
    setup" section above).
 
-2. Let the StorPool OpenStack integration suite find your Nova drivers
+2. Let the StorPool OpenStack integration suite find your Nova drivers and
    and make the necessary modifications in its own work directory:
 
-        make clean
-        make nova
+        ./sp-openstack check
+        ./sp-openstack install nova
 
-3. Let the StorPool OpenStack integration suite install the updated Cinder
-   drivers:
-
-        # As root:
-        make nova-install
-
-4. Edit the `/etc/nova/nova.conf` file; comment out any existing
-   `volume_drivers` lines and replace or add the following:
+3. Edit the `/etc/nova/nova.conf` file; comment out any existing
+   `volume_drivers` lines and replace them with or add the following one:
 
         volume_drivers=storpool=nova.virt.libvirt.volume.LibvirtStorPoolVolumeDriver
 
-5. Restart the Nova compute and metadata-api services:
+4. Restart the Nova compute and metadata-api services:
 
         service nova-compute restart
         service nova-api-metadata restart
