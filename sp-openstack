@@ -34,11 +34,16 @@ use Getopt::Std;
 
 my $debug = 0;
 
-my @releases = qw(mitaka liberty kilo);
+my @releases = qw(mitaka liberty kilo juno);
 
 my %files = (
 	cinder => {
 		'brick/initiator/connector.py' => [
+			{
+				type => 'chunk',
+				from => qr/^from cinder\.i18n import/,
+				to => qr/^from cinder\.openstack\.common import /,
+			},
 			{
 				type => 'chunk',
 				from => qr/^\s*elif protocol == "STORPOOL":/,
@@ -137,6 +142,19 @@ my %components = (
 			detect => {
 				file => 'volume/driver.py',
 				present => qr{^from oslo_config import cfg},
+			},
+
+			files => [
+				'brick/initiator/connector.py',
+				'exception.py',
+				'volume/drivers/storpool.py',
+			],
+		},
+
+		juno => {
+			detect => {
+				file => 'volume/driver.py',
+				present => qr{Number of times to attempt to run flakey shell commands},
 			},
 
 			files => [
@@ -251,7 +269,7 @@ EOUSAGE
 
 sub version()
 {
-	say 'sp-openstack 0.1.0.dev372';
+	say 'sp-openstack 0.1.0.dev392';
 }
 
 sub debug($)
