@@ -201,6 +201,18 @@ my %components = (
 				'virt/libvirt/volume.py',
 			],
 		},
+
+		juno => {
+			detect => {
+				file => 'virt/libvirt/driver.py',
+				present => qr{^MIN_LIBVIRT_BLOCKCOMMIT_RELATIVE_VERSION =},
+			},
+
+			files => [
+				'virt/libvirt/driver.py',
+				'virt/libvirt/volume.py',
+			],
+		},
 	},
 
 	os_brick => {
