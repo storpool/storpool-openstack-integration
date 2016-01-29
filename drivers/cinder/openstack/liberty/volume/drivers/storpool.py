@@ -54,8 +54,8 @@ CONF = cfg.CONF
 CONF.register_opts(storpool_opts)
 
 
-class StorPoolDriver(driver.TransferVD, driver.ExtendVD, driver.CloneableVD,
-                     driver.SnapshotVD, driver.RetypeVD, driver.BaseVD):
+class StorPoolDriver(driver.TransferVD, driver.ExtendVD,
+                     driver.SnapshotVD, driver.BaseVD):
     """The StorPool block device driver.
 
     Version history:
@@ -272,6 +272,8 @@ class StorPoolDriver(driver.TransferVD, driver.ExtendVD, driver.CloneableVD,
             'vendor_name': 'StorPool',
             'driver_version': self.VERSION,
             'storage_protocol': 'storpool',
+
+            'sparse_copy_volume': True,
 
             'pools': pools
         }
