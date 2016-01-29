@@ -281,7 +281,7 @@ EOUSAGE
 
 sub version()
 {
-	say 'sp-openstack 0.1.0.dev392';
+	say 'sp-openstack 0.1.0';
 }
 
 sub debug($)
