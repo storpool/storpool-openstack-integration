@@ -32,6 +32,8 @@ use File::Basename qw(basename dirname);
 use File::Temp;
 use Getopt::Std;
 
+my $def_grpname = 'spopenstack';
+
 my $debug = 0;
 
 my @releases = qw(mitaka liberty kilo juno);
@@ -243,24 +245,28 @@ my %components = (
 my @all_components = sort keys %components;
 my (@search_paths, @search_paths_prepend);
 
-my $grpname = 'spopenstack';
+my ($grpname, $username);
 my $spooldir = '/var/spool/openstack-storpool';
 my $spoolfile = "$spooldir/openstack-attach.json";
 
 sub usage($)
 {
 	my ($err) = @_;
-	my $s = <<'EOUSAGE' ;
+	my $s = <<"EOUSAGE" ;
 Usage:	sp-openstack [-v] [-L paths] check [components...]
 	sp-openstack [-v] [-L paths] detect [components...]
-	sp-openstack [-v] [-L paths] install [components...]
+	sp-openstack [-v] [-g grpname] [-L paths] [-u username] install [components...]
 	sp-openstack help
 	sp-openstack version
 	sp-openstack -V | -h
 
+	-g	specify the group for the shared state files
+		(default: $def_grpname)
 	-h	display program usage information and exit
 	-L	specify the paths (separated by ':') to search for
 		Python modules
+	-u	specify the service username to add to the group
+		(default: the same as the component name)
 	-V	display program version information and exit
 	-v	verbose operation; display diagnostic output
 
@@ -956,7 +962,7 @@ sub setup_group_and_file($)
 		@grp = getgrnam $grpname;
 		die "Could not set up the $grpname group\n" unless @grp;
 	}
-	setup_group_member $grpname, $comp;
+	setup_group_member $grpname, $username // $comp;
 	setup_file $grpname, $spooldir, $spoolfile;
 }
 
@@ -1040,11 +1046,14 @@ MAIN:
 {
 	my %opts;
 
-	getopts('hL:Vv', \%opts) or usage 1;
+	getopts('g:hL:u:Vv', \%opts) or usage 1;
 	version if $opts{V};
 	usage 0 if $opts{h};
 	exit 0 if $opts{V} || $opts{h};
 	$debug = $opts{v};
+
+	$grpname = $opts{g} // $def_grpname;
+	$username = $opts{u};
 
 	if (defined $opts{L}) {
 		my @dirs = split /:/, $opts{L};
