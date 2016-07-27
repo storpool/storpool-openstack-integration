@@ -4,6 +4,8 @@ Change log for the StorPool OpenStack integration
 0.2.1
 -----
 
+- Update the Mitaka os-brick connector.
+
 0.2.0
 -----
 
