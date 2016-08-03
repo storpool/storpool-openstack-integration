@@ -65,9 +65,13 @@ class StorPoolDriver(driver.TransferVD, driver.ExtendVD,
                   - use the driver.*VD ABC metaclasses
                   - bugfix: fall back to the configured StorPool template
         1.0.0   - Imported into OpenStack Liberty with minor fixes
+        1.1.0   - Bring the driver up to date with Liberty and Mitaka:
+                  - drop the CloneableVD and RetypeVD base classes
+                  - enable faster volume copying by specifying
+                    sparse_volume_copy=true in the stats report
     """
 
-    VERSION = '1.0.0'
+    VERSION = '1.1.0'
 
     def __init__(self, *args, **kwargs):
         super(StorPoolDriver, self).__init__(*args, **kwargs)
@@ -183,7 +187,7 @@ class StorPoolDriver(driver.TransferVD, driver.ExtendVD,
                               "%(msg)s"),
                           {'name': snapname, 'msg': e})
 
-    def create_export(self, context, volume):
+    def create_export(self, context, volume, connector):
         pass
 
     def remove_export(self, context, volume):
@@ -449,13 +453,13 @@ class StorPoolDriver(driver.TransferVD, driver.ExtendVD,
             LOG.error(_LE('StorPool update_migrated_volume(): it seems '
                           'that the StorPool volume "%(tid)s" was not '
                           'created as part of the migration from '
-                          '"%(oid)s"'), {'tid': temp_id, 'oid': orig_id})
+                          '"%(oid)s".'), {'tid': temp_id, 'oid': orig_id})
             return {'_name_id': new_volume['_name_id'] or new_volume['id']}
         elif orig_name in vols:
             LOG.error(_LE('StorPool update_migrated_volume(): both '
                           'the original volume "%(oid)s" and the migrated '
                           'StorPool volume "%(tid)s" seem to exist on '
-                          'the StorPool cluster'),
+                          'the StorPool cluster.'),
                       {'oid': orig_id, 'tid': temp_id})
             return {'_name_id': new_volume['_name_id'] or new_volume['id']}
         else:
