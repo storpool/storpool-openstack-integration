@@ -36,7 +36,7 @@ my $def_grpname = 'spopenstack';
 
 my $debug = 0;
 
-my @releases = qw(mitaka liberty kilo juno);
+my @releases = qw(mitaka liberty kilo);
 
 my %files = (
 	cinder => {
@@ -152,19 +152,6 @@ my %components = (
 				'volume/drivers/storpool.py',
 			],
 		},
-
-		juno => {
-			detect => {
-				file => 'volume/driver.py',
-				present => qr{Number of times to attempt to run flakey shell commands},
-			},
-
-			files => [
-				'brick/initiator/connector.py',
-				'exception.py',
-				'volume/drivers/storpool.py',
-			],
-		},
 	},
 
 	nova => {
@@ -196,18 +183,6 @@ my %components = (
 			detect => {
 				file => 'virt/libvirt/driver.py',
 				present => qr{^from oslo_config import cfg},
-			},
-
-			files => [
-				'virt/libvirt/driver.py',
-				'virt/libvirt/volume.py',
-			],
-		},
-
-		juno => {
-			detect => {
-				file => 'virt/libvirt/driver.py',
-				present => qr{^MIN_LIBVIRT_BLOCKCOMMIT_RELATIVE_VERSION =},
 			},
 
 			files => [
