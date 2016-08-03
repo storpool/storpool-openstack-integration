@@ -43,10 +43,6 @@ my %files = (
 		'exception.py' => [
 			{
 				type => 'class',
-				name => 'StorPoolConfigurationMissing',
-			},
-			{
-				type => 'class',
 				name => 'StorPoolConfigurationInvalid',
 			},
 		],

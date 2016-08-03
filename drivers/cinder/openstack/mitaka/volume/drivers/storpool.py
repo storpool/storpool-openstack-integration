@@ -1,4 +1,4 @@
-#    Copyright (c) 2014, 2015 StorPool
+#    Copyright (c) 2014 - 2016 StorPool
 #    All Rights Reserved.
 #
 #    Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -16,6 +16,8 @@
 """StorPool block device driver"""
 
 from __future__ import absolute_import
+
+import platform
 
 from oslo_config import cfg
 from oslo_log import log as logging
@@ -69,9 +71,12 @@ class StorPoolDriver(driver.TransferVD, driver.ExtendVD,
                   - drop the CloneableVD and RetypeVD base classes
                   - enable faster volume copying by specifying
                     sparse_volume_copy=true in the stats report
+        1.1.1   - Fix the internal _storpool_client_id() method to
+                  not break on an unknown host name or UUID; thus,
+                  remove the StorPoolConfigurationMissing exception.
     """
 
-    VERSION = '1.1.0'
+    VERSION = '1.1.1'
 
     def __init__(self, *args, **kwargs):
         super(StorPoolDriver, self).__init__(*args, **kwargs)
@@ -116,12 +121,13 @@ class StorPoolDriver(driver.TransferVD, driver.ExtendVD,
 
     def _storpool_client_id(self, connector):
         hostname = connector['host']
+        if hostname == self.host or hostname == CONF.host:
+            hostname = platform.node()
         try:
             cfg = spconfig.SPConfig(section=hostname)
             return int(cfg['SP_OURID'])
         except KeyError:
-            raise exception.StorPoolConfigurationMissing(
-                section=hostname, param='SP_OURID')
+            return 65
         except Exception as e:
             raise exception.StorPoolConfigurationInvalid(
                 section=hostname, param='SP_OURID', error=e)

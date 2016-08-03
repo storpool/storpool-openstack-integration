@@ -983,11 +983,6 @@ class XtremIOAlreadyMappedError(CinderException):
 
 
 # StorPool driver
-class StorPoolConfigurationMissing(CinderException):
-    message = _("Missing parameter %(param)s in the %(section)s section "
-                "of the /etc/storpool.conf file")
-
-
 class StorPoolConfigurationInvalid(CinderException):
     message = _("Invalid parameter %(param)s in the %(section)s section "
                 "of the /etc/storpool.conf file: %(error)s")

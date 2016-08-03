@@ -71,7 +71,9 @@ class StorPoolDriver(driver.TransferVD, driver.ExtendVD,
                   - drop the CloneableVD and RetypeVD base classes
                   - enable faster volume copying by specifying
                     sparse_volume_copy=true in the stats report
-        1.1.1   - Fix the internal _storpool_client_id() method.
+        1.1.1   - Fix the internal _storpool_client_id() method to
+                  not break on an unknown host name or UUID; thus,
+                  remove the StorPoolConfigurationMissing exception.
     """
 
     VERSION = '1.1.1'
