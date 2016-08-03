@@ -171,7 +171,7 @@ my %components = (
 		mitaka => {
 			detect => {
 				file => 'virt/libvirt/driver.py',
-				present => qr{^\s+def\s+_rebase_with_qemu_img\s*\(},
+				present => qr{DEFAULT_UEFI_LOADER_PATH},
 			},
 
 			files => [
