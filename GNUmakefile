@@ -1,5 +1,5 @@
 name=		storpool-openstack-integration
-version=	0.2.1.dev20160803
+version=	1.0.0.dev1
 
 md=		README.md
 html=		$(subst .md,.html,${md})
