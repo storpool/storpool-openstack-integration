@@ -1,4 +1,4 @@
-#    Copyright (c) 2014, 2015 StorPool
+#    Copyright (c) 2014 - 2016 StorPool
 #    All Rights Reserved.
 #
 #    Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -71,9 +71,10 @@ class StorPoolDriver(driver.TransferVD, driver.ExtendVD,
                   - drop the CloneableVD and RetypeVD base classes
                   - enable faster volume copying by specifying
                     sparse_volume_copy=true in the stats report
+        1.1.1   - Fix the internal _storpool_client_id() method.
     """
 
-    VERSION = '1.1.0'
+    VERSION = '1.1.1'
 
     def __init__(self, *args, **kwargs):
         super(StorPoolDriver, self).__init__(*args, **kwargs)
