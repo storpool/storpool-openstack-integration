@@ -17,6 +17,8 @@
 
 from __future__ import absolute_import
 
+import platform
+
 from oslo_config import cfg
 from oslo_log import log as logging
 from oslo_utils import importutils
@@ -116,12 +118,13 @@ class StorPoolDriver(driver.TransferVD, driver.ExtendVD,
 
     def _storpool_client_id(self, connector):
         hostname = connector['host']
+        if hostname == self.host or hostname == CONF.host:
+            hostname = platform.node()
         try:
             cfg = spconfig.SPConfig(section=hostname)
             return int(cfg['SP_OURID'])
         except KeyError:
-            raise exception.StorPoolConfigurationMissing(
-                section=hostname, param='SP_OURID')
+            return 65
         except Exception as e:
             raise exception.StorPoolConfigurationInvalid(
                 section=hostname, param='SP_OURID', error=e)
