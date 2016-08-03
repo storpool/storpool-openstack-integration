@@ -7,6 +7,7 @@ Change log for the StorPool OpenStack integration
 - Update the Mitaka os-brick connector.
 - Update the Liberty cinder connector.
 - Fix the detection of Nova Liberty vs Mitaka.
+- Drop support for the Juno and Kilo releases of OpenStack.
 
 0.2.0
 -----
