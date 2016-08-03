@@ -5,6 +5,7 @@ Change log for the StorPool OpenStack integration
 -----
 
 - Update the Mitaka os-brick connector.
+- Update the Liberty cinder connector.
 
 0.2.0
 -----
