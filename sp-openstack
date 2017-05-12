@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 #
-# Copyright (c) 2016  StorPool
+# Copyright (c) 2016, 2017  StorPool
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -36,7 +36,7 @@ my $def_grpname = 'spopenstack';
 
 my $debug = 0;
 
-my @releases = qw(mitaka liberty);
+my @releases = qw(ocata mitaka liberty);
 
 my %files = (
 	cinder => {
@@ -96,6 +96,18 @@ my %files = (
 
 my %components = (
 	cinder => {
+		ocata => {
+			detect => {
+				file => 'volume/driver.py',
+				present => qr{^\s+def\s+supports_replication_feature\s*\(},
+			},
+
+			files => [
+				'exception.py',
+				'volume/drivers/storpool.py',
+			],
+		},
+
 		mitaka => {
 			detect => {
 				file => 'volume/driver.py',
@@ -217,7 +229,7 @@ EOUSAGE
 
 sub version()
 {
-	say 'sp-openstack 1.0.0';
+	say 'sp-openstack 1.1.0.dev1';
 }
 
 sub debug($)

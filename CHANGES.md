@@ -1,6 +1,11 @@
 Change log for the StorPool OpenStack integration
 =================================================
 
+1.1.0.dev1
+----------
+
+- Add the Ocata Cinder volume driver.
+
 1.0.0
 -----
 
