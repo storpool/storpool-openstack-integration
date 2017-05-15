@@ -134,6 +134,18 @@ my %components = (
 	},
 
 	nova => {
+		ocata => {
+			detect => {
+				file => 'virt/libvirt/driver.py',
+				present => qr{MIN_LIBVIRT_PARALLELS_SET_ADMIN_PASSWD},
+			},
+
+			files => [
+				'virt/libvirt/driver.py',
+				'virt/libvirt/volume/storpool.py',
+			],
+		},
+
 		mitaka => {
 			detect => {
 				file => 'virt/libvirt/driver.py',
