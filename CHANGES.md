@@ -8,6 +8,9 @@ Change log for the StorPool OpenStack integration
 - Add the Newton and Ocata os-brick connector driver.
 - Add the capability to make different changes to the same file for
   different OpenStack releases.
+- Remove the "probably unaligned" warnings from the documentation of
+  the "storpool volume list" and "storpool volume status" checks, since
+  the StorPool CLI tool aligns the output in recent versions.
 
 1.0.0
 -----
