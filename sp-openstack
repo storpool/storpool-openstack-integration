@@ -61,12 +61,6 @@ my %files = (
 				to => qr/^\s+'iser=nova\./,
 			},
 		],
-		'virt/libvirt/volume.py' => [
-			{
-				type => 'class',
-				name => 'LibvirtStorPoolVolumeDriver',
-			},
-		],
 		'virt/libvirt/volume/storpool.py' => [
 			{
 				type => 'new',
