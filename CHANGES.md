@@ -5,6 +5,9 @@ Change log for the StorPool OpenStack integration
 ----------
 
 - Add the Ocata Cinder volume driver and Nova attachment driver.
+- Add the Newton os-brick connector driver.
+- Add the capability to make different changes to the same file for
+  different OpenStack releases.
 
 1.0.0
 -----

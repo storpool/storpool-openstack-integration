@@ -36,7 +36,7 @@ my $def_grpname = 'spopenstack';
 
 my $debug = 0;
 
-my @releases = qw(ocata mitaka liberty);
+my @releases = qw(ocata newton mitaka liberty);
 
 my %files = (
 	cinder => {
@@ -69,20 +69,41 @@ my %files = (
 	},
 
 	os_brick => {
-		'initiator/connector.py' => [
+		'initiator/__init__.py' => [
 			{
 				type => 'chunk',
 				from => qr/^STORPOOL = /,
 				to => qr/^LOCAL = /,
 			},
+		],
+		'initiator/connector.py' => [
+			{
+				type => 'chunk',
+				from => qr/^STORPOOL = /,
+				to => qr/^LOCAL = /,
+				release => [ qw(liberty mitaka) ],
+			},
 			{
 				type => 'chunk',
 				from => qr/^\s+elif protocol == STORPOOL/,
 				to => qr/^\s+elif protocol == LOCAL/,
+				release => [ qw(liberty mitaka) ],
 			},
 			{
 				type => 'class',
 				name => 'StorPoolConnector',
+				release => [ qw(liberty mitaka) ],
+			},
+			{
+				type => 'chunk',
+				from => qr/^\s+initiator\.STORPOOL:$/,
+				to => qr/^\s+initiator\.LOCAL:$/,
+				release => [ qw(newton) ],
+			},
+		],
+		'initiator/connectors/storpool.py' => [
+			{
+				type => 'new',
 			},
 		],
 	},
@@ -185,6 +206,19 @@ my %components = (
 
 			files => [
 				'initiator/connector.py',
+			],
+		},
+
+		newton => {
+			detect => {
+				file => 'initiator/connector.py',
+				present => qr{^connector_list = \[},
+			},
+
+			files => [
+				'initiator/__init__.py',
+				'initiator/connector.py',
+				'initiator/connectors/storpool.py',
 			],
 		},
 	},
@@ -730,6 +764,13 @@ COMPONENT:
 			die "Internal error: no definition for $file\n"
 			    unless defined $f;
 			debug "  - $file: ".scalar(@{$f})." chunks: ".join ', ', map $_->{type}, @{$f};
+			$f = [
+				grep {
+					my $def = $_;
+					!defined $def->{release} || grep $_ eq $release, @{$def->{release}}
+				} @{$f}
+			];
+			debug "  - $file (filtered): ".scalar(@{$f})." chunks: ".join ', ', map $_->{type}, @{$f};
 
 			my $src = get_source_path $file, $comp, $release;
 			if (! -f $src) {
