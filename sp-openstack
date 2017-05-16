@@ -98,7 +98,7 @@ my %files = (
 				type => 'chunk',
 				from => qr/^\s+initiator\.STORPOOL:$/,
 				to => qr/^\s+initiator\.LOCAL:$/,
-				release => [ qw(newton) ],
+				release => [ qw(newton ocata) ],
 			},
 		],
 		'initiator/connectors/storpool.py' => [
@@ -213,6 +213,19 @@ my %components = (
 			detect => {
 				file => 'initiator/connector.py',
 				present => qr{^connector_list = \[},
+			},
+
+			files => [
+				'initiator/__init__.py',
+				'initiator/connector.py',
+				'initiator/connectors/storpool.py',
+			],
+		},
+
+		ocata => {
+			detect => {
+				file => 'exception.py',
+				present => qr{^class InvalidConnectorProtocol},
 			},
 
 			files => [
