@@ -11,6 +11,7 @@ Change log for the StorPool OpenStack integration
 - Remove the "probably unaligned" warnings from the documentation of
   the "storpool volume list" and "storpool volume status" checks, since
   the StorPool CLI tool aligns the output in recent versions.
+- Let the documentation use the "openstack" client tool where possible.
 
 1.0.0
 -----

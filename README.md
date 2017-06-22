@@ -72,10 +72,10 @@ Set up the Cinder volume backend
 
 4. Try to create a Cinder volume:
 
-        cinder create --display-name vol1 1
-        cinder list
-        cinder extend vol1 2
-        cinder list
+        openstack volume create --size 1 vol1
+        openstack volume list
+        openstack volume set --size 2 vol1
+        openstack volume list
         
         # Now look for the volume in the StorPool volume list:
         #
@@ -85,23 +85,23 @@ Set up the Cinder volume backend
         # volumes, obtaining the internal Cinder volume ID from the output of
         # "cinder show".
         #
-        storpool volume list | fgrep -e `cinder show vol1 | awk '$2 == "id" { print $4 }'` -e placeTail
+        storpool volume list | fgrep -e "$(openstack volume show -f value -c id vol1)" -e placeTail
 
 Create a Cinder volume based on a Glance image
 ----------------------------------------------
 
-        # Obtain the internal Glance ID of the "centos 7" image:
-        glance image-list | awk '/centos 7/ { print $2 }'
+        # Obtain the internal Glance ID of the "centos-7" image:
+        openstack image list --property name=centos-7 -c ID -f value
         
         # Now create a volume based on this image:
-        cinder create --image-id fdd6ecdd-074c-40fe-8370-0b4438d8c060 --display-name centos-1 3
+        openstack volume create --image fdd6ecdd-074c-40fe-8370-0b4438d8c060 --size 3 centos-7-base
         
         # Wait for the volume to get out of the "downloading" state:
-        cinder list
+        openstack volume list
         
         # In the meantime, monitor the progress in the StorPool volume status
         # display:
-        cinder show centos-1 | awk '$2 == "id" { print $4 }'
+        openstack volume show -f value -c id centos-7-base
         storpool volume list | fgrep -e fbca1e54-6901-43af-828f-f2434e8d0bc3
         storpool volume os--volume-fbca1e54-6901-43af-828f-f2434e8d0bc3 status
         
@@ -129,7 +129,7 @@ to it.
         # Note the "id" in the output of "cinder create" and use it further
         # down...
         #
-        cinder create --display-name=centos-7-base 8
+        openstack volume create --size 8 centos-7-base
         
         # Find the StorPool volume with the name corresponding to this
         # internal ID.  It will usually be in the form os--volume-ID, but,
@@ -175,14 +175,14 @@ Verify the operation of volume snapshots
 
 Make sure that Cinder can create snapshots of existing volumes and use them:
 
-        cinder snapshot-create --display-name centos-7-20150323 centos-7-base
+        openstack volume snapshot create --volume centos-7-base centos-7-20170518
         
-        cinder snapshot-list
-        storpool snapshot list | fgrep -e 8c4e7260-f7bb-4ff7-9a61-6b3edb692a9a
+        openstack volume snapshot list
+        storpool snapshot list | fgrep -e 8c4e7260-f7bb-4ff7-9a61-6b3edb692a9a -e placeAll
         
         # Now create a volume from this snapshot:
-        cinder create --snapshot-id 8c4e7260-f7bb-4ff7-9a61-6b3edb692a9a --display-name centos-01 8
-        cinder list
+        openstack volume create --snapshot centos-7-20170518 --size 8 centos-01
+        openstack volume list
         
         # And now the following command may display a somewhat surprising
         # result: the snapshot will have 100% allocated disk space, while both
