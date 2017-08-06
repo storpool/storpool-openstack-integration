@@ -5,6 +5,7 @@ Change log for the StorPool OpenStack integration
 -----
 
 - Add the sp-openstack.1 manual page.
+- Look for the Python modules path in a way compatible with Python 3.
 
 1.1.0
 -----
