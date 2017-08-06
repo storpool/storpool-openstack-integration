@@ -11,6 +11,7 @@ Vcs-Browser: https://github.com/storpool/storpool-openstack-integration/tree/deb
 Package: storpool-openstack-integration
 Architecture: all
 Depends: ${misc:Depends}, ${perl:Depends}, python:any
+Recommends: txn-install
 Multi-Arch: foreign
 Description: toolset for StorPool-backed OpenStack storage
  These are some tools necessary to set up an OpenStack cluster that uses
