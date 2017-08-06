@@ -1,0 +1,16 @@
+Description: Actually use Python 3-compatible syntax.
+Forwarded: yes
+Author: Peter Pentchev <openstack-dev@storpool.com>
+Last-Update: 2017-08-06
+
+--- a/sp-openstack
++++ b/sp-openstack
+@@ -328,7 +328,7 @@
+ 	return @search_paths if @search_paths;
+ 
+ 	my @lines = map { chomp; $_ } run_program 'python3', '-c',
+-	    'import sys; print str.join("\n", sys.path)';
++	    'from __future__ import print_function; import sys; print("\n".join(sys.path))';
+ 	die "Python did not report a module search path at all\n"
+ 	    unless @lines;
+ 	@lines = grep length && -d, @lines;
