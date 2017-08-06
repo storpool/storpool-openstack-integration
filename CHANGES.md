@@ -4,6 +4,8 @@ Change log for the StorPool OpenStack integration
 1.1.1
 -----
 
+- Add the sp-openstack.1 manual page.
+
 1.1.0
 -----
 
