@@ -11,6 +11,6 @@ Last-Update: 2017-08-06
  
 -	my @lines = map { chomp; $_ } run_program 'python', '-c',
 +	my @lines = map { chomp; $_ } run_program 'python3', '-c',
- 	    'import sys; print str.join("\n", sys.path)';
+ 	    'from __future__ import print_function; import sys; print("\n".join(sys.path))';
  	die "Python did not report a module search path at all\n"
  	    unless @lines;
