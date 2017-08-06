@@ -1,6 +1,9 @@
 Change log for the StorPool OpenStack integration
 =================================================
 
+1.1.1
+-----
+
 1.1.0
 -----
 
