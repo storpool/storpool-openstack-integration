@@ -43,6 +43,7 @@
 .Op Fl v
 .Op Fl g Ar grpname
 .Op Fl L Ar paths
+.Op Fl T Ar module
 .Op Fl u Ar username
 .Cm install
 .Op Ar components...
@@ -88,6 +89,11 @@ Display program usage information and exit.
 Specify the paths
 .Pq separated by So : Sc
 to search for Python modules.
+.It Fl T
+Use the
+.Xr txn-install 1
+utility to record the modified files and pass it the specified
+module name.
 .It Fl u
 Specify the service username to add to the group                                                       
 .Pq default: the same as the component name .

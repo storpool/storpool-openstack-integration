@@ -4,6 +4,8 @@ Change log for the StorPool OpenStack integration
 1.2.0
 -----
 
+- add the `-T txn-module` option for use with the txn-install tool.
+
 1.1.1
 -----
 

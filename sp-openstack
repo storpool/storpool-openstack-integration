@@ -244,13 +244,15 @@ my ($grpname, $username);
 my $spooldir = '/var/spool/openstack-storpool';
 my $spoolfile = "$spooldir/openstack-attach.json";
 
+my $txn_module;
+
 sub usage($)
 {
 	my ($err) = @_;
 	my $s = <<"EOUSAGE" ;
 Usage:	sp-openstack [-v] [-L paths] check [components...]
 	sp-openstack [-v] [-L paths] detect [components...]
-	sp-openstack [-v] [-g grpname] [-L paths] [-u username] install [components...]
+	sp-openstack [-v] [-g grpname] [-L paths] [-T module] [-u username] install [components...]
 	sp-openstack help
 	sp-openstack version
 	sp-openstack -V | -h
@@ -262,6 +264,8 @@ Usage:	sp-openstack [-v] [-L paths] check [components...]
 		Python modules
 	-u	specify the service username to add to the group
 		(default: the same as the component name)
+	-T	use the txn-install utility to record the modified files
+		and pass it the specified module name
 	-V	display program version information and exit
 	-v	verbose operation; display diagnostic output
 
@@ -751,6 +755,13 @@ sub mimic_stat($ $)
 	}
 }
 
+sub txn_install(@)
+{
+	my (@args) = @_;
+
+	run_program 'env', "TXN_INSTALL_MODULE=$txn_module", 'txn', '--', 'install', @args;
+}
+
 sub do_integration($ %)
 {
 	my ($check_only, %data) = @_;
@@ -803,9 +814,13 @@ COMPONENT:
 				} else {
 					say "Creating new file $dst";
 					mkdir_p_basedir "$path/$comp", $file;
-					copy_file $src, $dst;
-					chmod 0644, $dst or
-					   die "Could not make $dst world-readable: $!\n";
+					if (defined $txn_module) {
+						txn_install '-m', '644', '--', $src, $dst;
+					} else {
+						copy_file $src, $dst;
+						chmod 0644, $dst or
+						   die "Could not make $dst world-readable: $!\n";
+					}
 				}
 				next;
 			} elsif (! -f $dst) {
@@ -855,10 +870,17 @@ COMPONENT:
 				say "Created a temporary file $tempname";
 
 				update_file $dst, $tempname, $tempfile, $dsrc;
+				close $tempfile or
+				    die "Could not close the temporary file $tempname: $!\n";
+
 				say "Renaming $tempname to $dst";
-				rename $tempname, $dst or
-				    die "Could not rename $tempname to $dst: $!\n";
-				$tempfile->unlink_on_destroy(0);
+				if (defined $txn_module) {
+					txn_install '--', $tempname, $dst;
+				} else {
+					rename $tempname, $dst or
+					    die "Could not rename $tempname to $dst: $!\n";
+					$tempfile->unlink_on_destroy(0);
+				}
 				mimic_stat $dst, \@stat;
 			}
 		}
@@ -930,11 +952,18 @@ sub setup_file($ $ $)
 	if (! -f $spoolfile) {
 		$nsay->("Creating $spoolfile");
 		$n = '';
-		open my $f, '>', $spoolfile or
-		    die "Could not create $spoolfile: $!\n";
-		print $f '{}';
-		close $f or
-		    die "Could not close $spoolfile: $!\n";
+		if (defined $txn_module) {
+			my $tempfile = File::Temp->new(TEMPLATE => 'openstack-attach.json.XXXXXX', DIR => $spooldir);
+			print $tempfile '{}';
+			close $tempfile;
+			txn_install '--', $tempfile->filename, $spoolfile;
+		} else {
+			open my $f, '>', $spoolfile or
+			    die "Could not create $spoolfile: $!\n";
+			print $f '{}';
+			close $f or
+			    die "Could not close $spoolfile: $!\n";
+		}
 	}
 	@stat = stat $spoolfile;
 	if (!@stat) {
@@ -1048,7 +1077,7 @@ MAIN:
 {
 	my %opts;
 
-	getopts('g:hL:u:Vv', \%opts) or usage 1;
+	getopts('g:hL:T:u:Vv', \%opts) or usage 1;
 	version if $opts{V};
 	usage 0 if $opts{h};
 	exit 0 if $opts{V} || $opts{h};
@@ -1056,6 +1085,8 @@ MAIN:
 
 	$grpname = $opts{g} // $def_grpname;
 	$username = $opts{u};
+	
+	$txn_module = $opts{T};
 
 	if (defined $opts{L}) {
 		my @dirs = split /:/, $opts{L};
