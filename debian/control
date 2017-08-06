@@ -1,0 +1,18 @@
+Source: storpool-openstack-integration
+Section: text
+Priority: optional
+Maintainer: Peter Pentchev <openstack-dev@storpool.com>
+Build-Depends: debhelper (>> 10), markdown
+Standards-Version: 4.0.0
+Homepage: https://github.com/storpool/storpool-openstack-integration
+Vcs-Git: https://github.com/storpool/storpool-openstack-integration.git -b debian
+Vcs-Browser: https://github.com/storpool/storpool-openstack-integration/tree/debian
+
+Package: storpool-openstack-integration
+Architecture: all
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Multi-Arch: foreign
+Description: toolset for StorPool-backed OpenStack storage
+ These are some tools necessary to set up an OpenStack cluster that uses
+ a StorPool distributed storage cluster as a backend for the Cinder volumes
+ and the Nova instance disks.

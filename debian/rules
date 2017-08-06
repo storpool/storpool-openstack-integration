@@ -1,0 +1,20 @@
+#!/usr/bin/make -f
+
+P=	$(shell dh_listpackages | head -n1)
+D=	${CURDIR}/debian/$P
+
+DRV=	/usr/share/$P/drivers
+
+override_dh_auto_install:
+	dh_auto_install
+
+	mkdir -p -- '$D/${DRV}'
+	set -e; (cd drivers && find . -type d | fgrep -vxe .) | while read d; do \
+		mkdir -- "$D/${DRV}/$$d"; \
+	done
+	set -e; (cd drivers && find . -type f) | while read f; do \
+		install -c -o root -g root -m 644 -- "drivers/$$f" "$D/${DRV}/$$f"; \
+	done
+
+%:
+	dh "$@"

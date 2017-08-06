@@ -1,0 +1,5 @@
+storpool-openstack-integration (1.1.0-1~1) UNRELEASED; urgency=medium
+
+  * Initial release.
+
+ -- Peter Pentchev <openstack-dev@storpool.com>  Mon, 31 Jul 2017 16:13:46 +0300

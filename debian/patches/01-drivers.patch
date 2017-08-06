@@ -1,0 +1,16 @@
+Description: Look for drivers in /usr/share.
+Forwarded: not-needed
+Author: Peter Pentchev <openstack-dev@storpool.com>
+Last-Update: 2017-07-31
+
+--- a/sp-openstack
++++ b/sp-openstack
+@@ -421,7 +421,7 @@
+ {
+ 	my ($file, $comp, $release) = @_;
+ 
+-	return "drivers/$comp/openstack/$release/$file";
++	return "/usr/share/storpool-openstack-integration/drivers/$comp/openstack/$release/$file";
+ }
+ 
+ sub get_destination_path($ $ $)
