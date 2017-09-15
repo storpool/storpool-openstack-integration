@@ -36,7 +36,7 @@ my $def_grpname = 'spopenstack';
 
 my $debug = 0;
 
-my @releases = qw(ocata newton mitaka liberty);
+my @releases = qw(pike ocata newton mitaka liberty);
 
 my %files = (
 	cinder => {
@@ -98,7 +98,7 @@ my %files = (
 				type => 'chunk',
 				from => qr/^\s+initiator\.STORPOOL:$/,
 				to => qr/^\s+initiator\.LOCAL:$/,
-				release => [ qw(newton ocata) ],
+				release => [ qw(newton ocata pike) ],
 			},
 		],
 		'initiator/connectors/storpool.py' => [
@@ -111,6 +111,18 @@ my %files = (
 
 my %components = (
 	cinder => {
+		pike => {
+			detect => {
+				file => 'volume/driver.py',
+				present => qr{^from os_brick import exception as brick_exception},
+			},
+
+			files => [
+				'exception.py',
+				'volume/drivers/storpool.py',
+			],
+		},
+
 		ocata => {
 			detect => {
 				file => 'volume/driver.py',
@@ -149,6 +161,18 @@ my %components = (
 	},
 
 	nova => {
+		pike => {
+			detect => {
+				file => 'virt/libvirt/driver.py',
+				present => qr{^\s*def\s+extend_volume\s*[(]},
+			},
+
+			files => [
+				'virt/libvirt/driver.py',
+				'virt/libvirt/volume/storpool.py',
+			],
+		},
+
 		ocata => {
 			detect => {
 				file => 'virt/libvirt/driver.py',
@@ -226,6 +250,19 @@ my %components = (
 			detect => {
 				file => 'exception.py',
 				present => qr{^class InvalidConnectorProtocol},
+			},
+
+			files => [
+				'initiator/__init__.py',
+				'initiator/connector.py',
+				'initiator/connectors/storpool.py',
+			],
+		},
+
+		pike => {
+			detect => {
+				file => 'exception.py',
+				present => qr{^class ExceptionChainer},
 			},
 
 			files => [
