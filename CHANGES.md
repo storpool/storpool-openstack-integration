@@ -5,11 +5,12 @@ Change log for the StorPool OpenStack integration
 ----------
 
 - Add the Pike Cinder, Nova, and os-brick drivers.
+- Properly capitalize the 1.2.0 changelog entry.
 
 1.2.0
 -----
 
-- add the `-T txn-module` option for use with the txn-install tool.
+- Add the `-T txn-module` option for use with the txn-install tool.
 
 1.1.1
 -----
