@@ -1,0 +1,187 @@
+#!/bin/sh
+#
+# Copyright (c) 2017  StorPool
+# All rights reserved.
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions
+# are met:
+# 1. Redistributions of source code must retain the above copyright
+#    notice, this list of conditions and the following disclaimer.
+# 2. Redistributions in binary form must reproduce the above copyright
+#    notice, this list of conditions and the following disclaimer in the
+#    documentation and/or other materials provided with the distribution.
+#
+# THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND
+# ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+# ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE
+# FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+# DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+# OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+# HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+# LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+# OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+# SUCH DAMAGE.
+
+set -e
+
+usage() {
+	cat <<EOUSAGE
+Usage:	sp-image-to-volume [-v] [-c client-command] image-name volume-name
+	sp-image-to-volume -V | -h
+
+	-c	specify the OpenStack client command to use (default: openstack)
+	-h	display program usage information and exit
+	-V	display program version information and exit
+	-v	verbose operation; display diagnostic output
+EOUSAGE
+}
+
+version() {
+	echo 'sp-volume-to-image 0.1.0'
+}
+
+debug() {
+	[ -z "$v" ] || echo "RDBG $*" 1>&2
+}
+
+unset hflag Vflag v
+ocli='openstack'
+
+while getopts 'c:hVv' o; do
+	case "$o" in
+		c)
+			ocli="$OPTARG"
+			;;
+
+		h)
+			hflag=1
+			;;
+
+		V)
+			Vflag=1
+			;;
+
+		v)
+			v='-v'
+			;;
+
+		*)
+			usage 1>&2
+			exit 1
+			;;
+	esac
+done
+[ -z "$Vflag" ] || version
+[ -z "$hflag" ] || usage
+[ -z "$Vflag$hflag" ] || exit 0
+
+shift `expr "$OPTIND" - 1`
+if [ "$#" -ne 2 ]; then
+	usage 1>&2
+	exit 1
+fi
+
+img_name="$1"
+vol_name="$2"
+
+# Get the image size and status
+img_data="$($ocli image show -f json -- "$img_name" | jq -r '(.size | tostring) + ":" + .status')"
+if [ -z "$img_data" ]; then
+	echo "The '$img_name' image does not seem to exist" 1>&2
+	exit 1
+fi
+img_size="${img_data%%:*}"
+img_status="${img_data#*:}"
+debug "got image size $img_size status $img_status"
+if ! expr "x$img_size" : 'x[1-9][0-9]*$' > /dev/null; then
+	echo "Could not obtain a numeric image size for the '$img_name' image, got '$img_size'" 1>&2
+	exit 1
+elif [ "$img_status" != 'active' ]; then
+	echo "The '$img_name' image is not in the 'active' state, '$img_status' instead" 1>&2
+	exit 1
+fi
+
+# Get the volume id and status
+vol_data="$($ocli volume show -f json -- "$vol_name" | jq -r '.id + ":" + .status')"
+if [ -z "$vol_data" ]; then
+	echo "The '$vol_name' volume does not seem to exist" 1>&2
+	exit 1
+fi
+vol_id="${vol_data%%:*}"
+vol_status="${vol_data#*:}"
+debug "got volume id $vol_id status $vol_status"
+if [ "$vol_status" != 'available' ]; then
+	echo "The '$vol_name' image is not in the 'available' state, '$vol_status' instead" 1>&2
+	exit 1
+fi
+
+vol_sname="os--volume-$vol_id"
+vol_ssize="$(storpool -Bj volume "$vol_sname" info | jq '.data.size')"
+debug "got StorPool volume name $vol_sname size $vol_ssize"
+if [ -z "$vol_ssize" ]; then
+	echo "Could not obtain the size for the StorPool volume '$vol_ssname' for the '$vol_name' volume" 1>&2
+	exit 1
+elif ! expr "x$vol_ssize" : 'x[1-9][0-9]*$' > /dev/null; then
+	echo "Could not obtain a numeric volume size for the '$vol_name' volume, got '$vol_ssize'" 1>&2
+fi
+
+vol_local="/dev/storpool/$vol_sname"
+if [ -e "$vol_local" ]; then
+	echo "The StorPool volume seems to be already attached here as $vol_local" 1>&2
+	exit 1
+fi
+
+if [ "$vol_ssize" -ge "$img_size" ]; then
+	debug "no need to resize the volume, it is big enough to hold the image"
+else
+	vol_nsize="$(echo "($img_size + 1024 * 1024 * 1024 - 1) / (1024 * 1024 * 1024)" | bc)"
+	debug "resizing the volume to ${vol_nsize} GB"
+	$ocli volume set --size "$vol_nsize" -- "$vol_name"
+fi
+
+# Prepare for creating a temporary file... yes, shell trap handling is a bit weird
+unset img_temp cleanup_err
+
+cleanup() {
+	local res="$?"
+	local arg="$1"
+
+	if [ -n "$img_temp" ]; then
+		rm -f -- "$img_temp"
+		unset img_temp
+	fi
+
+	if [ "$arg" -eq 0 ] && [ -n "$res" ]; then
+		arg="$res"
+	fi
+	: "${cleanup_err:=$arg}"
+	exit $cleanup_err
+}
+
+trap 'cleanup 0' EXIT                                                                                                 
+trap 'cleanup 2' QUIT TERM INT HUP
+
+# Create a temporary file and store the image
+img_temp="$(mktemp -t sp-image-to-volume.XXXXXX)"
+trap "rm -f $v -- '$img_temp'" EXIT HUP INT QUIT TERM
+debug "using a temporary image file $img_temp"
+$ocli image save --file "$img_temp" -- "$img_name"
+img_tsize="$(stat -c '%s' -- "$img_temp")"
+debug "stored $img_tsize bytes there"
+if [ "$img_tsize" != "$img_size" ]; then
+	echo "Could not save the image to a temporary file, stored '$img_tsize' bytes, expected '$img_size' bytes" 1>&2
+	exit 1
+fi
+
+debug "about to attach the $vol_sname volume here"
+storpool -B attach volume "$vol_sname" here
+
+debug "about to run 'qemu-img dd' to write the image contents to it"
+qemu-img dd -O raw bs=1M if="$img_temp" of="$vol_local"
+
+debug "about to detach the $vol_sname volume"
+storpool -B detach volume "$vol_sname" here
+
+debug 'all done'

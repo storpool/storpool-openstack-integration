@@ -1,11 +1,13 @@
 Change log for the StorPool OpenStack integration
 =================================================
 
-1.3.0.dev1
+1.3.0.dev2
 ----------
 
 - Add the Pike Cinder, Nova, and os-brick drivers.
 - Properly capitalize the 1.2.0 changelog entry.
+- Add the `sp-image-to-volume` tool to save a Glance image to a StorPool volume
+  and its manual page.
 
 1.2.0
 -----

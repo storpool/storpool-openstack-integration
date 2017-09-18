@@ -1,0 +1,82 @@
+.\" Copyright (c) 2017  StorPool
+.\" All rights reserved.
+.\"
+.\" Redistribution and use in source and binary forms, with or without
+.\" modification, are permitted provided that the following conditions
+.\" are met:
+.\" 1. Redistributions of source code must retain the above copyright
+.\"    notice, this list of conditions and the following disclaimer.
+.\" 2. Redistributions in binary form must reproduce the above copyright
+.\"    notice, this list of conditions and the following disclaimer in the
+.\"    documentation and/or other materials provided with the distribution.
+.\"
+.\" THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND
+.\" ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+.\" IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+.\" ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE
+.\" FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+.\" DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+.\" OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+.\" HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+.\" LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+.\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+.\" SUCH DAMAGE.
+.\"
+.Dd September 18, 2017
+.Dt SP-IMAGE-TO-VOLUME 1
+.Os
+.Sh NAME
+.Nm sp-image-to-volume
+.Nd save a Glance image to an OpenStack module backed by StorPool
+.Sh SYNOPSIS
+.Nm
+.Op Fl v
+.Op Fl c Ar client
+.Ar image
+.Ar volume
+.Nm
+.Fl V | Fl h
+.Sh DESCRIPTION
+The
+.Nm
+utility saves the data from a Glance image to an OpenStack volume using
+the StorPool client to attach the volume to the local machine and detach it
+afterwards.
+Both the Glance image and the Cinder volume must already exist.
+.Pp
+The
+.Nm
+utility accepts the following command-line options:
+.Bl -tag -width indent
+.It Fl c
+Specify the OpenStack client program to use
+.Pq default: Cm openstack . 
+.It Fl h
+Display program usage information and exit.
+.It Fl V
+Display program version information and exit.
+.It Fl v
+Verbose operation; display diagnostic output.
+.El
+.Sh ENVIRONMENT
+The operation of the
+.Nm
+utility is affected by the same environment variables as the OpenStack
+client tool used and the StorPool client.
+.Sh EXIT STATUS
+.Ex -std
+.Sh SEE ALSO
+.Xr qemu-img 1
+.Sh STANDARDS
+No standards documentation was harmed in the process of creating
+.Nm .
+.Sh BUGS
+Please report any bugs in
+.Nm
+to the author.
+.Sh AUTHOR
+The
+.Nm
+utility was written by
+.An Peter Pentchev Aq openstack-dev@storpool.com
+in 2017.
