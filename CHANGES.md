@@ -1,8 +1,8 @@
 Change log for the StorPool OpenStack integration
 =================================================
 
-1.3.0.dev2
-----------
+1.3.0
+-----
 
 - Add the Pike Cinder, Nova, and os-brick drivers.
 - Properly capitalize the 1.2.0 changelog entry.
