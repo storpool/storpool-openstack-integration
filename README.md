@@ -6,9 +6,8 @@ cluster that uses a StorPool distributed storage cluster as a backend
 for the Cinder volumes and the Nova instance disks.  Please note that
 this is only needed for the Mitaka (April 2016), Newton (October 2016),
 Ocata (February 2017), and Pike (August 2017) releases; the StorPool
-drivers have been accepted into the OpenStack codebase and will be
-part of the next OpenStack release, Queens (scheduled for
-February/March 2018).
+drivers have been accepted into the OpenStack codebase and are a part of
+the Queens (February 2018) release.
 
 Some of the tools referenced here may be found in the [StorPool
 OpenStack Integration][github] Git repository.
