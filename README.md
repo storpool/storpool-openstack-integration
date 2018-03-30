@@ -1,5 +1,4 @@
-StorPool Integration with OpenStack
-===================================
+# StorPool Integration with OpenStack
 
 This document describes the steps necessary to set up an OpenStack
 cluster that uses a StorPool distributed storage cluster as a backend
@@ -13,8 +12,7 @@ Some of the tools referenced here may be found in the [StorPool
 OpenStack Integration][github] Git repository.
 
 
-Preliminary setup
------------------
+## Preliminary setup
 
 1. Set up an OpenStack cluster.
 
@@ -43,8 +41,7 @@ Preliminary setup
         # Clone the StorPool OpenStack Integration repository
         git clone https://github.com/storpool/storpool-openstack-integration.git
 
-Set up the Cinder volume backend
---------------------------------
+## Set up the Cinder volume backend
 
 0. Change into the `storpool-openstack-integration/` directory prepared in
    the last step of the "Preliminary setup" section above.
@@ -91,8 +88,7 @@ Set up the Cinder volume backend
         #
         storpool volume list | fgrep -e "$(openstack volume show -f value -c id vol1)" -e placeTail
 
-Create a Cinder volume based on a Glance image
-----------------------------------------------
+## Create a Cinder volume based on a Glance image
 
         # Obtain the internal Glance ID of the "centos-7" image:
         openstack image list --property name=centos-7 -c ID -f value
@@ -112,8 +108,7 @@ Create a Cinder volume based on a Glance image
         # Hopefully the volume has moved to the "available" state and is now
         # useable by Nova.
 
-Fill in a Cinder volume directly using `dd` or `qemu-img`
----------------------------------------------------------
+## Fill in a Cinder volume directly using `dd` or `qemu-img`
 
 Until the StorPool integration with Glance is complete, it might be
 easier to fill in a Cinder volume directly from an OS disk image.  These
@@ -174,8 +169,7 @@ to it.
         #
         storpool detach here volume os--volume-b3fb268c-2fb9-4017-a28f-ab33f7dfa0cd
 
-Verify the operation of volume snapshots
-----------------------------------------
+## Verify the operation of volume snapshots
 
 Make sure that Cinder can create snapshots of existing volumes and use them:
 
@@ -203,8 +197,7 @@ Make sure that Cinder can create snapshots of existing volumes and use them:
         #
         storpool volume status
 
-Set up the Nova volume attachment driver (on each hypevisor node)
------------------------------------------------------------------
+## Set up the Nova volume attachment driver (on each hypevisor node)
 
 0. Change into the `storpool-openstack-integration/` directory prepared in
    the last step of the "Preliminary setup" section above.
@@ -230,8 +223,7 @@ Set up the Nova volume attachment driver (on each hypevisor node)
         service nova-compute restart
         service nova-api-metadata restart
 
-Create a Nova instance off a Cinder volume
-------------------------------------------
+## Create a Nova instance off a Cinder volume
 
 Create a Nova virtual machine and specify that it should boot from a new
 volume based on a Cinder snapshot (if done through the Horizon
