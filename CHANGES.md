@@ -1,6 +1,13 @@
 Change log for the StorPool OpenStack integration
 =================================================
 
+1.4.0
+-----
+
+- Note that the StorPool drivers have been included in the Queens release.
+- Detect the Queens release of OpenStack and (hopefully) just say that
+  the StorPool integration is installed already.
+
 1.3.0
 -----
 
