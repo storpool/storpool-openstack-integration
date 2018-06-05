@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 #
-# Copyright (c) 2016, 2017  StorPool
+# Copyright (c) 2016 - 2018  StorPool
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -36,7 +36,7 @@ my $def_grpname = 'spopenstack';
 
 my $debug = 0;
 
-my @releases = qw(pike ocata newton mitaka liberty);
+my @releases = qw(queens pike ocata newton mitaka liberty);
 
 my %files = (
 	cinder => {
@@ -59,6 +59,13 @@ my %files = (
 				type => 'chunk',
 				from => qr/^\s+'storpool=nova\./,
 				to => qr/^\s+'iser=nova\./,
+				release => [ qw(liberty mitaka newton ocata pike) ],
+			},
+			{
+				type => 'chunk',
+				from => qr/^\s+'storpool=nova\./,
+				to => qr/^\]/,
+				release => [ qw(queens) ],
 			},
 		],
 		'virt/libvirt/volume/storpool.py' => [
@@ -111,6 +118,18 @@ my %files = (
 
 my %components = (
 	cinder => {
+		queens => {
+			detect => {
+				file => 'volume/driver.py',
+				present => qr{^\s+def\s+snapshot_revert_use_temp_snapshot},
+			},
+
+			files => [
+				# This really should not be needed, but, well...
+				'exception.py',
+			],
+		},
+
 		pike => {
 			detect => {
 				file => 'volume/driver.py',
@@ -161,6 +180,18 @@ my %components = (
 	},
 
 	nova => {
+		queens => {
+			detect => {
+				file => 'virt/libvirt/driver.py',
+				present => qr{^\s*def\s+_guest_add_usb_host_keyboard\s*[(]},
+			},
+
+			files => [
+				# This really should not be needed, but, well...
+				'virt/libvirt/driver.py',
+			],
+		},
+
 		pike => {
 			detect => {
 				file => 'virt/libvirt/driver.py',
@@ -269,6 +300,18 @@ my %components = (
 				'initiator/__init__.py',
 				'initiator/connector.py',
 				'initiator/connectors/storpool.py',
+			],
+		},
+
+		queens => {
+			detect => {
+				file => 'initiator/connector.py',
+				present => qr{^\s*initiator\.NVME\s*:},
+			},
+
+			files => [
+				# This really should not be needed, but, well...
+				'initiator/connector.py',
 			],
 		},
 	},
