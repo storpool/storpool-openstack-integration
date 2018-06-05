@@ -1,5 +1,5 @@
-storpool-openstack-integration (1.4.0-1~1) unstable; urgency=medium
+storpool-openstack-integration (1.4.0-1~1) UNRELEASED; urgency=medium
 
   * Initial release.
 
- -- Peter Pentchev <openstack-dev@storpool.com>  Mon, 18 Sep 2017 13:19:00 +0300
+ -- Peter Pentchev <openstack-dev@storpool.com>  Tue, 05 Jun 2018 16:12:36 +0300

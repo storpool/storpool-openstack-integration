@@ -3,7 +3,7 @@ Section: text
 Priority: optional
 Maintainer: Peter Pentchev <openstack-dev@storpool.com>
 Build-Depends: debhelper (>> 10), markdown
-Standards-Version: 4.0.0
+Standards-Version: 4.1.4
 Homepage: https://github.com/storpool/storpool-openstack-integration
 Vcs-Git: https://github.com/storpool/storpool-openstack-integration.git -b debian
 Vcs-Browser: https://github.com/storpool/storpool-openstack-integration/tree/debian
