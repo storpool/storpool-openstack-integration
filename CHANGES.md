@@ -1,6 +1,13 @@
 Change log for the StorPool OpenStack integration
 =================================================
 
+1.5.0
+-----
+
+- add the "groups" command to the `sp-openstack` tool to only check, create,
+  and set up the "spopenstack" group and the service accounts' membership,
+  as well as the `/var/spool/storpool-spopenstack/` directory
+
 1.4.0
 -----
 

@@ -332,6 +332,7 @@ sub usage($)
 	my $s = <<"EOUSAGE" ;
 Usage:	sp-openstack [-v] [-L paths] check [components...]
 	sp-openstack [-v] [-L paths] detect [components...]
+	sp-openstack [-v] [-g grpname] [-L paths] [-T module] [-u username] groups [components...]
 	sp-openstack [-v] [-g grpname] [-L paths] [-T module] [-u username] install [components...]
 	sp-openstack help
 	sp-openstack version
@@ -352,6 +353,7 @@ Usage:	sp-openstack [-v] [-L paths] check [components...]
 Commands:
 	check	check if the StorPool integration has been installed
 	detect	determine the versions of the installed OpenStack components
+	groups	set up the spopenstack group and the spool directory
 	help	display program usage information and exit
 	install	deploy the StorPool integration
 	version	display program version information and exit
@@ -366,7 +368,7 @@ EOUSAGE
 
 sub version()
 {
-	say 'sp-openstack 1.4.0';
+	say 'sp-openstack 1.5.0';
 }
 
 sub debug($)
@@ -1102,13 +1104,9 @@ sub cmd_detect($ @)
 	detect_and_report @components;
 }
 
-sub cmd_install($ @)
+sub check_groups(@)
 {
-	my ($cmd, @args) = @_;
-
-	my @components = get_components @args;
-	my %data = detect_and_report @components;
-	do_integration 0, %data;
+	my (@components) = @_;
 
 	for my $c (@components) {
 		next unless $c eq 'cinder' || $c eq 'nova';
@@ -1118,6 +1116,24 @@ sub cmd_install($ @)
 			say 'Not running as root, skipping the group and spoolfile checks';
 		}
 	}
+}
+
+sub cmd_groups($ @)
+{
+	my ($cmd, @args) = @_;
+	my @components = get_components @args;
+	check_groups @components;
+}
+
+sub cmd_install($ @)
+{
+	my ($cmd, @args) = @_;
+
+	my @components = get_components @args;
+	my %data = detect_and_report @components;
+	do_integration 0, %data;
+
+	check_groups @components;
 
 	say "\nAll done!";
 }
@@ -1125,6 +1141,7 @@ sub cmd_install($ @)
 my %cmds = (
 	check	=> \&cmd_check,
 	detect	=> \&cmd_detect,
+	groups	=> \&cmd_groups,
 	help	=> sub { usage 0 },
 	install	=> \&cmd_install,
 	version	=> sub { version },
