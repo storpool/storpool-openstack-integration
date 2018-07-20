@@ -1,6 +1,7 @@
 storpool-openstack-integration (1.5.0-1~2) UNRELEASED; urgency=medium
 
   * Declare compliance with Debian Policy 4.1.5 with no changes.
+  * Add an upstream metadata file.
 
  -- Peter Pentchev <openstack-dev@storpool.com>  Fri, 20 Jul 2018 11:43:11 +0300
 
