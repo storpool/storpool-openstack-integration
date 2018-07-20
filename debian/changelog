@@ -2,7 +2,8 @@ storpool-openstack-integration (1.5.0-1~2) UNRELEASED; urgency=medium
 
   * Declare compliance with Debian Policy 4.1.5 with no changes.
   * Add an upstream metadata file.
-  * Bump the debhelper compatibility level to 11 with no changes.
+  * Bump the debhelper compatibility level to 11 with no changes and use
+    the new debhelper-compat (= 11) mechanism.
   * Add Rules-Requires-Root: no and drop the owner and group options from
     the install(1) invocation.
 

@@ -2,7 +2,7 @@ Source: storpool-openstack-integration
 Section: text
 Priority: optional
 Maintainer: Peter Pentchev <openstack-dev@storpool.com>
-Build-Depends: debhelper (>> 11~), markdown
+Build-Depends: debhelper-compat (= 11), markdown
 Standards-Version: 4.1.5
 Homepage: https://github.com/storpool/storpool-openstack-integration
 Vcs-Git: https://github.com/storpool/storpool-openstack-integration.git -b debian

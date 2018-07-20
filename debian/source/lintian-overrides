@@ -1,0 +1,7 @@
+# lintian does not understand the "debhelper-compat (= X)"
+# build-dependency
+storpool-openstack-integration source: debhelper-compat-file-is-missing
+storpool-openstack-integration source: package-uses-deprecated-debhelper-compat-version 1
+storpool-openstack-integration source: package-uses-debhelper-but-lacks-build-depends
+storpool-openstack-integration source: package-lacks-versioned-build-depends-on-debhelper 1
+storpool-openstack-integration source: missing-build-dependency debhelper
