@@ -6,6 +6,7 @@ storpool-openstack-integration (1.5.0-1~2) UNRELEASED; urgency=medium
     the new debhelper-compat (= 11) mechanism.
   * Add Rules-Requires-Root: no and drop the owner and group options from
     the install(1) invocation.
+  * Update the upstream and debian/* copyright years: add the year 2018.
 
  -- Peter Pentchev <openstack-dev@storpool.com>  Fri, 20 Jul 2018 11:43:11 +0300
 
