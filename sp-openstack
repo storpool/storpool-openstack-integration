@@ -36,7 +36,7 @@ my $def_grpname = 'spopenstack';
 
 my $debug = 0;
 
-my @releases = qw(rocky queens pike ocata newton mitaka liberty);
+my @releases = qw(train stein rocky queens pike ocata newton mitaka liberty);
 
 my %files = (
 	cinder => {
@@ -118,6 +118,30 @@ my %files = (
 
 my %components = (
 	cinder => {
+		train => {
+			detect => {
+				file => 'exception.py',
+				present => qr{^\s*class\s+VolumeTypeDefault\s*[(]},
+			},
+
+			files => [
+				# This really should not be needed, but, well...
+				'exception.py',
+			],
+		},
+
+		stein => {
+			detect => {
+				file => 'volume/driver.py',
+				present => qr{^\s*scst_opts\s*=},
+			},
+
+			files => [
+				# This really should not be needed, but, well...
+				'exception.py',
+			],
+		},
+
 		rocky => {
 			detect => {
 				file => 'volume/driver.py',
@@ -192,6 +216,30 @@ my %components = (
 	},
 
 	nova => {
+		train => {
+			detect => {
+				file => 'virt/libvirt/driver.py',
+				present => qr{^\s*def\s+post_claim_migrate_data\s*[(]},
+			},
+
+			files => [
+				# This really should not be needed, but, well...
+				'virt/libvirt/driver.py',
+			],
+		},
+
+		stein => {
+			detect => {
+				file => 'virt/libvirt/driver.py',
+				present => qr{^\s*def\s+extend_volume\s*[(].*,\s*requested_size},
+			},
+
+			files => [
+				# This really should not be needed, but, well...
+				'virt/libvirt/driver.py',
+			],
+		},
+
 		rocky => {
 			detect => {
 				file => 'virt/libvirt/driver.py',
@@ -343,6 +391,30 @@ my %components = (
 			detect => {
 				file => 'initiator/connector.py',
 				present => qr{^\s*def\s+get_connector_mapping\s*[(]},
+			},
+
+			files => [
+				# This really should not be needed, but, well...
+				'initiator/connector.py',
+			],
+		},
+
+		stein => {
+			detect => {
+				file => 'initiator/connector.py',
+				present => qr{^\s+initiator\.NVMEOF:},
+			},
+
+			files => [
+				# This really should not be needed, but, well...
+				'initiator/connector.py',
+			],
+		},
+
+		train => {
+			detect => {
+				file => 'initiator/connector.py',
+				present => qr{os_brick\.initiator\.connectors\.nvmeof\.NVMeOFConnector},
 			},
 
 			files => [
