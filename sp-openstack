@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 #
-# Copyright (c) 2016 - 2018  StorPool
+# Copyright (c) 2016 - 2019  StorPool
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -36,7 +36,7 @@ my $def_grpname = 'spopenstack';
 
 my $debug = 0;
 
-my @releases = qw(queens pike ocata newton mitaka liberty);
+my @releases = qw(rocky queens pike ocata newton mitaka liberty);
 
 my %files = (
 	cinder => {
@@ -118,6 +118,18 @@ my %files = (
 
 my %components = (
 	cinder => {
+		rocky => {
+			detect => {
+				file => 'volume/driver.py',
+				present => qr{^\s*nvmet_opts\s*=},
+			},
+
+			files => [
+				# This really should not be needed, but, well...
+				'exception.py',
+			],
+		},
+
 		queens => {
 			detect => {
 				file => 'volume/driver.py',
@@ -180,6 +192,18 @@ my %components = (
 	},
 
 	nova => {
+		rocky => {
+			detect => {
+				file => 'virt/libvirt/driver.py',
+				present => qr{^\s*def\s+get_info\s*[(].*,\s*use_cache},
+			},
+
+			files => [
+				# This really should not be needed, but, well...
+				'virt/libvirt/driver.py',
+			],
+		},
+
 		queens => {
 			detect => {
 				file => 'virt/libvirt/driver.py',
@@ -307,6 +331,18 @@ my %components = (
 			detect => {
 				file => 'initiator/connector.py',
 				present => qr{^\s*initiator\.NVME\s*:},
+			},
+
+			files => [
+				# This really should not be needed, but, well...
+				'initiator/connector.py',
+			],
+		},
+
+		rocky => {
+			detect => {
+				file => 'initiator/connector.py',
+				present => qr{^\s*def\s+get_connector_mapping\s*[(]},
 			},
 
 			files => [
