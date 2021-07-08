@@ -122,132 +122,77 @@ my %components = (
 			detect => {
 				file => 'volume/driver.py',
 				present => qr{volume_utils\.brick_get_connector_properties},
-			},
-
-			files => [
-				# This really should not be needed, but, well...
-				'volume/driver.py',
-			],
+			}
 		},
 
 		victoria => {
 			detect => {
 				file => 'exception.py',
 				present => qr{^\s*class\s+VolumeTypeProjectDefaultNotFound\s*[(]},
-			},
-
-			files => [
-				# This really should not be needed, but, well...
-				'exception.py',
-			],
+			}
 		},
 
 		ussuri => {
 			detect => {
 				file => 'exception.py',
 				present => qr{^\s*class\s+GlanceStoreNotFound\s*[(]},
-			},
-
-			files => [
-				# This really should not be needed, but, well...
-				'exception.py',
-			],
+			}
 		},
 
 		train => {
 			detect => {
 				file => 'exception.py',
 				present => qr{^\s*class\s+VolumeTypeDefault\s*[(]},
-			},
-
-			files => [
-				# This really should not be needed, but, well...
-				'exception.py',
-			],
+			}
 		},
 
 		stein => {
 			detect => {
 				file => 'volume/driver.py',
 				present => qr{^\s*scst_opts\s*=},
-			},
-
-			files => [
-				# This really should not be needed, but, well...
-				'exception.py',
-			],
+			}
 		},
 
 		rocky => {
 			detect => {
 				file => 'volume/driver.py',
 				present => qr{^\s*nvmet_opts\s*=},
-			},
-
-			files => [
-				# This really should not be needed, but, well...
-				'exception.py',
-			],
+			}
 		},
 
 		queens => {
 			detect => {
 				file => 'volume/driver.py',
 				present => qr{^\s+def\s+snapshot_revert_use_temp_snapshot},
-			},
-
-			files => [
-				# This really should not be needed, but, well...
-				'exception.py',
-			],
+			}
 		},
 
 		pike => {
 			detect => {
 				file => 'volume/driver.py',
 				present => qr{^from os_brick import exception as brick_exception},
-			},
-
-			files => [
-				'exception.py',
-				'volume/drivers/storpool.py',
-			],
+			}
 		},
 
 		ocata => {
 			detect => {
 				file => 'volume/driver.py',
 				present => qr{^\s+def\s+supports_replication_feature\s*\(},
-			},
-
-			files => [
-				'exception.py',
-				'volume/drivers/storpool.py',
-			],
+			}
 		},
 
 		mitaka => {
 			detect => {
 				file => 'volume/driver.py',
 				present => qr{^\s+def\s+_create_temp_volume_from_snapshot\s*\(},
-			},
-
-			files => [
-				'exception.py',
-				'volume/drivers/storpool.py',
-			],
+			}
 		},
 
 		liberty => {
 			detect => {
 				file => 'volume/driver.py',
 				present => qr{^\s+def\s+_detach_snapshot\s*\(},
-			},
-
-			files => [
-				'exception.py',
-				'volume/drivers/storpool.py',
-			],
+			}
 		},
 	},
 
@@ -256,88 +201,56 @@ my %components = (
 			detect => {
 				file => 'api/v2/images.py',
 				present => qr{^\s*def\s+proxy_response_error\s*[(]},
-			},
-
-			files => [
-				'api/v2/images.py',
-			],
+			}
 		},
 
 		victoria => {
 			detect => {
 				file => 'async_/__init__.py',
 				present => qr{^\s*class\s+ThreadPoolModel},
-			},
-
-			files => [
-				'async_/__init__.py',
-			],
+			}
 		},
 
 		ussuri => {
 			detect => {
 				file => 'api/v2/images.py',
 				present => qr{^\s*import\s+datetime},
-			},
-
-			files => [
-				'api/v2/images.py',
-			],
+			}
 		},
 
 		train => {
 			detect => {
 				file => 'common/store_utils.py',
 				present => qr{^\s*def\s+check_reserved_stores\s*[(]},
-			},
-
-			files => [
-				'common/store_utils.py',
-			],
+			}
 		},
 
 		stein => {
 			detect => {
 				file => 'api/policy.py',
 				present => qr{^\s*def\s+get_enforcer\s*[(]},
-			},
-
-			files => [
-				'api/policy.py',
-			],
+			}
 		},
 
 		rocky => {
 			detect => {
 				file => 'api/v2/discovery.py',
 				present => qr{^\s*def\s+get_stores\s*[(]},
-			},
-
-			files => [
-				'api/v2/discovery.py',
-			],
+			}
 		},
 
 		queens => {
 			detect => {
 				file => 'cmd/cache_manage.py',
 				present => qr{^\s*import\s+argparse},
-			},
-
-			files => [
-				'cmd/cache_manage.py',
-			],
+			}
 		},
 
 		pike => {
 			detect => {
 				file => 'api/v2/discovery.py',
 				present => qr{^\s*class\s+InfoController\s*[(]},
-			},
-
-			files => [
-				'api/v2/discovery.py',
-			],
+			}
 		},
 	},
 
@@ -346,132 +259,77 @@ my %components = (
 			detect => {
 				file => 'virt/libvirt/driver.py',
 				present => qr{^\s*class\s+Waiter\s*:},
-			},
-
-			files => [
-				# This really should not be needed, but, well...
-				'virt/libvirt/driver.py',
-			],
+			}
 		},
 
 		victoria => {
 			detect => {
 				file => 'virt/libvirt/driver.py',
 				present => qr{^\s*def\s+cleanup_lingering_instance_resources\s*[(]},
-			},
-
-			files => [
-				# This really should not be needed, but, well...
-				'virt/libvirt/driver.py',
-			],
+			}
 		},
 
 		ussuri => {
 			detect => {
 				file => 'virt/libvirt/driver.py',
 				present => qr{^\s*def\s+static_traits\s*[(]},
-			},
-
-			files => [
-				# This really should not be needed, but, well...
-				'virt/libvirt/driver.py',
-			],
+			}
 		},
 
 		train => {
 			detect => {
 				file => 'virt/libvirt/driver.py',
 				present => qr{^\s*def\s+post_claim_migrate_data\s*[(]},
-			},
-
-			files => [
-				# This really should not be needed, but, well...
-				'virt/libvirt/driver.py',
-			],
+			}
 		},
 
 		stein => {
 			detect => {
 				file => 'virt/libvirt/driver.py',
 				present => qr{^\s*def\s+extend_volume\s*[(].*,\s*requested_size},
-			},
-
-			files => [
-				# This really should not be needed, but, well...
-				'virt/libvirt/driver.py',
-			],
+			}
 		},
 
 		rocky => {
 			detect => {
 				file => 'virt/libvirt/driver.py',
 				present => qr{^\s*def\s+get_info\s*[(].*,\s*use_cache},
-			},
-
-			files => [
-				# This really should not be needed, but, well...
-				'virt/libvirt/driver.py',
-			],
+			}
 		},
 
 		queens => {
 			detect => {
 				file => 'virt/libvirt/driver.py',
 				present => qr{^\s*def\s+_guest_add_usb_host_keyboard\s*[(]},
-			},
-
-			files => [
-				# This really should not be needed, but, well...
-				'virt/libvirt/driver.py',
-			],
+			}
 		},
 
 		pike => {
 			detect => {
 				file => 'virt/libvirt/driver.py',
 				present => qr{^\s*def\s+extend_volume\s*[(]},
-			},
-
-			files => [
-				'virt/libvirt/driver.py',
-				'virt/libvirt/volume/storpool.py',
-			],
+			}
 		},
 
 		ocata => {
 			detect => {
 				file => 'virt/libvirt/driver.py',
 				present => qr{MIN_LIBVIRT_PARALLELS_SET_ADMIN_PASSWD},
-			},
-
-			files => [
-				'virt/libvirt/driver.py',
-				'virt/libvirt/volume/storpool.py',
-			],
+			}
 		},
 
 		mitaka => {
 			detect => {
 				file => 'virt/libvirt/driver.py',
 				present => qr{DEFAULT_UEFI_LOADER_PATH},
-			},
-
-			files => [
-				'virt/libvirt/driver.py',
-				'virt/libvirt/volume/storpool.py',
-			],
+			}
 		},
 
 		liberty => {
 			detect => {
 				file => 'virt/libvirt/driver.py',
 				present => qr{^\s+def\s+inject_nmi\s*\(},
-			},
-
-			files => [
-				'virt/libvirt/driver.py',
-				'virt/libvirt/volume/storpool.py',
-			],
+			}
 		},
 	},
 
@@ -480,145 +338,84 @@ my %components = (
 			detect => {
 				file => 'initiator/connector.py',
 				present => qr{^\s+def\s+get_search_path\s*\(},
-			},
-
-			files => [
-				'initiator/connector.py',
-			],
+			}
 		},
 
 		liberty => {
 			detect => {
 				file => 'initiator/connector.py',
 				present => qr{^class InitiatorConnector},
-			},
-
-			files => [
-				'initiator/connector.py',
-			],
+			}
 		},
 
 		newton => {
 			detect => {
 				file => 'initiator/connector.py',
 				present => qr{^connector_list = \[},
-			},
-
-			files => [
-				'initiator/__init__.py',
-				'initiator/connector.py',
-				'initiator/connectors/storpool.py',
-			],
+			}
 		},
 
 		ocata => {
 			detect => {
 				file => 'exception.py',
 				present => qr{^class InvalidConnectorProtocol},
-			},
-
-			files => [
-				'initiator/__init__.py',
-				'initiator/connector.py',
-				'initiator/connectors/storpool.py',
-			],
+			}
 		},
 
 		pike => {
 			detect => {
 				file => 'exception.py',
 				present => qr{^class ExceptionChainer},
-			},
-
-			files => [
-				'initiator/__init__.py',
-				'initiator/connector.py',
-				'initiator/connectors/storpool.py',
-			],
+			}
 		},
 
 		queens => {
 			detect => {
 				file => 'initiator/connector.py',
 				present => qr{^\s*initiator\.NVME\s*:},
-			},
-
-			files => [
-				# This really should not be needed, but, well...
-				'initiator/connector.py',
-			],
+			}
 		},
 
 		rocky => {
 			detect => {
 				file => 'initiator/connector.py',
 				present => qr{^\s*def\s+get_connector_mapping\s*[(]},
-			},
-
-			files => [
-				# This really should not be needed, but, well...
-				'initiator/connector.py',
-			],
+			}
 		},
 
 		stein => {
 			detect => {
 				file => 'initiator/connector.py',
 				present => qr{^\s+initiator\.NVMEOF:},
-			},
-
-			files => [
-				# This really should not be needed, but, well...
-				'initiator/connector.py',
-			],
+			}
 		},
 
 		train => {
 			detect => {
 				file => 'initiator/connector.py',
 				present => qr{os_brick\.initiator\.connectors\.nvmeof\.NVMeOFConnector},
-			},
-
-			files => [
-				# This really should not be needed, but, well...
-				'initiator/connector.py',
-			],
+			}
 		},
 
 		ussuri => {
 			detect => {
 				file => 'tests/initiator/test_linuxscsi.py',
 				present => qr{^\s*def\s+test_get_device_info\s*[(]},
-			},
-
-			files => [
-				# This really should not be needed, but, well...
-				'tests/initiator/test_linuxscsi.py',
-			],
+			}
 		},
 
 		victoria => {
 			detect => {
 				file => 'caches/__init__.py',
 				present => qr{^\s*class\s+CacheEngineBase\s*[(]},
-			},
-
-			files => [
-				# This really should not be needed, but, well...
-				'caches/__init__.py',
-			],
+			}
 		},
 
 		wallaby => {
 			detect => {
 				file => 'initiator/connector.py',
 				present => qr{os_brick\.initiator\.windows\.rbd\.WindowsRBDConnector},
-			},
-
-			files => [
-				# This really should not be needed, but, well...
-				'initiator/connector.py',
-			],
+			}
 		},
 	},
 );
@@ -1167,11 +964,11 @@ COMPONENT:
 		}
 		my ($release, $path) =
 		    @{$data{found}{$comp}}{qw(release path)};
-		my $files_list = $components{$comp}{$release}{files};
-		if (!defined $files_list) {
-			die "Internal error: no files defined for $comp/$release\n";
+		my @files_list = grep { -f get_source_path $_, $comp, $release } keys %{$files{$comp}};
+		if (!@files_list) {
+			die "Internal error: no files found for $comp/$release\n";
 		}
-		for my $file (@{$files_list}) {
+		for my $file (@files_list) {
 			my $f = $files{$comp}{$file};
 			die "Internal error: no definition for $file\n"
 			    unless defined $f;
