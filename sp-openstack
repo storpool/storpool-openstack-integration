@@ -251,6 +251,96 @@ my %components = (
 		},
 	},
 
+	glance => {
+		wallaby => {
+			detect => {
+				file => 'api/v2/images.py',
+				present => qr{^\s*def\s+proxy_response_error\s*[(]},
+			},
+
+			files => [
+				'api/v2/images.py',
+			],
+		},
+
+		victoria => {
+			detect => {
+				file => 'async_/__init__.py',
+				present => qr{^\s*class\s+ThreadPoolModel},
+			},
+
+			files => [
+				'async_/__init__.py',
+			],
+		},
+
+		ussuri => {
+			detect => {
+				file => 'api/v2/images.py',
+				present => qr{^\s*import\s+datetime},
+			},
+
+			files => [
+				'api/v2/images.py',
+			],
+		},
+
+		train => {
+			detect => {
+				file => 'common/store_utils.py',
+				present => qr{^\s*def\s+check_reserved_stores\s*[(]},
+			},
+
+			files => [
+				'common/store_utils.py',
+			],
+		},
+
+		stein => {
+			detect => {
+				file => 'api/policy.py',
+				present => qr{^\s*def\s+get_enforcer\s*[(]},
+			},
+
+			files => [
+				'api/policy.py',
+			],
+		},
+
+		rocky => {
+			detect => {
+				file => 'api/v2/discovery.py',
+				present => qr{^\s*def\s+get_stores\s*[(]},
+			},
+
+			files => [
+				'api/v2/discovery.py',
+			],
+		},
+
+		queens => {
+			detect => {
+				file => 'cmd/cache_manage.py',
+				present => qr{^\s*import\s+argparse},
+			},
+
+			files => [
+				'cmd/cache_manage.py',
+			],
+		},
+
+		pike => {
+			detect => {
+				file => 'api/v2/discovery.py',
+				present => qr{^\s*class\s+InfoController\s*[(]},
+			},
+
+			files => [
+				'api/v2/discovery.py',
+			],
+		},
+	},
+
 	nova => {
 		wallaby => {
 			detect => {
@@ -1325,7 +1415,7 @@ sub check_groups(@)
 	my (@components) = @_;
 
 	for my $c (@components) {
-		next unless $c eq 'cinder' || $c eq 'nova';
+		next unless $c eq 'cinder' || $c eq 'nova' || $c eq 'glance';
 		if ($> == 0) {
 			setup_group_and_file $c;
 		} else {
