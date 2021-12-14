@@ -36,7 +36,7 @@ my $def_grpname = 'spopenstack';
 
 my $debug = 0;
 
-my @releases = qw(wallaby victoria ussuri train stein rocky queens pike ocata newton mitaka liberty);
+my @releases = qw(xena wallaby victoria ussuri train stein rocky queens pike ocata newton mitaka liberty);
 
 my %files = (
 	cinder => {
@@ -118,6 +118,13 @@ my %files = (
 
 my %components = (
 	cinder => {
+		xena => {
+			detect => {
+				file => 'volume/driver.py',
+				present => qr{^\s*from\s+cinder\s+import\s+db\s*$},
+			}
+		},
+
 		wallaby => {
 			detect => {
 				file => 'volume/driver.py',
@@ -197,6 +204,13 @@ my %components = (
 	},
 
 	glance => {
+		xena => {
+			detect => {
+				file => 'api/v2/images.py',
+				present => qr{^\s*from\s+glance\.api\.v2\s+import\s+policy\s+as\s+api_policy\s*$},
+			}
+		},
+
 		wallaby => {
 			detect => {
 				file => 'api/v2/images.py',
@@ -255,6 +269,13 @@ my %components = (
 	},
 
 	nova => {
+		xena => {
+			detect => {
+				file => 'virt/libvirt/driver.py',
+				present => qr{^\s*MIN_LIBVIRT_AARCH64_CPU_COMPARE\s*=},
+			}
+		},
+
 		wallaby => {
 			detect => {
 				file => 'virt/libvirt/driver.py',
@@ -415,6 +436,13 @@ my %components = (
 			detect => {
 				file => 'initiator/connector.py',
 				present => qr{os_brick\.initiator\.windows\.rbd\.WindowsRBDConnector},
+			}
+		},
+
+		xena => {
+			detect => {
+				file => 'initiator/linuxscsi.py',
+				present => qr{^\s*from\s+typing\s+import\s+Dict\s*,},
 			}
 		},
 	},
