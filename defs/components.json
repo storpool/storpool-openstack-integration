@@ -1,0 +1,208 @@
+{
+    "format": {
+        "version": {
+            "major": 0,
+            "minor": 1
+        }
+    },
+    "components": {
+        "cinder": {
+            "detect_files_order": [
+                "volume/drivers/storpool.py",
+                "volume/driver.py"
+            ],
+            "branches": {
+                "xena": {
+                    "19.0.0.2.0.0": {
+                        "comment": "StorPool fixes for Xena",
+                        "files": {
+                            "volume/driver.py": {
+                                "sha256": "394d4b2dccf2d6b51e1cc3aedc775ecbd38c80103c90b7c32e68e878903d1c02"
+                            },
+                            "volume/drivers/storpool.py": {
+                                "sha256": "6011ff414721d44c086be8a8a4d6c2addce3365ce1846b1e6d75f1845f464596"
+                            }
+                        },
+                        "outdated": false
+                    },
+                    "19.0.0.0.0.0": {
+                        "comment": "upstream Xena 19.0.0",
+                        "files": {
+                            "volume/driver.py": {
+                                "sha256": "394d4b2dccf2d6b51e1cc3aedc775ecbd38c80103c90b7c32e68e878903d1c02"
+                            },
+                            "volume/drivers/storpool.py": {
+                                "sha256": "1692231956ff69bf68d2c669834b94bbe1e8682e68c19c5fcd62b020195c8a9d"
+                            }
+                        },
+                        "outdated": true
+                    }
+                },
+                "wallaby": {
+                    "18.1.0.0.0.0": {
+                        "comment": "upstream Wallaby 18.1.0",
+                        "files": {
+                            "volume/driver.py": {
+                                "sha256": "d6a0a48a9e92d3805839e3ae7035d4edb5127aed203c1fdd4afae4675d2f5d43"
+                            },
+                            "volume/drivers/storpool.py": {
+                                "sha256": "1692231956ff69bf68d2c669834b94bbe1e8682e68c19c5fcd62b020195c8a9d"
+                            }
+                        },
+                        "outdated": true
+                    }
+                },
+                "victoria": {
+                    "17.0.1.0.0.0": {
+                        "comment": "upstream Victoria 17.0.1",
+                        "files": {
+                            "volume/driver.py": {
+                                "sha256": "4988fc420077f1fd8262786ca3c538530a3ca5e49b237bb90791a3a84b845923"
+                            },
+                            "volume/drivers/storpool.py": {
+                                "sha256": "df925697b0bc8a8ecdc31f41b51d85b42bab70b7f5e05f67c06c8b720942d4a9"
+                            }
+                        },
+                        "outdated": true
+                    }
+                }
+            }
+        },
+        "glance": {
+            "detect_files_order": [
+                "async_/__init__.py",
+                "api/v2/images.py"
+            ],
+            "branches": {
+                "xena": {
+                    "23.0.0.0.0.0": {
+                        "comment": "upstream Xena 23.0.0",
+                        "files": {
+                            "async_/__init__.py": {
+                                "sha256": "77844b4bbbe0b573b628c37f2ceb3e66cc62f87b76d2124e2dae36e3455bc8f1"
+                            },
+                            "api/v2/images.py": {
+                                "sha256": "d1c492888206d6ac5f3874ec97550c2d6cccd7fbb16dba63d97cff738e39865d"
+                            }
+                        },
+                        "outdated": false
+                    }
+                },
+                "wallaby": {
+                    "22.1.0.0.0.0": {
+                        "comment": "upstream Xena 22.1.0",
+                        "files": {
+                            "async_/__init__.py": {
+                                "sha256": "9eba95090150749d336edb49c13e89031763cb4621d38d1bf4b17b9e21ce34fc"
+                            },
+                            "api/v2/images.py": {
+                                "sha256": "edd6948b727ef9eaba9068b1455e272f075e2428eb36da10c0163abc5a2ee28e"
+                            }
+                        },
+                        "outdated": false
+                    }
+                },
+                "victoria": {
+                    "21.1.0.0.0.0": {
+                        "comment": "upstream Victoria 21.1.0",
+                        "files": {
+                            "async_/__init__.py": {
+                                "sha256": "9eba95090150749d336edb49c13e89031763cb4621d38d1bf4b17b9e21ce34fc"
+                            },
+                            "api/v2/images.py": {
+                                "sha256": "f9f91adb2d62afd8e6e7a89730bef1de6e362db9ae908de5e38056e832def9b6"
+                            }
+                        },
+                        "outdated": false
+                    }
+                }
+            }
+        },
+        "nova": {
+            "detect_files_order": [
+                "virt/libvirt/driver.py",
+                "virt/libvirt/config.py"
+            ],
+            "branches": {
+                "xena": {
+                    "24.0.0.1.0.0": {
+                        "comment": "Ubuntu cloud archive Xena 24.0.0",
+                        "files": {
+                            "virt/libvirt/driver.py": {
+                                "sha256": "9730a5f3b526379c2eace9c2f22b84626aa9379f0958d78c3b5a02a9f27f5a2c"
+                            },
+                            "virt/libvirt/config.py": {
+                                "sha256": "67b90262b16c691acb61775216f2d2c42827341ac7d956eb2d5b2e0fe56c2fa3"
+                            }
+                        },
+                        "outdated": false
+                    },
+                    "24.0.0.0.0.0": {
+                        "comment": "upstream Xena 24.0.0",
+                        "files": {
+                            "virt/libvirt/driver.py": {
+                                "sha256": "acdd5b280c53bea96bb8e39270fa0e85da90f88bb83ff55091adf01e9dbe63fc"
+                            },
+                            "virt/libvirt/config.py": {
+                                "sha256": "67b90262b16c691acb61775216f2d2c42827341ac7d956eb2d5b2e0fe56c2fa3"
+                            }
+                        },
+                        "outdated": false
+                    }
+                },
+                "wallaby": {
+                    "23.1.0.0.1.0": {
+                        "comment": "Ubuntu cloud archive Wallaby 23.1.0",
+                        "files": {
+                            "virt/libvirt/driver.py": {
+                                "sha256": "04eaa3609e8399e3d5eaaa2c96af1643691bfc55685c247de7cadf83b067be23"
+                            },
+                            "virt/libvirt/config.py": {
+                                "sha256": "2ae9597a30b66b9789f7206129ee600930b72e43d20b83ac2a238309ddeb06b5"
+                            }
+                        },
+                        "outdated": false
+                    },
+                    "23.1.0.0.0.0": {
+                        "comment": "upstream Wallaby 23.1.0",
+                        "files": {
+                            "virt/libvirt/driver.py": {
+                                "sha256": "182cdfa0d30ad5dcd30599b1400054d417d08855e1eef81c02bb3f86fb58998b"
+                            },
+                            "virt/libvirt/config.py": {
+                                "sha256": "2ae9597a30b66b9789f7206129ee600930b72e43d20b83ac2a238309ddeb06b5"
+                            }
+                        },
+                        "outdated": false
+                    }
+                },
+                "victoria": {
+                    "22.3.0.0.1.0": {
+                        "comment": "Ubuntu cloud archive Victoria 22.3.0",
+                        "files": {
+                            "virt/libvirt/driver.py": {
+                                "sha256": "153b1fc102d849ea5b14c83dbb4c9df4a06d8b570a1aa29adf43ce7a161983bb"
+                            },
+                            "virt/libvirt/config.py": {
+                                "sha256": "2c35c25997d9508c8b60eb43597710f8e5c1761cdfc4dafccc83ca8314fb0cc0"
+                            }
+                        },
+                        "outdated": false
+                    },
+                    "22.3.0.0.0.0": {
+                        "comment": "upstream Victoria 22.3.0",
+                        "files": {
+                            "virt/libvirt/driver.py": {
+                                "sha256": "c8ff949bf8cec5ce01253e3eb09d8512ce338c8978d835e3d902dc1765fcc626"
+                            },
+                            "virt/libvirt/config.py": {
+                                "sha256": "2c35c25997d9508c8b60eb43597710f8e5c1761cdfc4dafccc83ca8314fb0cc0"
+                            }
+                        },
+                        "outdated": false
+                    }
+                }
+            }
+        }
+    }
+}
