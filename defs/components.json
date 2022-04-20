@@ -13,6 +13,18 @@
             ],
             "branches": {
                 "xena": {
+                    "19.0.0.3.0.0": {
+                        "comment": "StorPool fixes for Xena",
+                        "files": {
+                            "volume/driver.py": {
+                                "sha256": "394d4b2dccf2d6b51e1cc3aedc775ecbd38c80103c90b7c32e68e878903d1c02"
+                            },
+                            "volume/drivers/storpool.py": {
+                                "sha256": "6980898f1d4c3002dcd29176410a4c54daf1f7b4e47d5c944c483f4e4930654f"
+                            }
+                        },
+                        "outdated": false
+                    },
                     "19.0.0.2.0.0": {
                         "comment": "StorPool fixes for Xena",
                         "files": {
@@ -23,7 +35,7 @@
                                 "sha256": "6011ff414721d44c086be8a8a4d6c2addce3365ce1846b1e6d75f1845f464596"
                             }
                         },
-                        "outdated": false
+                        "outdated": true
                     },
                     "19.0.0.0.0.0": {
                         "comment": "upstream Xena 19.0.0",

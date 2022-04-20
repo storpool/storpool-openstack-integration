@@ -92,9 +92,10 @@ class StorPoolDriver(driver.VolumeDriver):
         1.2.3   - Advertise some more driver capabilities.
         2.0.0   - Drop _attach_volume() and _detach_volume(), our os-brick
                   connector will handle this.
+                - Drop backup_volume()
     """
 
-    VERSION = '1.2.3'
+    VERSION = '2.0.0'
     CI_WIKI_NAME = 'StorPool_distributed_storage_CI'
 
     def __init__(self, *args, **kwargs):
