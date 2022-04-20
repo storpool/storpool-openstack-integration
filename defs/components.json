@@ -13,8 +13,20 @@
             ],
             "branches": {
                 "xena": {
+                    "19.0.0.4.0.0": {
+                        "comment": "StorPool fixes for Xena (create_cloned_volume(), clone_image())",
+                        "files": {
+                            "volume/driver.py": {
+                                "sha256": "394d4b2dccf2d6b51e1cc3aedc775ecbd38c80103c90b7c32e68e878903d1c02"
+                            },
+                            "volume/drivers/storpool.py": {
+                                "sha256": "75fcbe6f23e1dfa89b136127cea703d2d64eb28cf584f814fea72222bad69caf"
+                            }
+                        },
+                        "outdated": false
+                    },
                     "19.0.0.3.0.0": {
-                        "comment": "StorPool fixes for Xena",
+                        "comment": "StorPool fixes for Xena (bump the driver version)",
                         "files": {
                             "volume/driver.py": {
                                 "sha256": "394d4b2dccf2d6b51e1cc3aedc775ecbd38c80103c90b7c32e68e878903d1c02"
@@ -23,10 +35,10 @@
                                 "sha256": "6980898f1d4c3002dcd29176410a4c54daf1f7b4e47d5c944c483f4e4930654f"
                             }
                         },
-                        "outdated": false
+                        "outdated": true
                     },
                     "19.0.0.2.0.0": {
-                        "comment": "StorPool fixes for Xena",
+                        "comment": "StorPool fixes for Xena (attach/detach_driver(), backup_volume())",
                         "files": {
                             "volume/driver.py": {
                                 "sha256": "394d4b2dccf2d6b51e1cc3aedc775ecbd38c80103c90b7c32e68e878903d1c02"

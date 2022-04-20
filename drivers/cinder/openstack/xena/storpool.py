@@ -1,4 +1,4 @@
-#    Copyright (c) 2014 - 2021 StorPool
+#    Copyright (c) 2014 - 2022 StorPool
 #    All Rights Reserved.
 #
 #    Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -19,10 +19,14 @@ import platform
 
 from oslo_config import cfg
 from oslo_log import log as logging
+from oslo_utils import excutils
 from oslo_utils import importutils
+from oslo_utils import netutils
 from oslo_utils import units
+from oslo_utils import uuidutils
 import six
 
+from cinder import context
 from cinder import exception
 from cinder.i18n import _
 from cinder import interface
@@ -54,6 +58,28 @@ storpool_opts = [
 
 CONF = cfg.CONF
 CONF.register_opts(storpool_opts, group=configuration.SHARED_CONF_GROUP)
+
+
+def _extract_cinder_ids(urls):
+    ids = []
+    for url in urls:
+        # The url can also be None and a TypeError is raised
+        # TypeError: a bytes-like object is required, not 'str'
+        if not url:
+            continue
+        parts = netutils.urlsplit(url)
+        if parts.scheme == 'cinder':
+            if parts.path:
+                vol_id = parts.path.split('/')[-1]
+            else:
+                vol_id = parts.netloc
+            if uuidutils.is_uuid_like(vol_id):
+                ids.append(vol_id)
+            else:
+                LOG.debug("Ignoring malformed image location uri "
+                          "'%(url)s'", {'url': url})
+
+    return ids
 
 
 class StorPoolConfigurationInvalid(exception.CinderException):
@@ -93,6 +119,8 @@ class StorPoolDriver(driver.VolumeDriver):
         2.0.0   - Drop _attach_volume() and _detach_volume(), our os-brick
                   connector will handle this.
                 - Drop backup_volume()
+                - Avoid data duplication in create_cloned_volume()
+                - Implement clone_image()
     """
 
     VERSION = '2.0.0'
@@ -197,32 +225,119 @@ class StorPoolDriver(driver.VolumeDriver):
         except spapi.ApiError as e:
             raise self._backendException(e)
 
+    def clone_image(self, context, volume,
+                    image_location, image_meta, image_service):
+        if (image_meta.get('container_format') != 'bare' or
+                image_meta.get('disk_format') != 'raw'):
+            LOG.info("Requested image %(id)s is not in raw format.",
+                     {'id': image_meta.get('id')})
+            return None, False
+
+        LOG.debug('Check whether the image is accessible')
+        visibility = image_meta.get('visibility', None)
+        public = (
+            visibility and visibility == 'public' or
+            image_meta.get('is_public', False) or
+            image_meta['owner'] == volume['project_id']
+        )
+        if not public:
+            LOG.warning(
+                'The requested image is not accessible by the current tenant'
+            )
+            return None, False
+
+        LOG.debug('On to parsing %(loc)s', {'loc': repr(image_location)})
+        direct_url, locations = image_location
+        urls = list(set([direct_url] + [
+            loc.get('url') for loc in locations or []
+        ]))
+        image_volume_ids = _extract_cinder_ids(urls)
+        LOG.debug('image_volume_ids %(ids)s', {'ids': repr(image_volume_ids)})
+
+        if not image_volume_ids:
+            LOG.info('No Cinder volumes found to clone')
+            return None, False
+
+        vol_id = image_volume_ids[0]
+        LOG.info('Cloning volume %(vol_id)s', {'vol_id': vol_id})
+        return self.create_cloned_volume(volume, {'id': vol_id}), True
+
     def create_cloned_volume(self, volume, src_vref):
         refname = self._attach.volumeName(src_vref['id'])
+        size = int(volume['size']) * units.Gi
+        volname = self._attach.volumeName(volume['id'])
+
+        src_volume = self.db.volume_get(
+            context.get_admin_context(),
+            src_vref['id'],
+        )
+        src_template = self._template_from_volume(src_volume)
+
+        template = self._template_from_volume(volume)
+        LOG.debug('clone volume id %(vol_id)s template %(template)s', {
+            'vol_id': repr(volume['id']),
+            'template': repr(template),
+        })
+        if template == src_template:
+            LOG.info('Using baseOn to clone a volume into the same template')
+            try:
+                self._attach.api().volumeCreate({
+                    'name': volname,
+                    'size': size,
+                    'baseOn': refname,
+                })
+            except spapi.ApiError as e:
+                raise self._backendException(e)
+
+            return None
+
         snapname = self._attach.snapshotName('clone', volume['id'])
+        LOG.info(
+            'A transient snapshot for a %(src)s -> %(dst)s template change',
+            {'src': src_template, 'dst': template})
         try:
             self._attach.api().snapshotCreate(refname, {'name': snapname})
         except spapi.ApiError as e:
-            raise self._backendException(e)
+            if e.name != 'objectExists':
+                raise self._backendException(e)
 
-        size = int(volume['size']) * units.Gi
-        volname = self._attach.volumeName(volume['id'])
         try:
-            self._attach.api().volumeCreate({
-                'name': volname,
-                'size': size,
-                'parent': snapname
-            })
-        except spapi.ApiError as e:
-            raise self._backendException(e)
-        finally:
             try:
-                self._attach.api().snapshotDelete(snapname)
+                self._attach.api().snapshotUpdate(
+                    snapname,
+                    {'template': template},
+                )
             except spapi.ApiError as e:
-                # ARGH!
-                LOG.error("Could not delete the temp snapshot %(name)s: "
-                          "%(msg)s",
-                          {'name': snapname, 'msg': e})
+                raise self._backendException(e)
+
+            try:
+                self._attach.api().volumeCreate({
+                    'name': volname,
+                    'size': size,
+                    'parent': snapname
+                })
+            except spapi.ApiError as e:
+                raise self._backendException(e)
+
+            try:
+                self._attach.api().snapshotUpdate(
+                    snapname,
+                    {'tags': {'transient': '1.0'}},
+                )
+            except spapi.ApiError as e:
+                raise self._backendException(e)
+        except Exception:
+            with excutils.save_and_reraise_exception():
+                try:
+                    LOG.warning(
+                        'Something went wrong, removing the transient snapshot'
+                    )
+                    self._attach.api().snapshotDelete(snapname)
+                except spapi.ApiError as e:
+                    LOG.error(
+                        'Could not delete the %(name)s snapshot: %(err)s',
+                        {'name': snapname, 'err': str(e)}
+                    )
 
     def create_export(self, context, volume, connector):
         pass
