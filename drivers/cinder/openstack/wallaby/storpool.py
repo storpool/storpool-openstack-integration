@@ -1,4 +1,4 @@
-#    Copyright (c) 2014 - 2021 StorPool
+#    Copyright (c) 2014 - 2022 StorPool
 #    All Rights Reserved.
 #
 #    Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -19,10 +19,12 @@ import platform
 
 from oslo_config import cfg
 from oslo_log import log as logging
+from oslo_utils import excutils
 from oslo_utils import importutils
 from oslo_utils import units
 import six
 
+from cinder import context
 from cinder import exception
 from cinder.i18n import _
 from cinder import interface
@@ -93,6 +95,7 @@ class StorPoolDriver(driver.VolumeDriver):
         2.0.0   - Drop _attach_volume() and _detach_volume(), our os-brick
                   connector will handle this.
                 - Drop backup_volume()
+                - Avoid data duplication in create_cloned_volume()
     """
 
     VERSION = '2.0.0'
@@ -199,30 +202,80 @@ class StorPoolDriver(driver.VolumeDriver):
 
     def create_cloned_volume(self, volume, src_vref):
         refname = self._attach.volumeName(src_vref['id'])
+        size = int(volume['size']) * units.Gi
+        volname = self._attach.volumeName(volume['id'])
+
+        src_volume = self.db.volume_get(
+            context.get_admin_context(),
+            src_vref['id'],
+        )
+        src_template = self._template_from_volume(src_volume)
+
+        template = self._template_from_volume(volume)
+        LOG.debug('clone volume id %(vol_id)s template %(template)s', {
+            'vol_id': repr(volume['id']),
+            'template': repr(template),
+        })
+        if template == src_template:
+            LOG.info('Using baseOn to clone a volume into the same template')
+            try:
+                self._attach.api().volumeCreate({
+                    'name': volname,
+                    'size': size,
+                    'baseOn': refname,
+                })
+            except spapi.ApiError as e:
+                raise self._backendException(e)
+
+            return None
+
         snapname = self._attach.snapshotName('clone', volume['id'])
+        LOG.info(
+            'A transient snapshot for a %(src)s -> %(dst)s template change',
+            {'src': src_template, 'dst': template})
         try:
             self._attach.api().snapshotCreate(refname, {'name': snapname})
         except spapi.ApiError as e:
-            raise self._backendException(e)
+            if e.name != 'objectExists':
+                raise self._backendException(e)
 
-        size = int(volume['size']) * units.Gi
-        volname = self._attach.volumeName(volume['id'])
         try:
-            self._attach.api().volumeCreate({
-                'name': volname,
-                'size': size,
-                'parent': snapname
-            })
-        except spapi.ApiError as e:
-            raise self._backendException(e)
-        finally:
             try:
-                self._attach.api().snapshotDelete(snapname)
+                self._attach.api().snapshotUpdate(
+                    snapname,
+                    {'template': template},
+                )
             except spapi.ApiError as e:
-                # ARGH!
-                LOG.error("Could not delete the temp snapshot %(name)s: "
-                          "%(msg)s",
-                          {'name': snapname, 'msg': e})
+                raise self._backendException(e)
+
+            try:
+                self._attach.api().volumeCreate({
+                    'name': volname,
+                    'size': size,
+                    'parent': snapname
+                })
+            except spapi.ApiError as e:
+                raise self._backendException(e)
+
+            try:
+                self._attach.api().snapshotUpdate(
+                    snapname,
+                    {'tags': {'transient': '1.0'}},
+                )
+            except spapi.ApiError as e:
+                raise self._backendException(e)
+        except Exception:
+            with excutils.save_and_reraise_exception():
+                try:
+                    LOG.warning(
+                        'Something went wrong, removing the transient snapshot'
+                    )
+                    self._attach.api().snapshotDelete(snapname)
+                except spapi.ApiError as e:
+                    LOG.error(
+                        'Could not delete the %(name)s snapshot: %(err)s',
+                        {'name': snapname, 'err': str(e)}
+                    )
 
     def create_export(self, context, volume, connector):
         pass
