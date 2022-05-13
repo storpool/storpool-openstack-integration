@@ -77,6 +77,18 @@
                     }
                 },
                 "victoria": {
+                    "17.0.1.4.0.0": {
+                        "comment": "StorPool fixes for Victoria (create_cloned_volume(), clone_image())",
+                        "files": {
+                            "volume/driver.py": {
+                                "sha256": "4988fc420077f1fd8262786ca3c538530a3ca5e49b237bb90791a3a84b845923"
+                            },
+                            "volume/drivers/storpool.py": {
+                                "sha256": "bcf3c897e49e6cfadd56910907ef870cbafe6a6d88e9842a7d7dc78ef674a96e"
+                            }
+                        },
+                        "outdated": false
+                    },
                     "17.0.1.0.0.0": {
                         "comment": "upstream Victoria 17.0.1",
                         "files": {
