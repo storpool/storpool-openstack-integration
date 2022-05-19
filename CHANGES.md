@@ -1,8 +1,8 @@
 Change log for the StorPool OpenStack integration
 =================================================
 
-2.0.0 (not yet)
----------------
+2.0.0
+-----
 
 - reimplement the `sp-openstack` tool in Python 3.6 or higher
 - let `sp-openstack` use the `dpkg-divert` tool on Debian/Ubuntu systems
