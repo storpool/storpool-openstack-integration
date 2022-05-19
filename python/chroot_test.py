@@ -326,6 +326,7 @@ def check_diverted(chroot: Chroot, expected: bool) -> None:
 def check_detect(chroot: Chroot, osipath: pathlib.Path, release: str, outdated: bool) -> None:
     """Make sure that sp_osi detects the correct release."""
     print(
+        # pylint: disable-next=consider-using-f-string
         "Expecting '{msg} OpenStack {release}'".format(
             msg="out of date" if outdated else "ok", release=release
         )

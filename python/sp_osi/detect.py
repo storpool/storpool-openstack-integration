@@ -15,7 +15,7 @@ class NotFoundError(defs.OSIError):
 
     def __init__(self, component: str) -> None:
         """Store the component name."""
-        super().__init__("Could not find a known {comp} version".format(comp=component))
+        super().__init__(f"Could not find a known {component} version")
         self.component = component
 
 
@@ -41,13 +41,13 @@ def get_python_paths(cfg: defs.Config) -> List[pathlib.Path]:
 
     def query_program(prog: str) -> List[pathlib.Path]:
         """Query a Python interpreter for its search paths."""
-        cfg.diag("Querying {prog} for its library search paths".format(prog=prog))
+        cfg.diag(f"Querying {prog} for its library search paths")
         cmd = [
             prog,
             "-c",
             "import sys; print('\\n'.join(path for path in sys.path if path))",
         ]
-        cfg.diag("- about to execute {cmd}".format(cmd=repr(cmd)))
+        cfg.diag(f"- about to execute {cmd!r}")
         try:
             return [
                 pathlib.Path(line)
@@ -56,12 +56,10 @@ def get_python_paths(cfg: defs.Config) -> List[pathlib.Path]:
                 ).splitlines()
             ]
         except FileNotFoundError:
-            cfg.diag("Apparently there is no {prog} on this system".format(prog=prog))
+            cfg.diag(f"Apparently there is no {prog} on this system")
             return []
         except (IOError, subprocess.CalledProcessError) as err:
-            raise defs.OSIEnvError(
-                "Could not execute {cmd}: {err}".format(cmd=repr(cmd), err=err)
-            ) from err
+            raise defs.OSIEnvError(f"Could not execute {cmd!r}: {err}") from err
 
     return list(itertools.chain(*(query_program(prog) for prog in ("python3", "python2"))))
 
@@ -89,8 +87,9 @@ def detect(cfg: defs.Config) -> DetectedComponents:
     comps = cfg.all_components
     req = cfg.components
     cfg.diag(
-        "Looking for OpenStack components: {req} out of {comps}".format(
-            req=" ".join(sorted(req)), comps=" ".join(sorted(comps.components))
+        (
+            f"Looking for OpenStack components: {' '.join(sorted(req))} "
+            f"out of {' '.join(sorted(comps.components))}"
         )
     )
 
@@ -105,12 +104,10 @@ def detect(cfg: defs.Config) -> DetectedComponents:
                 )
             )
         )
-        cfg.diag(
-            "Looking for {name}, {count} known versions".format(name=name, count=len(versions))
-        )
+        cfg.diag(f"Looking for {name}, {len(versions)} known versions")
 
         for path in pypaths:
-            cfg.diag("- checking {path}".format(path=path))
+            cfg.diag(f"- checking {path}")
             try:
                 res[name] = next(
                     DetectedComponent(name, path, branch, version, ver)

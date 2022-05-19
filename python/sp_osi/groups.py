@@ -14,29 +14,23 @@ _DB_FILE = pathlib.Path("/var/spool/openstack-storpool/openstack-attach.json")
 
 def setup_group(cfg: defs.Config) -> grp.struct_group:
     """Create the spopenstack group if necessary, add the user accounts to it."""
-    print("Checking for the {group} group".format(group=_GROUP_NAME))
+    print(f"Checking for the {_GROUP_NAME} group")
     try:
         osgrp = grp.getgrnam(_GROUP_NAME)
     except KeyError:
         print("Creating the spopenstack group")
         if cfg.noop:
-            print("- groupadd --system -- {group}".format(group=_GROUP_NAME))
+            print(f"- groupadd --system -- {_GROUP_NAME}")
             osgrp = grp.struct_group((_GROUP_NAME, "x", 616, []))
         else:
             try:
                 subprocess.check_call(["groupadd", "--system", "--", _GROUP_NAME], env=cfg.utf8_env)
             except (OSError, subprocess.CalledProcessError) as err:
-                raise defs.OSIError(
-                    "Could not create the {group} group: {err}".format(group=_GROUP_NAME, err=err)
-                ) from err
+                raise defs.OSIError(f"Could not create the {_GROUP_NAME} group: {err}") from err
 
             osgrp = grp.getgrnam(_GROUP_NAME)
 
-    print(
-        "Got group {name}, members {members}".format(
-            name=osgrp.gr_name, members=" ".join(sorted(osgrp.gr_mem))
-        )
-    )
+    print(f"Got group {osgrp.gr_name}, members {' '.join(sorted(osgrp.gr_mem))}")
 
     missing = [name for name in cfg.components if name not in osgrp.gr_mem]
     if not missing:
@@ -48,24 +42,18 @@ def setup_group(cfg: defs.Config) -> grp.struct_group:
     for name in missing:
         current = [group.gr_name for group in all_groups if name in group.gr_mem]
         if _GROUP_NAME in current:
-            raise defs.OSIError(
-                "Internal inconsistency: osgrp {osgrp!r}, current {current!r}".format(
-                    osgrp=osgrp, current=current
-                )
-            )
+            raise defs.OSIError(f"Internal inconsistency: osgrp {osgrp!r}, current {current!r}")
 
         wanted = ",".join(sorted(current + [_GROUP_NAME]))
-        print("Setting the group list of {name} to {wanted}".format(name=name, wanted=wanted))
+        print(f"Setting the group list of {name} to {wanted}")
         if cfg.noop:
-            print("- usermod -G {wanted} -- {name}".format(wanted=wanted, name=name))
+            print(f"- usermod -G {wanted} -- {name}")
         else:
             try:
                 subprocess.check_call(["usermod", "-G", wanted, "--", name], env=cfg.utf8_env)
             except (OSError, subprocess.CalledProcessError) as err:
                 raise defs.OSIError(
-                    "Could not add the {name} account to the {group} group: {err}".format(
-                        name=name, group=_GROUP_NAME, err=err
-                    )
+                    f"Could not add the {name} account to the {_GROUP_NAME} group: {err}"
                 ) from err
 
     osgrp = grp.getgrnam(_GROUP_NAME)
@@ -74,8 +62,9 @@ def setup_group(cfg: defs.Config) -> grp.struct_group:
         if missing:
             raise defs.OSIError(
                 (
-                    "Some of the service accounts are still not in the {group} group: {missing}"
-                ).format(group=_GROUP_NAME, missing=" ".join(missing))
+                    f"Some of the service accounts are still not in "
+                    f"the {_GROUP_NAME} group: {' '.join(missing)}"
+                )
             )
     return osgrp
 
@@ -90,39 +79,35 @@ def _ensure(
     """Ensure the ownership and permissions of a directory or file."""
     if is_dir:
         if not stat.S_ISDIR(pstat.st_mode):
-            raise defs.OSIError("Not a directory: {path}".format(path=path))
+            raise defs.OSIError(f"Not a directory: {path}")
         mode = 0o770
     else:
         if not stat.S_ISREG(pstat.st_mode):
-            raise defs.OSIError("Not a regular file: {path}".format(path=path))
+            raise defs.OSIError(f"Not a regular file: {path}")
         mode = 0o660
 
     if pstat.st_uid != 0 or pstat.st_gid != osgrp.gr_gid:
-        print("Setting the ownership of {path}".format(path=path))
+        print(f"Setting the ownership of {path}")
         if cfg.noop:
-            print("- chown 0:{gid} -- {path}".format(gid=osgrp.gr_gid, path=path))
+            print(f"- chown 0:{osgrp.gr_gid} -- {path}")
         else:
             try:
                 os.chown(path, 0, osgrp.gr_gid)
             except OSError as err:
                 raise defs.OSIError(
-                    "Could not set the ownership of {path} to root:{group}: {err}".format(
-                        path=path, group=osgrp.gr_name, err=err
-                    )
+                    f"Could not set the ownership of {path} to root:{osgrp.gr_name}: {err}"
                 ) from err
 
     if (pstat.st_mode & 0o7777) != mode:
-        print("Setting the permissions mode of {path} to {mode:03o}".format(path=path, mode=mode))
+        print(f"Setting the permissions mode of {path} to {mode:03o}")
         if cfg.noop:
-            print("- chmod {mode:03o} -- {path}".format(mode=mode, path=path))
+            print(f"- chmod {mode:03o} -- {path}")
         else:
             try:
                 os.chmod(path, mode)
             except OSError as err:
                 raise defs.OSIError(
-                    "Could not set the permissions mode of {path} to {mode:03o}: {err}".format(
-                        path=path, mode=0o777, err=err
-                    )
+                    f"Could not set the permissions mode of {path} to {mode:03o}: {err}"
                 )
 
 
@@ -130,13 +115,13 @@ def setup_files(cfg: defs.Config, osgrp: grp.struct_group) -> None:
     """Set up the shared directory."""
 
     parent = _DB_FILE.parent
-    print("Examining the {parent} directory".format(parent=parent))
+    print(f"Examining the {parent} directory")
     try:
         pstat = parent.stat()
     except FileNotFoundError:
-        print("Creating the {parent} directory".format(parent=parent))
+        print(f"Creating the {parent} directory")
         if cfg.noop:
-            print("- mkdir -m 0770 -- {parent}".format(parent=parent))
+            print(f"- mkdir -m 0770 -- {parent}")
             pstat = pathlib.Path("/").stat()
         else:
             parent.mkdir(mode=0o770)
@@ -144,13 +129,13 @@ def setup_files(cfg: defs.Config, osgrp: grp.struct_group) -> None:
 
     _ensure(cfg, osgrp, parent, pstat, True)
 
-    print("Examining the {path} file".format(path=_DB_FILE))
+    print(f"Examining the {_DB_FILE} file")
     try:
         pstat = _DB_FILE.stat()
     except FileNotFoundError:
-        print("Creating the {path} file".format(path=_DB_FILE))
+        print(f"Creating the {_DB_FILE} file")
         if cfg.noop:
-            print("- write '{{}}' to {path}".format(path=_DB_FILE))
+            print(f"- write '{{}}' to {_DB_FILE}")
             pstat = pathlib.Path("/etc/passwd").stat()
         else:
             _DB_FILE.write_text("{}\n", encoding="us-ascii")

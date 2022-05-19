@@ -31,9 +31,7 @@ class OSIParseError(defs.OSIError):
 
     def __init__(self, path: pathlib.Path, msg: str) -> None:
         """Record the file path and the error message."""
-        super().__init__(
-            "Could not parse the components file {path}: {msg}".format(path=path, msg=msg)
-        )
+        super().__init__(f"Could not parse the components file {path}: {msg}")
         self.osi_path = path
         self.osi_msg = msg
 
@@ -63,22 +61,18 @@ def read_components(cfg: defs.Config) -> defs.ComponentsTop:
         )
 
     cpath = pathlib.Path("defs/components.json")
-    cfg.diag("Trying to parse {cpath}".format(cpath=cpath))
+    cfg.diag(f"Trying to parse {cpath}")
     try:
         cdata = json.loads(cpath.read_text(encoding="UTF-8"))
     except OSError as err:
-        raise OSIParseError(
-            cpath, "Could not read the file contents: {err}".format(err=err)
-        ) from err
+        raise OSIParseError(cpath, f"Could not read the file contents: {err}") from err
     except UnicodeDecodeError as err:
         raise OSIParseError(
-            cpath,
-            "Could not parse the file contents as valid UTF-8: {err}".format(err=err),
+            cpath, f"Could not parse the file contents as valid UTF-8: {err}"
         ) from err
     except ValueError as err:
         raise OSIParseError(
-            cpath,
-            "Could not parse the file contents as valid JSON: {err}".format(err=err),
+            cpath, f"Could not parse the file contents as valid JSON: {err}"
         ) from err
 
     try:
@@ -86,16 +80,14 @@ def read_components(cfg: defs.Config) -> defs.ComponentsTop:
             cdata["format"]["version"]["major"],
             cdata["format"]["version"]["minor"],
         )
-        cfg.diag("Got config format {vmajor}.{vminor}".format(vmajor=vmajor, vminor=vminor))
+        cfg.diag(f"Got config format {vmajor}.{vminor}")
         if vmajor != 0:
-            raise OSIParseError(cpath, "Unsupported format version {vmajor}".format(vmajor=vmajor))
+            raise OSIParseError(cpath, f"Unsupported format version {vmajor}")
         return defs.ComponentsTop(
             components={name: parse_component(value) for name, value in cdata["components"].items()}
         )
     except TypeError as err:
-        raise OSIParseError(
-            cpath, "Could not parse the components data: {err}".format(err=err)
-        ) from err
+        raise OSIParseError(cpath, f"Could not parse the components data: {err}") from err
 
 
 def validate(cfg: defs.Config) -> List[str]:
@@ -109,19 +101,11 @@ def validate(cfg: defs.Config) -> List[str]:
         uptodate_files = {}  # type: Dict[pathlib.Path, str]
 
         if not RE_BRANCH_NAME.match(branch_name):
-            res.append(
-                "{comp_name}: Invalid branch name: {branch_name}".format(
-                    comp_name=comp_name, branch_name=branch_name
-                )
-            )
+            res.append(f"{comp_name}: Invalid branch name: {branch_name}")
 
         for ver, version in sorted(branch.items()):
             if not RE_VERSION_STRING.match(ver):
-                res.append(
-                    ("{comp_name}/{branch_name}: Invalid version string: " "{ver}").format(
-                        comp_name=comp_name, branch_name=branch_name, ver=ver
-                    )
-                )
+                res.append(f"{comp_name}/{branch_name}: Invalid version string: " "{ver}")
 
             if not version.outdated:
                 found = {
@@ -141,36 +125,26 @@ def validate(cfg: defs.Config) -> List[str]:
                     if util.file_sha256sum(path) != cksum
                 }
                 if bad_cksum:
-                    res.append(
-                        ("{comp_name}/{branch_name}/{ver}: " "Bad checksum for {files}").format(
-                            comp_name=comp_name,
-                            branch_name=branch_name,
-                            ver=ver,
-                            files=" ".join(sorted(str(path) for path in bad_cksum.keys())),
-                        )
-                    )
+                    bad_files = " ".join(sorted(str(path) for path in bad_cksum.keys()))
+                    res.append(f"{comp_name}/{branch_name}/{ver}: Bad checksum for {bad_files}")
 
                 if not uptodate_files:
                     uptodate_files = found
                 elif uptodate_files != found:
                     res.append(
                         (
-                            "{comp_name}/{branch_name}: All the up-to-date versions should "
-                            "define the same set of files with the same checksums"
-                        ).format(comp_name=comp_name, branch_name=branch_name)
+                            f"{comp_name}/{branch_name}: All the up-to-date versions should "
+                            f"define the same set of files with the same checksums"
+                        )
                     )
 
             if not any(not version.outdated for version in branch.values()):
-                res.append(
-                    "{comp_name}/{branch_name}: No non-outdated versions".format(
-                        comp_name=comp_name, branch_name=branch_name
-                    )
-                )
+                res.append(f"{comp_name}/{branch_name}: No non-outdated versions")
 
     def check_component(comp_name: str, comp: defs.Component) -> None:
         """Validate the definition of a single component."""
         if not RE_COMP_NAME.match(comp_name):
-            res.append("Invalid component name: {comp_name}".format(comp_name=comp_name))
+            res.append(f"Invalid component name: {comp_name}")
 
         for branch_name, branch in sorted(comp.branches.items()):
             check_branch(comp_name, branch_name, branch)

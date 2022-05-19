@@ -65,6 +65,7 @@ class Config:
 
     def __repr__(self) -> str:
         """Provide a Python-esque representation."""
+        # pylint: disable-next=consider-using-f-string
         return (
             "{tname}("
             "all_components={all_components!r}, "

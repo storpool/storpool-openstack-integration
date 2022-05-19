@@ -16,9 +16,7 @@ class OSIInstallError(defs.OSIError):
 
     def __init__(self, src: pathlib.Path, dst: pathlib.Path, err: str) -> None:
         """Store the source and destination paths."""
-        super().__init__(
-            "Could not install {src} to {dst}: {err}".format(src=src, dst=dst, err=err)
-        )
+        super().__init__(f"Could not install {src} to {dst}: {err}")
         self.osi_src = src
         self.osi_dst = dst
 
@@ -37,11 +35,7 @@ def find_wanted_version(
         )
     }
     if len(wanted) != len(version.files):
-        raise defs.OSIError(
-            "Files consistency error: went from {det!r} to {wanted!r}".format(
-                det=det, wanted=wanted
-            )
-        )
+        raise defs.OSIError(f"Files consistency error: went from {det!r} to {wanted!r}")
 
     found = [
         ver
@@ -50,10 +44,7 @@ def find_wanted_version(
     ]
     if len(found) != 1 or found[0][1].outdated:
         raise defs.OSIError(
-            (
-                "Files consistency error: went from {det!r} to {wanted!r} and "
-                "then found {found!r}"
-            ).format(det=det, wanted=wanted, found=found)
+            f"Files consistency error: went from {det!r} to {wanted!r} and then found {found!r}"
         )
 
     return found[0]
@@ -63,31 +54,25 @@ def install(cfg: defs.Config, name: str, det: detect.DetectedComponent) -> bool:
     """Install (or not) a component's files, return True if anything changed."""
     version = det.data
     if not version.outdated:
-        print("Nothing to do for {name} at {path}".format(name=name, path=det.path))
+        print(f"Nothing to do for {name} at {det.path}")
         return False
 
     wanted_ver, wanted = find_wanted_version(cfg, name, det)
-    print(
-        "About to replace {name} {current_ver} with {name} {wanted_ver}".format(
-            name=name, current_ver=det.version, wanted_ver=wanted_ver
-        )
-    )
+    print(f"About to replace {name} {det.version} with {name} {wanted_ver}")
     for fname, fdata in sorted(wanted.files.items()):
         src = util.get_driver_path(name, det.branch, fname.name)
         if src is None:
             continue
 
         dst = det.path / name / fname
-        print("- {src} -> {dst}".format(src=src, dst=dst))
+        print(f"- {src} -> {dst}")
 
         cksum = util.file_sha256sum(src)
         if cksum != fdata.sha256:
             raise OSIInstallError(
                 src,
                 dst,
-                "Checksum mismatch for the {src} file: expected {expected!r}, got {cksum!r}".format(
-                    src=src, expected=fdata.sha256, cksum=cksum
-                ),
+                f"Checksum mismatch for the {src} file: expected {fdata.sha256!r}, got {cksum!r}",
             )
 
         target = divert.ensure_diverted(cfg, dst)
@@ -98,9 +83,7 @@ def install(cfg: defs.Config, name: str, det: detect.DetectedComponent) -> bool:
             dst_data = (0, 0, 0o644)
         except OSError as err:
             raise OSIInstallError(
-                src,
-                dst,
-                "Could not examine the destination file {dst}: {err}".format(dst=dst, err=err),
+                src, dst, f"Could not examine the destination file {dst}: {err}"
             ) from err
 
         if not cfg.noop:
@@ -113,7 +96,7 @@ def install(cfg: defs.Config, name: str, det: detect.DetectedComponent) -> bool:
                         "-g",
                         str(dst_data[1]),
                         "-m",
-                        "{mode:03o}".format(mode=dst_data[2]),
+                        f"{dst_data[2]:03o}",
                         "--",
                         src,
                         dst,
@@ -121,9 +104,7 @@ def install(cfg: defs.Config, name: str, det: detect.DetectedComponent) -> bool:
                     env=cfg.utf8_env,
                 )
             except (OSError, subprocess.CalledProcessError) as err:
-                raise OSIInstallError(
-                    src, dst, "Could not run install(8): {err}".format(err=err)
-                ) from err
+                raise OSIInstallError(src, dst, f"Could not run install(8): {err}") from err
 
             cksum = util.file_sha256sum(dst)
             if cksum != fdata.sha256:
@@ -131,15 +112,13 @@ def install(cfg: defs.Config, name: str, det: detect.DetectedComponent) -> bool:
                     src,
                     dst,
                     (
-                        "Checksum mismatch for the {dst} file after the installation: "
-                        "expected {expected!r}, got {cksum!r}"
-                    ).format(dst=dst, expected=fdata.sha256, cksum=cksum),
+                        f"Checksum mismatch for the {dst} file after the installation: "
+                        f"expected {fdata.sha256!r}, got {cksum!r}"
+                    ),
                 )
         else:
             print(
-                "- install -o {uid} -g {gid} -m {mode:03o} -- {src} {dst}".format(
-                    uid=dst_data[0], gid=dst_data[1], mode=dst_data[2], src=src, dst=dst
-                )
+                f"- install -o {dst_data[0]} -g {dst_data[1]} -m {dst_data[2]:03o} -- {src} {dst}"
             )
 
     return True
@@ -148,26 +127,20 @@ def install(cfg: defs.Config, name: str, det: detect.DetectedComponent) -> bool:
 def uninstall(cfg: defs.Config, name: str, det: detect.DetectedComponent) -> bool:
     """Restore (or not) a component's files, return True if anything changed."""
     version = det.data
-    print(
-        "About to restore {name} files currently updated to {current_ver}".format(
-            name=name, current_ver=det.version
-        )
-    )
+    print(f"About to restore {name} files currently updated to {det.version}")
     for fname, fdata in sorted(version.files.items()):
         src = det.path / name / fname
         dst = divert.get_diverted_name(src)
         if not dst.is_file():
             continue
-        print("- {dst} -> {src}".format(src=src, dst=dst))
+        print(f"- {dst} -> {src}")
 
         cksum = util.file_sha256sum(src)
         if cksum != fdata.sha256:
             raise OSIInstallError(
                 src,
                 dst,
-                "Checksum mismatch for the {src} file: expected {expected!r}, got {cksum!r}".format(
-                    src=src, expected=fdata.sha256, cksum=cksum
-                ),
+                f"Checksum mismatch for the {src} file: expected {fdata.sha256!r}, got {cksum!r}",
             )
 
         if not cfg.noop:
@@ -175,12 +148,10 @@ def uninstall(cfg: defs.Config, name: str, det: detect.DetectedComponent) -> boo
                 src.unlink()
             except OSError as err:
                 raise OSIInstallError(
-                    src,
-                    dst,
-                    "Could not remove the patched file {src}: {err}".format(src=src, err=err),
+                    src, dst, f"Could not remove the patched file {src}: {err}"
                 ) from err
         else:
-            print("Would remove the patched file {src}".format(src=src))
+            print(f"Would remove the patched file {src}")
 
         divert.ensure_undiverted(cfg, src)
 

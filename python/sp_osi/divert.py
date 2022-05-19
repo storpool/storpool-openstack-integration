@@ -11,7 +11,7 @@ class OSIDivertError(defs.OSIError):
 
     def __init__(self, path: pathlib.Path, err: str) -> None:
         """Store the path."""
-        super().__init__("Could not divert {path}: {err}".format(path=path, err=err))
+        super().__init__(f"Could not divert {path}: {err}")
         self.osi_path = path
 
 
@@ -23,7 +23,7 @@ def get_diverted_name(path: pathlib.Path) -> pathlib.Path:
 def has_dpkg_divert(cfg: defs.Config) -> bool:
     """Check whether we can and should use dpkg-divert."""
     if cfg.variant.family != "debian":
-        print("No dpkg-divert on {vname}".format(vname=cfg.variant.name))
+        print(f"No dpkg-divert on {cfg.variant.name}")
         return False
 
     if cfg.no_divert:
@@ -36,17 +36,12 @@ def has_dpkg_divert(cfg: defs.Config) -> bool:
 def ensure_diverted_rename(cfg: defs.Config, path: pathlib.Path) -> pathlib.Path:
     """Simulate diverting a file on systems that do not have dpkg-divert."""
     target = get_diverted_name(path)
-    print("Renaming {path} to {target}".format(path=path, target=target))
+    print(f"Renaming {path} to {target}")
     if not cfg.noop:
         try:
             path.rename(target)
         except OSError as err:
-            raise OSIDivertError(
-                path,
-                "Could not rename {path} to {target}: {err}".format(
-                    path=path, target=target, err=err
-                ),
-            ) from err
+            raise OSIDivertError(path, f"Could not rename {path} to {target}: {err}") from err
     else:
         print("- would rename {path} to {target}")
 
@@ -62,40 +57,34 @@ def ensure_diverted(cfg: defs.Config, path: pathlib.Path) -> pathlib.Path:
         return ensure_diverted_rename(cfg, path)
 
     target = get_diverted_name(path)
-    print(
-        "Checking whether {path} is already diverted to {target}".format(path=path, target=target)
-    )
+    print(f"Checking whether {path} is already diverted to {target}")
     try:
         lines = subprocess.check_output(
             ["dpkg-divert", "--quiet", "--list", "--", path], encoding="UTF-8", env=cfg.utf8_env
         ).splitlines()
     except (OSError, subprocess.CalledProcessError) as err:
-        raise OSIDivertError(path, "`dpkg-divert --list` failed: {err}".format(err=err)) from err
+        raise OSIDivertError(path, f"`dpkg-divert --list` failed: {err}") from err
 
     if len(lines) > 1:
-        raise OSIDivertError(
-            path, "`dpkg-divert --list` returned too many lines: {lines!r}".format(lines=lines)
-        )
+        raise OSIDivertError(path, f"`dpkg-divert --list` returned too many lines: {lines!r}")
 
     if len(lines) == 1:
-        if lines[0] != "local diversion of {path} to {target}".format(path=path, target=target):
-            raise OSIDivertError(
-                path, "Unexpected `dpkg-divert --list` output: {line}".format(line=lines[0])
-            )
-        print("- already diverted to {target}".format(target=target))
+        if lines[0] != f"local diversion of {path} to {target}":
+            raise OSIDivertError(path, f"Unexpected `dpkg-divert --list` output: {lines[0]}")
+        print(f"- already diverted to {target}")
         return target
 
     if not cfg.noop:
-        print("- diverting it to {target}".format(target=target))
+        print(f"- diverting it to {target}")
         try:
             subprocess.check_call(
                 ["dpkg-divert", "--quiet", "--local", "--rename", "--divert", target, "--", path],
                 env=cfg.utf8_env,
             )
         except (OSError, subprocess.CalledProcessError) as err:
-            raise OSIDivertError(path, "dpkg-divert failed: {err}".format(err=err)) from err
+            raise OSIDivertError(path, f"dpkg-divert failed: {err}") from err
     else:
-        print("- would divert it to {target}".format(target=target))
+        print(f"- would divert it to {target}")
 
     return target
 
@@ -103,17 +92,12 @@ def ensure_diverted(cfg: defs.Config, path: pathlib.Path) -> pathlib.Path:
 def ensure_undiverted_rename(cfg: defs.Config, path: pathlib.Path) -> pathlib.Path:
     """Remove a simulated diversion for a file when there is no dpkg-divert."""
     target = get_diverted_name(path)
-    print("Renaming {target} to {path}".format(path=path, target=target))
+    print(f"Renaming {target} to {path}")
     if not cfg.noop:
         try:
             target.rename(path)
         except OSError as err:
-            raise OSIDivertError(
-                path,
-                "Could not rename {target} to {path}: {err}".format(
-                    path=path, target=target, err=err
-                ),
-            ) from err
+            raise OSIDivertError(path, f"Could not rename {target} to {path}: {err}") from err
     else:
         print("- would rename {target} to {path}")
 
@@ -131,41 +115,35 @@ def ensure_undiverted(cfg: defs.Config, path: pathlib.Path) -> pathlib.Path:
         return ensure_undiverted_rename(cfg, path)
 
     target = get_diverted_name(path)
-    print(
-        "Checking whether {path} is already diverted to {target}".format(path=path, target=target)
-    )
+    print(f"Checking whether {path} is already diverted to {target}")
     try:
         lines = subprocess.check_output(
             ["dpkg-divert", "--quiet", "--list", "--", path], encoding="UTF-8", env=cfg.utf8_env
         ).splitlines()
     except (OSError, subprocess.CalledProcessError) as err:
-        raise OSIDivertError(path, "`dpkg-divert --list` failed: {err}".format(err=err)) from err
+        raise OSIDivertError(path, f"`dpkg-divert --list` failed: {err}") from err
 
     if len(lines) > 1:
-        raise OSIDivertError(
-            path, "`dpkg-divert --list` returned too many lines: {lines!r}".format(lines=lines)
-        )
+        raise OSIDivertError(path, f"`dpkg-divert --list` returned too many lines: {lines!r}")
 
     if len(lines) == 0:
         print("- not diverted at all")
         return path
 
-    if lines[0] != "local diversion of {path} to {target}".format(path=path, target=target):
-        raise OSIDivertError(
-            path, "Unexpected `dpkg-divert --list` output: {line}".format(line=lines[0])
-        )
-    print("- currently diverted to {target}".format(target=target))
+    if lines[0] != f"local diversion of {path} to {target}":
+        raise OSIDivertError(path, f"Unexpected `dpkg-divert --list` output: {lines[0]}")
+    print(f"- currently diverted to {target}")
 
     if not cfg.noop:
-        print("- removing the diversion to {target}".format(target=target))
+        print(f"- removing the diversion to {target}")
         try:
             subprocess.check_call(
                 ["dpkg-divert", "--quiet", "--local", "--rename", "--remove", "--", path],
                 env=cfg.utf8_env,
             )
         except (OSError, subprocess.CalledProcessError) as err:
-            raise OSIDivertError(path, "dpkg-divert failed: {err}".format(err=err)) from err
+            raise OSIDivertError(path, f"dpkg-divert failed: {err}") from err
     else:
-        print("- would remove the diversion to {target}".format(target=target))
+        print(f"- would remove the diversion to {target}")
 
     return path

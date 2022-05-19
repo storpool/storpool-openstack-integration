@@ -26,14 +26,8 @@ def cmd_detect(cfg: defs.Config) -> None:
     print("Found the following OpenStack components:")
     for name in cfg.components:
         data = res.res[name]
-        print(
-            "{name:20} {branch:10} {outdated:20} {path}".format(
-                name=name,
-                branch=data.branch,
-                path=data.path,
-                outdated="out of date!" if data.data.outdated else "ok",
-            )
-        )
+        outdated = "out of date!" if data.data.outdated else "ok"
+        print(f"{name:20} {data.branch:10} {outdated:20} {data.path}")
 
 
 def cmd_check(cfg: defs.Config) -> None:
@@ -43,9 +37,9 @@ def cmd_check(cfg: defs.Config) -> None:
     if outdated:
         sys.exit(
             (
-                "The StorPool OpenStack integration is either not installed or "
-                "not up to date for {comps}"
-            ).format(comps=", ".join(outdated))
+                f"The StorPool OpenStack integration is either not installed or "
+                f"not up to date for {', '.join(outdated)}"
+            )
         )
 
     print("The StorPool OpenStack integration is installed")
@@ -183,7 +177,7 @@ def parse_args() -> Tuple[defs.Config, Callable[[defs.Config], None]]:
 
     invalid = [item for item in cfg.components if item not in cfg.all_components.components]
     if invalid:
-        sys.exit("Invalid component name(s) specified: {inv}".format(inv=" ".join(sorted(invalid))))
+        sys.exit(f"Invalid component name(s) specified: {' '.join(sorted(invalid))}")
 
     return cfg, func
 
