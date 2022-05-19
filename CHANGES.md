@@ -4,6 +4,19 @@ Change log for the StorPool OpenStack integration
 2.0.0 (not yet)
 ---------------
 
+- reimplement the `sp-openstack` tool in Python 3.6 or higher
+- let `sp-openstack` use the `dpkg-divert` tool on Debian/Ubuntu systems
+  (unless the `-D` / `--no-divert` command-line option is specified) to
+  make sure the local changes are not lost if the OpenStack packages are
+  upgraded
+- add the "uninstall" command to the `sp-openstack` tool
+- detect the Xena release of OpenStack
+- add some StorPool driver fixes for the OpenStack Victoria, Wallaby, and
+  Xena releases:
+  - drop `_attach_volume()`, `_detach_volume()`, and `backup_volume()`
+  - reimplement `create_cloned_volume()` in a much more efficient way
+  - implement `clone_image()`
+
 1.5.0
 -----
 
