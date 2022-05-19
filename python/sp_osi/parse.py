@@ -92,13 +92,13 @@ def read_components(cfg: defs.Config) -> defs.ComponentsTop:
 
 def validate(cfg: defs.Config) -> List[str]:
     """Validate the components data, return a list of errors."""
-    res = []  # type: List[str]
+    res: List[str] = []
 
     def check_branch(
         comp_name: str, branch_name: str, branch: Dict[str, defs.ComponentVersion]
     ) -> None:
         """Validate versions within a single branch."""
-        uptodate_files = {}  # type: Dict[pathlib.Path, str]
+        uptodate_files: Dict[pathlib.Path, str] = {}
 
         if not RE_BRANCH_NAME.match(branch_name):
             res.append(f"{comp_name}: Invalid branch name: {branch_name}")

@@ -367,7 +367,7 @@ def check_detect(chroot: Chroot, osipath: pathlib.Path, release: str, outdated: 
 def install_sp_osi(chroot: Chroot, osipath: pathlib.Path, no_divert: bool = False) -> None:
     """Run `sp-openstack install` within the chroot."""
     print("Installing the updated OpenStack driver files")
-    cmd = ["./sp-openstack", "-v"]  # type: PathList
+    cmd: PathList = ["./sp-openstack", "-v"]
     if no_divert:
         cmd.append("-D")
     cmd.extend(["install", "cinder", "glance", "nova"])
@@ -377,7 +377,7 @@ def install_sp_osi(chroot: Chroot, osipath: pathlib.Path, no_divert: bool = Fals
 def uninstall_sp_osi(chroot: Chroot, osipath: pathlib.Path, no_divert: bool = False) -> None:
     """Run `sp-openstack uninstall` within the chroot."""
     print("Restoring the original OpenStack driver files")
-    cmd = ["./sp-openstack", "-v"]  # type: PathList
+    cmd: PathList = ["./sp-openstack", "-v"]
     if no_divert:
         cmd.append("-D")
     cmd.extend(["uninstall", "cinder", "glance", "nova"])

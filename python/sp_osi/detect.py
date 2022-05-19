@@ -94,7 +94,7 @@ def detect(cfg: defs.Config) -> DetectedComponents:
     )
 
     pypaths = get_python_paths(cfg)
-    res = {}  # type: Dict[str, DetectedComponent]
+    res: Dict[str, DetectedComponent] = {}
     for name, comp in ((name, comps.components[name]) for name in req):
         versions = list(
             itertools.chain(
