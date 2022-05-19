@@ -158,8 +158,8 @@ def parse_args() -> Tuple[defs.Config, Callable[[defs.Config], None]]:
             if args.all:
                 assert not cfg.all_components.components
                 assert not cfg.utf8_env
-                cfg = cfg.replace(utf8_env=get_utf8_env())
-                cfg = cfg.replace(all_components=parse.read_components(cfg))
+                cfg = cfg._replace(utf8_env=get_utf8_env())
+                cfg = cfg._replace(all_components=parse.read_components(cfg))
                 components = sorted(cfg.all_components.components.keys())
             else:
                 sys.exit("No components specified")
@@ -167,13 +167,13 @@ def parse_args() -> Tuple[defs.Config, Callable[[defs.Config], None]]:
             components = []
 
     assert not cfg.components
-    cfg = cfg.replace(components=components)
+    cfg = cfg._replace(components=components)
 
     if not cfg.utf8_env:
-        cfg = cfg.replace(utf8_env=get_utf8_env())
+        cfg = cfg._replace(utf8_env=get_utf8_env())
 
     if not cfg.all_components.components:
-        cfg = cfg.replace(all_components=parse.read_components(cfg))
+        cfg = cfg._replace(all_components=parse.read_components(cfg))
 
     invalid = [item for item in cfg.components if item not in cfg.all_components.components]
     if invalid:
