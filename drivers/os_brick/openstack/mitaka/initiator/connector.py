@@ -71,7 +71,6 @@ AOE = "AOE"
 DRBD = "DRBD"
 NFS = "NFS"
 GLUSTERFS = "GLUSTERFS"
-STORPOOL = "STORPOOL"
 LOCAL = "LOCAL"
 HUAWEISDSHYPERVISOR = "HUAWEISDSHYPERVISOR"
 HGST = "HGST"
@@ -81,6 +80,7 @@ SCALITY = "SCALITY"
 QUOBYTE = "QUOBYTE"
 DISCO = "DISCO"
 VZSTORAGE = "VZSTORAGE"
+STORPOOL = "STORPOOL"
 
 
 def _check_multipathd_running(root_helper, enforce_multipath):
@@ -317,18 +317,20 @@ class InitiatorConnector(executor.Executor):
         multipath_id = None
 
         if path is None:
+            # find_multipath_device only accept realpath not symbolic path
+            device_realpath = os.path.realpath(device_name)
             mpath_info = self._linuxscsi.find_multipath_device(
-                device_name)
+                device_realpath)
             if mpath_info:
                 device_path = mpath_info['device']
                 multipath_id = device_wwn
             else:
                 # we didn't find a multipath device.
                 # so we assume the kernel only sees 1 device
-                device_path = self.host_device
+                device_path = device_name
                 LOG.debug("Unable to find multipath device name for "
                           "volume. Using path %(device)s for volume.",
-                          {'device': self.host_device})
+                          {'device': device_path})
         else:
             device_path = path
             multipath_id = device_wwn
@@ -919,7 +921,6 @@ class ISCSIConnector(InitiatorConnector):
         target_lun(s) - LUN id of the volume
         """
         if self.use_multipath:
-            self._rescan_multipath()
             host_device = multipath_device = None
             host_devices = self._get_device_path(connection_properties)
             # Choose an accessible host device
@@ -1230,8 +1231,6 @@ class ISCSIConnector(InitiatorConnector):
             props['target_iqn'] = iqn
             self._disconnect_from_iscsi_portal(props)
 
-        self._rescan_multipath()
-
     def _get_multipath_iqns(self, multipath_devices, mpath_map):
         entries = self._get_iscsi_devices()
         iqns = []
@@ -1298,9 +1297,6 @@ class ISCSIConnector(InitiatorConnector):
                                 check_exit_code=[0, 1, 21, 255])
         self._run_iscsiadm_bare(('-m', 'session', '--rescan'),
                                 check_exit_code=[0, 1, 21, 255])
-
-    def _rescan_multipath(self):
-        self._run_multipath(['-r'], check_exit_code=[0, 1, 21])
 
 
 class FibreChannelConnector(InitiatorConnector):
@@ -1580,14 +1576,16 @@ class FibreChannelConnectorS390X(FibreChannelConnector):
     def _get_host_devices(self, possible_devs, lun):
         host_devices = []
         for pci_num, target_wwn in possible_devs:
-            target_lun = self._get_lun_string(lun)
             host_device = self._get_device_file_path(
                 pci_num,
                 target_wwn,
-                target_lun)
+                lun)
+            # NOTE(arne_r)
+            # LUN driver path is the same on all distros, so no need to have
+            # multiple calls here
             self._linuxfc.configure_scsi_device(pci_num, target_wwn,
-                                                target_lun)
-            host_devices.append(host_device)
+                                                self._get_lun_string(lun))
+            host_devices.extend(host_device)
         return host_devices
 
     def _get_lun_string(self, lun):
@@ -1598,11 +1596,17 @@ class FibreChannelConnectorS390X(FibreChannelConnector):
             target_lun = "0x%08x00000000" % lun
         return target_lun
 
-    def _get_device_file_path(self, pci_num, target_wwn, target_lun):
-        host_device = "/dev/disk/by-path/ccw-%s-zfcp-%s:%s" % (
-            pci_num,
-            target_wwn,
-            target_lun)
+    def _get_device_file_path(self, pci_num, target_wwn, lun):
+        # NOTE(arne_r)
+        # Need to add two possible ways to resolve device paths,
+        # depending on OS. Since it gets passed to '_get_possible_volume_paths'
+        # having a mismatch is not a problem
+        host_device = [
+            "/dev/disk/by-path/ccw-%s-zfcp-%s:%s" % (
+                pci_num, target_wwn, self._get_lun_string(lun)),
+            "/dev/disk/by-path/ccw-%s-fc-%s-lun-%s" % (
+                pci_num, target_wwn, lun),
+        ]
         return host_device
 
     def _remove_devices(self, connection_properties, devices):
