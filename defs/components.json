@@ -225,6 +225,18 @@
                     }
                 },
                 "victoria": {
+                    "22.4.0.0.0.0": {
+                        "comment": "upstream Victoria 22.4.0",
+                        "files": {
+                            "virt/libvirt/driver.py": {
+                                "sha256": "40344e663b2305e807dcf5da0166ed396b04b9967226de8f65676a296d8c8c8c"
+                            },
+                            "virt/libvirt/config.py": {
+                                "sha256": "2c35c25997d9508c8b60eb43597710f8e5c1761cdfc4dafccc83ca8314fb0cc0"
+                            }
+                        },
+                        "outdated": false
+                    },
                     "22.3.0.0.1.0": {
                         "comment": "Ubuntu cloud archive Victoria 22.3.0",
                         "files": {
