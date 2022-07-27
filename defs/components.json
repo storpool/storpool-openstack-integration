@@ -211,6 +211,30 @@
                     }
                 },
                 "wallaby": {
+                    "23.2.1.0.0.0": {
+                        "comment": "upstream Wallaby 23.2.1",
+                        "files": {
+                            "virt/libvirt/driver.py": {
+                                "sha256": "a53e5ae0cdc0553ea2f459d1c06709727d78f007f2dab1a5a363edb7e81004ef"
+                            },
+                            "virt/libvirt/config.py": {
+                                "sha256": "64d41384ef2823478dab2f5322fca88d1f6bb55a9bb08bfe3066bddaebd767e6"
+                            }
+                        },
+                        "outdated": false
+                    },
+                    "23.2.0.0.0.0": {
+                        "comment": "upstream Wallaby 23.2.0",
+                        "files": {
+                            "virt/libvirt/driver.py": {
+                                "sha256": "b8f719656bcbafbfe74ed4e52f665f0778ae4d0b00f01f0811ddadf59e740f6e"
+                            },
+                            "virt/libvirt/config.py": {
+                                "sha256": "64d41384ef2823478dab2f5322fca88d1f6bb55a9bb08bfe3066bddaebd767e6"
+                            }
+                        },
+                        "outdated": false
+                    },
                     "23.1.0.0.1.0": {
                         "comment": "Ubuntu cloud archive Wallaby 23.1.0",
                         "files": {
