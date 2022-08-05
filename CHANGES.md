@@ -1,6 +1,25 @@
 Change log for the StorPool OpenStack integration
 =================================================
 
+2.0.1
+-----
+
+- Cinder drivers:
+  - Wallaby:
+    - recognize the 18.2.1 upstream version
+    - bump the StorPool Cinder driver version so that it is higher than
+      the upstream one
+  - Xena:
+    - add iSCSI support to the StorPool driver
+  - Yoga:
+    - recognize the 20.0.0 and 20.0.1 upstream versions
+    - install an updated driver with iSCSI support
+- Nova drivers:
+  - Victora:
+    - recognize the 22.4.0 upstream version
+  - Wallaby:
+    - recognize the 23.2.0 and 23.2.1 upstream versions
+
 2.0.0
 -----
 
