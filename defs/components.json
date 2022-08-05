@@ -13,6 +13,18 @@
             ],
             "branches": {
                 "xena": {
+                    "19.0.0.5.0.0": {
+                        "comment": "StorPool fixes for Xena (iSCSI transport, detach snapshots)",
+                        "files": {
+                            "volume/driver.py": {
+                                "sha256": "394d4b2dccf2d6b51e1cc3aedc775ecbd38c80103c90b7c32e68e878903d1c02"
+                            },
+                            "volume/drivers/storpool.py": {
+                                "sha256": "a7cbea76f0d7a1459e6a1337a44ee09eeac4a9f9c03433e40f8e8c2cb7f07b00"
+                            }
+                        },
+                        "outdated": false
+                    },
                     "19.0.0.4.0.0": {
                         "comment": "StorPool fixes for Xena (create_cloned_volume(), clone_image())",
                         "files": {
@@ -23,7 +35,7 @@
                                 "sha256": "75fcbe6f23e1dfa89b136127cea703d2d64eb28cf584f814fea72222bad69caf"
                             }
                         },
-                        "outdated": false
+                        "outdated": true
                     },
                     "19.0.0.3.0.0": {
                         "comment": "StorPool fixes for Xena (bump the driver version)",
