@@ -220,6 +220,20 @@
                 "api/v2/images.py"
             ],
             "branches": {
+                "yoga": {
+                    "24.0.0.0.0.0": {
+                        "comment": "upstream Yoga 24.0.0",
+                        "files": {
+                            "async_/__init__.py": {
+                                "sha256": "77844b4bbbe0b573b628c37f2ceb3e66cc62f87b76d2124e2dae36e3455bc8f1"
+                            },
+                            "api/v2/images.py": {
+                                "sha256": "4dee7d997853ec3e3793b5199204426c6533073c4c1bb7180a4ef6b60c312913"
+                            }
+                        },
+                        "outdated": false
+                    }
+                },
                 "xena": {
                     "23.0.0.0.0.0": {
                         "comment": "upstream Xena 23.0.0",
