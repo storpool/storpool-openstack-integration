@@ -13,6 +13,18 @@
             ],
             "branches": {
                 "yoga": {
+                    "20.0.1.5.0.0": {
+                        "comment": "StorPool fixes for Yoga (iSCSI, attach/detach, etc)",
+                        "files": {
+                            "volume/driver.py": {
+                                "sha256": "fd83b933a061e6dee7edccf4f60d4f165f86dfa2361ceae1acf83f9758b466d0"
+                            },
+                            "volume/drivers/storpool.py": {
+                                "sha256": "a7cbea76f0d7a1459e6a1337a44ee09eeac4a9f9c03433e40f8e8c2cb7f07b00"
+                            }
+                        },
+                        "outdated": false
+                    },
                     "20.0.1.0.0.0": {
                         "comment": "upstream Yoga 20.0.1",
                         "files": {
