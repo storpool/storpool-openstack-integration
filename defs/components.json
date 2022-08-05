@@ -12,6 +12,44 @@
                 "volume/driver.py"
             ],
             "branches": {
+                "yoga": {
+                    "20.0.0.5.0.0": {
+                        "comment": "StorPool fixes for Yoga (iSCSI, attach/detach, etc)",
+                        "files": {
+                            "volume/driver.py": {
+                                "sha256": "1c356c3251640566aeddbe04c4bca63e5de267b565a680d8935bb93d2d572127"
+                            },
+                            "volume/drivers/storpool.py": {
+                                "sha256": "a7cbea76f0d7a1459e6a1337a44ee09eeac4a9f9c03433e40f8e8c2cb7f07b00"
+                            }
+                        },
+                        "outdated": false
+                    },
+                    "20.0.0.4.0.0": {
+                        "comment": "StorPool fixes for Yoga, an intermediate version",
+                        "files": {
+                            "volume/driver.py": {
+                                "sha256": "1c356c3251640566aeddbe04c4bca63e5de267b565a680d8935bb93d2d572127"
+                            },
+                            "volume/drivers/storpool.py": {
+                                "sha256": "feceb45f9ca13ad2ed137bf0797a8fd30c9e69f3ebc621bc314d6a4545d726bd"
+                            }
+                        },
+                        "outdated": true
+                    },
+                    "20.0.0.0.0.0": {
+                        "comment": "upstream Yoga 20.0.0",
+                        "files": {
+                            "volume/driver.py": {
+                                "sha256": "1c356c3251640566aeddbe04c4bca63e5de267b565a680d8935bb93d2d572127"
+                            },
+                            "volume/drivers/storpool.py": {
+                                "sha256": "1692231956ff69bf68d2c669834b94bbe1e8682e68c19c5fcd62b020195c8a9d"
+                            }
+                        },
+                        "outdated": true
+                    }
+                },
                 "xena": {
                     "19.0.0.5.0.0": {
                         "comment": "StorPool fixes for Xena (iSCSI transport, detach snapshots)",
