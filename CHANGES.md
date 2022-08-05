@@ -6,6 +6,8 @@ Change log for the StorPool OpenStack integration
 
 - Cinder drivers:
   - Wallaby:
+    - add an entry for the StorPool updated driver for the 18.1.0 Ubuntu
+      cloud archive version
     - recognize the 18.2.1 upstream version
     - bump the StorPool Cinder driver version so that it is higher than
       the upstream one
@@ -14,11 +16,22 @@ Change log for the StorPool OpenStack integration
   - Yoga:
     - recognize the 20.0.0 and 20.0.1 upstream versions
     - install an updated driver with iSCSI support
+- Glance drivers:
+  - Yoga:
+    - recognize the 24.0.0 upstream version
 - Nova drivers:
   - Victora:
     - recognize the 22.4.0 upstream version
+    - recognize the 22.4.0 Ubuntu cloud archive version
   - Wallaby:
     - recognize the 23.2.0 and 23.2.1 upstream versions
+    - recognize the 23.2.1 Ubuntu cloud archive version
+  - Xena:
+    - recognize the 24.1.0 and 24.1.1 upstream versions
+    - recognize the 24.1.1 Ubuntu cloud archive version
+  - Yoga:
+    - recognize the 25.0.0 upstream version
+    - recognize the 25.0.0 Ubuntu cloud archive version
 
 2.0.0
 -----
