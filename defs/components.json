@@ -258,7 +258,69 @@
                 "virt/libvirt/config.py"
             ],
             "branches": {
+                "yoga": {
+                    "25.0.0.0.1.0": {
+                        "comment": "Ubuntu cloud archive Yoga 25.0.0",
+                        "files": {
+                            "virt/libvirt/driver.py": {
+                                "sha256": "00bbcecb9d323b0d5387acc3d94de8358d56c38ecb6e7d0a1f57263b3f9c1ab1"
+                            },
+                            "virt/libvirt/config.py": {
+                                "sha256": "e21767176025eca5432b5fdb7b3491fda0b3ff206df18d74455e50efceed835d"
+                            }
+                        },
+                        "outdated": false
+                    },
+                    "25.0.0.0.0.0": {
+                        "comment": "upstream Yoga 25.0.0",
+                        "files": {
+                            "virt/libvirt/driver.py": {
+                                "sha256": "2ecf072cc30dc6de28fe39398f1f1137f8bf13a92c9e114ea5f3072b4d34738e"
+                            },
+                            "virt/libvirt/config.py": {
+                                "sha256": "e21767176025eca5432b5fdb7b3491fda0b3ff206df18d74455e50efceed835d"
+                            }
+                        },
+                        "outdated": false
+                    }
+                },
                 "xena": {
+                    "24.1.1.0.1.0": {
+                        "comment": "Ubuntu cloud archive Xena 24.1.1",
+                        "files": {
+                            "virt/libvirt/driver.py": {
+                                "sha256": "486f3a3846d95779aac6e37f7cad80623d62079c86dde1ef7faa863c117d7434"
+                            },
+                            "virt/libvirt/config.py": {
+                                "sha256": "67b90262b16c691acb61775216f2d2c42827341ac7d956eb2d5b2e0fe56c2fa3"
+                            }
+                        },
+                        "outdated": false
+                    },
+                    "24.1.1.0.0.0": {
+                        "comment": "upstream Xena 24.1.1",
+                        "files": {
+                            "virt/libvirt/driver.py": {
+                                "sha256": "9e649f76e6b5f32ba01475b3100e8658f347f9c7e88d0064fce3c57823e4f3b1"
+                            },
+                            "virt/libvirt/config.py": {
+                                "sha256": "67b90262b16c691acb61775216f2d2c42827341ac7d956eb2d5b2e0fe56c2fa3"
+                            }
+                        },
+                        "outdated": false
+                    },
+                    "24.1.0.0.0.0": {
+                        "comment": "upstream Xena 24.1.0",
+                        "files": {
+                            "virt/libvirt/driver.py": {
+                                "sha256": "8ba1f0d5c3a76a52ca65e471dff86ed917e5ed144db17ae0fa079e5e7ea281ec"
+                            },
+                            "virt/libvirt/config.py": {
+                                "sha256": "67b90262b16c691acb61775216f2d2c42827341ac7d956eb2d5b2e0fe56c2fa3"
+                            }
+                        },
+                        "outdated": false
+                    },
                     "24.0.0.1.0.0": {
                         "comment": "Ubuntu cloud archive Xena 24.0.0",
                         "files": {
@@ -285,6 +347,18 @@
                     }
                 },
                 "wallaby": {
+                    "23.2.1.0.1.0": {
+                        "comment": "Ubuntu cloud archive Wallaby 23.2.1",
+                        "files": {
+                            "virt/libvirt/driver.py": {
+                                "sha256": "8e9269d7f1fc73e6b332564f190cfa04498a297ee3057587d3c4769eb6c85b31"
+                            },
+                            "virt/libvirt/config.py": {
+                                "sha256": "64d41384ef2823478dab2f5322fca88d1f6bb55a9bb08bfe3066bddaebd767e6"
+                            }
+                        },
+                        "outdated": false
+                    },
                     "23.2.1.0.0.0": {
                         "comment": "upstream Wallaby 23.2.1",
                         "files": {
@@ -335,6 +409,18 @@
                     }
                 },
                 "victoria": {
+                    "22.4.0.0.1.0": {
+                        "comment": "Ubuntu cloud archive Victoria 22.4.0",
+                        "files": {
+                            "virt/libvirt/driver.py": {
+                                "sha256": "d7e5f563581da5da0700f8907f1301f5fbc3cb9a5d1ffed4f6760ec78f37f021"
+                            },
+                            "virt/libvirt/config.py": {
+                                "sha256": "2c35c25997d9508c8b60eb43597710f8e5c1761cdfc4dafccc83ca8314fb0cc0"
+                            }
+                        },
+                        "outdated": false
+                    },
                     "22.4.0.0.0.0": {
                         "comment": "upstream Victoria 22.4.0",
                         "files": {
