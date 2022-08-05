@@ -23,7 +23,7 @@ else:
     PathList = List[Union[str, os.PathLike]]
 
 
-SUPPORTED_RELEASES = ("victoria", "wallaby", "xena")
+SUPPORTED_RELEASES = ("victoria", "wallaby", "xena", "yoga")
 DEFAULT_RELEASES = SUPPORTED_RELEASES
 
 
