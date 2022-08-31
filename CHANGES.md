@@ -4,6 +4,33 @@ Change log for the StorPool OpenStack integration
 2.0.2
 -----
 
+- Cinder drivers:
+  - Victoria:
+    - add a fix for always detaching Glance image volumes after conversions
+    - implement the "revert a volume to a snapshot" Cinder feature
+  - Wallaby:
+    - add a fix for always detaching Glance image volumes after conversions
+    - implement the "revert a volume to a snapshot" Cinder feature
+  - Xena:
+    - implement the "revert a volume to a snapshot" Cinder feature
+  - Yoga:
+    - implement the "revert a volume to a snapshot" Cinder feature
+- build infrastructure:
+  - add setuptools infrastructure for use with setuptools version 61 or later
+  - add the py.typed marker file
+- testing infrastructure:
+  - drop the "flake8 + hacking" test environment
+  - add version constraints to the dependencies in all test environments
+  - add the "validate" test environment to make sure the components.json file
+    remains sane
+  - when validating the components.json file, make sure each outdated version
+    has exactly one non-outdated version in the same component and branch to
+    update to
+  - add Nox test definitions
+  - move the lists of test environment dependencies to separate files to
+    help Nox and Tox use the same ones
+- start a HACKING.md how-to document for developers
+
 2.0.1
 -----
 
