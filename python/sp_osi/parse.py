@@ -4,7 +4,7 @@ import json
 import pathlib
 import re
 
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Tuple
 
 from . import defs
 from . import util
@@ -90,6 +90,25 @@ def read_components(cfg: defs.Config) -> defs.ComponentsTop:
         raise OSIParseError(cpath, f"Could not parse the components data: {err}") from err
 
 
+def _split_by_existence(
+    comp_name: str, branch_name: str, files: Dict[pathlib.Path, defs.ComponentFile]
+) -> Tuple[
+    Dict[pathlib.Path, defs.ComponentFile],
+    Dict[pathlib.Path, Tuple[pathlib.Path, defs.ComponentFile]],
+]:
+    """Split the files in two groups depending on whether they exist or not."""
+    res_other: Dict[pathlib.Path, defs.ComponentFile] = {}
+    res_driver: Dict[pathlib.Path, Tuple[pathlib.Path, defs.ComponentFile]] = {}
+    for relpath, fdata in files.items():
+        path = util.get_driver_path(comp_name, branch_name, relpath.name)
+        if path is None:
+            res_other[relpath] = fdata
+        else:
+            res_driver[relpath] = path, fdata
+
+    return res_other, res_driver
+
+
 def validate(cfg: defs.Config) -> List[str]:
     """Validate the components data, return a list of errors."""
     res: List[str] = []
@@ -98,7 +117,7 @@ def validate(cfg: defs.Config) -> List[str]:
         comp_name: str, branch_name: str, branch: Dict[str, defs.ComponentVersion]
     ) -> None:
         """Validate versions within a single branch."""
-        uptodate_files: Dict[pathlib.Path, str] = {}
+        uptodate_files: Dict[pathlib.Path, Tuple[pathlib.Path, defs.ComponentFile]] = {}
 
         if not RE_BRANCH_NAME.match(branch_name):
             res.append(f"{comp_name}: Invalid branch name: {branch_name}")
@@ -107,30 +126,32 @@ def validate(cfg: defs.Config) -> List[str]:
             if not RE_VERSION_STRING.match(ver):
                 res.append(f"{comp_name}/{branch_name}: Invalid version string: " "{ver}")
 
-            if not version.outdated:
-                found = {
-                    path: fdata.sha256
-                    for path, fdata in (
-                        (
-                            util.get_driver_path(comp_name, branch_name, relpath.name),
-                            fdata,
-                        )
-                        for relpath, fdata in sorted(version.files.items())
+            other_cksums, driver_cksums = _split_by_existence(comp_name, branch_name, version.files)
+            if version.outdated:
+                update_to = [
+                    o_version
+                    for o_version in branch.values()
+                    if not o_version.outdated
+                    and _split_by_existence(comp_name, branch_name, o_version.files)[0]
+                    == other_cksums
+                ]
+                if len(update_to) != 1:
+                    res.append(
+                        f"{comp_name}/{branch_name}/{ver}: Got {len(update_to)} possible "
+                        f"versions to update to instead of exactly one"
                     )
-                    if path is not None
-                }
-                bad_cksum = {
-                    path: cksum
-                    for path, cksum in found.items()
-                    if util.file_sha256sum(path) != cksum
-                }
-                if bad_cksum:
-                    bad_files = " ".join(sorted(str(path) for path in bad_cksum.keys()))
+            else:
+                bad_files = sorted(
+                    relpath
+                    for relpath, (path, fdata) in driver_cksums.items()
+                    if util.file_sha256sum(path) != fdata.sha256
+                )
+                if bad_files:
                     res.append(f"{comp_name}/{branch_name}/{ver}: Bad checksum for {bad_files}")
 
                 if not uptodate_files:
-                    uptodate_files = found
-                elif uptodate_files != found:
+                    uptodate_files = driver_cksums
+                elif uptodate_files != driver_cksums:
                     res.append(
                         (
                             f"{comp_name}/{branch_name}: All the up-to-date versions should "
