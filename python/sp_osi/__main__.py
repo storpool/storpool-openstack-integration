@@ -8,7 +8,7 @@ import argparse
 import os
 import sys
 
-from typing import Callable, Dict, Tuple  # noqa: H301
+from typing import Callable, Dict, Tuple
 
 from sp_variant import variant as spvariant
 

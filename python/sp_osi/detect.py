@@ -4,7 +4,7 @@ import itertools
 import pathlib
 import subprocess
 
-from typing import Dict, List, NamedTuple  # noqa: H301
+from typing import Dict, List, NamedTuple
 
 from . import defs
 from . import util

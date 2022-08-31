@@ -4,7 +4,7 @@ import json
 import pathlib
 import re
 
-from typing import Any, Dict, List  # noqa: H301
+from typing import Any, Dict, List
 
 from . import defs
 from . import util

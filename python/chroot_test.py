@@ -9,7 +9,7 @@ import pathlib
 import subprocess
 import sys
 
-from typing import Dict, Iterator, List, Optional, Union, TYPE_CHECKING  # noqa: H301
+from typing import Dict, Iterator, List, Optional, Union, TYPE_CHECKING
 
 import cfg_diag
 import utf8_locale

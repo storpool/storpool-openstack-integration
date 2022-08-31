@@ -3,7 +3,7 @@
 import pathlib
 import sys
 
-from typing import Dict, List, NamedTuple  # noqa: H301
+from typing import Dict, List, NamedTuple
 
 from sp_variant import variant as spvariant
 
