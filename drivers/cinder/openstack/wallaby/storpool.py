@@ -118,9 +118,12 @@ class StorPoolDriver(driver.VolumeDriver):
         1.2.3   - Advertise some more driver capabilities.
         2.0.0   - Drop _attach_volume() and _detach_volume(), our os-brick
                   connector will handle this.
+                - Detach temporary snapshots and volumes after copying data
+                  to or from from Glance images.
                 - Drop backup_volume()
                 - Avoid data duplication in create_cloned_volume()
                 - Implement clone_image()
+                - Implement revert_to_snapshot().
     """
 
     VERSION = '2.0.0'
@@ -437,20 +440,28 @@ class StorPoolDriver(driver.VolumeDriver):
         name = self._attach.volsnapName(volume['id'], req_id)
         try:
             self._attach.api().snapshotCreate(volname, {'name': name})
+            self._attach.add(req_id, {
+                'volume': name,
+                'type': 'copy-from',
+                'id': req_id,
+                'rights': 1,
+                'volsnap': True
+            })
+            self._attach.sync(req_id, None)
         except spapi.ApiError as e:
             raise self._backendException(e)
-        self._attach.add(req_id, {
-            'volume': name,
-            'type': 'copy-from',
-            'id': req_id,
-            'rights': 1,
-            'volsnap': True
-        })
         try:
             return super(StorPoolDriver, self).copy_volume_to_image(
                 context, volume, image_service, image_meta)
         finally:
             self._attach.remove(req_id)
+            try:
+                self._attach.sync(req_id, name)
+            except spapi.ApiError as e:
+                LOG.error(
+                    'Could not detach the temp snapshot %(name)s for '
+                    '%(vol)s: %(err)s',
+                    {'name': name, 'vol': volname, 'err': e})
             try:
                 self._attach.api().snapshotDelete(name)
             except spapi.ApiError as e:
@@ -469,10 +480,20 @@ class StorPoolDriver(driver.VolumeDriver):
             'rights': 2
         })
         try:
+            self._attach.sync(req_id, None)
+        except spapi.ApiError as e:
+            raise self._backendException(e)
+        try:
             return super(StorPoolDriver, self).copy_image_to_volume(
                 context, volume, image_service, image_id)
         finally:
             self._attach.remove(req_id)
+            try:
+                self._attach.sync(req_id, name)
+            except spapi.ApiError as e:
+                LOG.error(
+                    'Could not detach the %(name)s volume: %(err)s',
+                    {'name': name, 'err': e})
 
     def extend_volume(self, volume, new_size):
         size = int(new_size) * units.Gi
@@ -558,3 +579,18 @@ class StorPoolDriver(driver.VolumeDriver):
                           '%(err)s',
                           {'tname': temp_name, 'oname': orig_name, 'err': e})
                 return {'_name_id': new_volume['_name_id'] or new_volume['id']}
+
+    def revert_to_snapshot(self, context, volume, snapshot):
+        volname = self._attach.volumeName(volume['id'])
+        snapname = self._attach.snapshotName('snap', snapshot['id'])
+        try:
+            rev = sptypes.VolumeRevertDesc(toSnapshot=snapname)
+            self._attach.api().volumeRevert(volname, rev)
+        except spapi.ApiError as e:
+            LOG.error('StorPool revert_to_snapshot(): could not revert '
+                      'the %(vol_id)s volume to the %(snap_id)s snapshot: '
+                      '%(err)s',
+                      {'vol_id': volume['id'],
+                       'snap_id': snapshot['id'],
+                       'err': e})
+            raise self._backendException(e)

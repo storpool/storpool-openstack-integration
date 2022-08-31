@@ -161,6 +161,18 @@
                     }
                 },
                 "wallaby": {
+                    "18.2.1.5.0.0": {
+                        "comment": "StorPool fixes for Wallaby (detach, revert to snapshot)",
+                        "files": {
+                            "volume/driver.py": {
+                                "sha256": "53d70a542625a4d663496fa64e7dffdc761d0970ab7a50ec88ceea635607099f"
+                            },
+                            "volume/drivers/storpool.py": {
+                                "sha256": "4cc30a07c5945c72095463dd53349324e86d79198e64cc187b97168d9e6d68f4"
+                            }
+                        },
+                        "outdated": false
+                    },
                     "18.2.1.4.0.0": {
                         "comment": "StorPool fixes for Wallaby (create_cloned_volume(), clone_image())",
                         "files": {
@@ -171,7 +183,7 @@
                                 "sha256": "75fcbe6f23e1dfa89b136127cea703d2d64eb28cf584f814fea72222bad69caf"
                             }
                         },
-                        "outdated": false
+                        "outdated": true
                     },
                     "18.2.1.0.0.0": {
                         "comment": "upstream Wallaby 18.1.0",
@@ -185,6 +197,18 @@
                         },
                         "outdated": true
                     },
+                    "18.1.0.5.0.0": {
+                        "comment": "StorPool fixes for Wallaby (detach, revert to snapshot)",
+                        "files": {
+                            "volume/driver.py": {
+                                "sha256": "d6a0a48a9e92d3805839e3ae7035d4edb5127aed203c1fdd4afae4675d2f5d43"
+                            },
+                            "volume/drivers/storpool.py": {
+                                "sha256": "4cc30a07c5945c72095463dd53349324e86d79198e64cc187b97168d9e6d68f4"
+                            }
+                        },
+                        "outdated": false
+                    },
                     "18.1.0.4.0.0": {
                         "comment": "StorPool fixes for Wallaby (create_cloned_volume(), clone_image())",
                         "files": {
@@ -195,7 +219,7 @@
                                 "sha256": "75fcbe6f23e1dfa89b136127cea703d2d64eb28cf584f814fea72222bad69caf"
                             }
                         },
-                        "outdated": false
+                        "outdated": true
                     },
                     "18.1.0.0.0.0": {
                         "comment": "upstream Wallaby 18.1.0",
