@@ -3,7 +3,7 @@
 import pathlib
 import sys
 
-from typing import Dict, List, NamedTuple
+from typing import Callable, Dict, List, NamedTuple
 
 from sp_variant import variant as spvariant
 
@@ -48,7 +48,7 @@ class Config(NamedTuple):
     variant: spvariant.Variant
     verbose: bool
 
-    def diag(self, msg: str) -> None:
+    def diag(self, func: Callable[[], str]) -> None:
         """Output a diagnostic message if requested."""
         if self.verbose:
-            print(msg, file=sys.stderr)
+            print(func(), file=sys.stderr)

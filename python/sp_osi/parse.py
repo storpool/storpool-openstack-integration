@@ -61,7 +61,7 @@ def read_components(cfg: defs.Config) -> defs.ComponentsTop:
         )
 
     cpath = pathlib.Path("defs/components.json")
-    cfg.diag(f"Trying to parse {cpath}")
+    cfg.diag(lambda: f"Trying to parse {cpath}")
     try:
         cdata = json.loads(cpath.read_text(encoding="UTF-8"))
     except OSError as err:
@@ -80,7 +80,7 @@ def read_components(cfg: defs.Config) -> defs.ComponentsTop:
             cdata["format"]["version"]["major"],
             cdata["format"]["version"]["minor"],
         )
-        cfg.diag(f"Got config format {vmajor}.{vminor}")
+        cfg.diag(lambda: f"Got config format {vmajor}.{vminor}")
         if vmajor != 0:
             raise OSIParseError(cpath, f"Unsupported format version {vmajor}")
         return defs.ComponentsTop(
