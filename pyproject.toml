@@ -1,2 +1,52 @@
+[build-system]
+requires = ["setuptools >= 61", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "sp-osi"
+description = "Update the StorPool drivers in an existing OpenStack installation"
+readme = "README.md"
+requires-python = ">= 3.6"
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Developers",
+    "License :: DFSG approved",
+    "License :: Freely Distributable",
+    "License :: OSI Approved :: BSD License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.6",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Topic :: Software Development :: Libraries",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
+urls = {"Source" = "https://github.com/storpool/storpool-openstack-integration"}
+dynamic = ["dependencies", "version"]
+
+[[project.authors]]
+name = "StorPool"
+email = "support@storpool.com"
+
+[project.scripts]
+sp-openstack = "sp_osi.__main__:main"
+
+[tool.setuptools]
+zip-safe = true
+package-dir = {"" = "python"}
+packages = ["sp_osi"]
+
+[tool.setuptools.package-data]
+sp_osi = ["py.typed"]
+
+[tool.setuptools.dynamic]
+dependencies = {file = "python/requirements.txt"}
+version = {attr = "sp_osi.VERSION"}
+
 [tool.black]
 line-length = 100

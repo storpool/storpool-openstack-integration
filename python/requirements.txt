@@ -1,0 +1,3 @@
+cfg_diag >= 0.2, < 0.3
+sp_variant >= 2, < 3
+utf8_locale >= 0.3, < 0.4
