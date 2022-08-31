@@ -389,7 +389,7 @@ def main() -> None:
     cfg = parse_args()
 
     with run_chroot(cfg) as chroot:
-        cfg.diag(f"Got chroot mount point {chroot.mountpoint}")
+        cfg.diag(lambda: f"Got chroot mount point {chroot.mountpoint}")
 
         print("Checking whether we can run commands in the chroot session")
         chroot.run(["id"])
