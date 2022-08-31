@@ -149,6 +149,7 @@ class StorPoolDriver(driver.VolumeDriver):
                 - Drop backup_volume()
                 - Avoid data duplication in create_cloned_volume()
                 - Implement clone_image()
+                - Implement revert_to_snapshot().
                 - Add support for exporting volumes via iSCSI
     """
 
@@ -933,3 +934,18 @@ class StorPoolDriver(driver.VolumeDriver):
                           '%(err)s',
                           {'tname': temp_name, 'oname': orig_name, 'err': e})
                 return {'_name_id': new_volume['_name_id'] or new_volume['id']}
+
+    def revert_to_snapshot(self, context, volume, snapshot):
+        volname = self._attach.volumeName(volume['id'])
+        snapname = self._attach.snapshotName('snap', snapshot['id'])
+        try:
+            rev = sptypes.VolumeRevertDesc(toSnapshot=snapname)
+            self._attach.api().volumeRevert(volname, rev)
+        except spapi.ApiError as e:
+            LOG.error('StorPool revert_to_snapshot(): could not revert '
+                      'the %(vol_id)s volume to the %(snap_id)s snapshot: '
+                      '%(err)s',
+                      {'vol_id': volume['id'],
+                       'snap_id': snapshot['id'],
+                       'err': e})
+            raise self._backendException(e)
