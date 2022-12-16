@@ -123,6 +123,18 @@
                     }
                 },
                 "xena": {
+                    "19.0.0.7.0.0": {
+                        "comment": "StorPool fixes for Xena (retype, image-to-volume)",
+                        "files": {
+                            "volume/driver.py": {
+                                "sha256": "394d4b2dccf2d6b51e1cc3aedc775ecbd38c80103c90b7c32e68e878903d1c02"
+                            },
+                            "volume/drivers/storpool.py": {
+                                "sha256": "f96418081b75475364bf8e8cd1815942aa2a1e0f090463d622bf31a7898936b7"
+                            }
+                        },
+                        "outdated": false
+                    },
                     "19.0.0.6.0.0": {
                         "comment": "StorPool fixes for Xena (revert to snapshot)",
                         "files": {
@@ -133,7 +145,7 @@
                                 "sha256": "ec585ee7c2fd95c27889020546ac2158284e0ed9330fed367058098f55d49219"
                             }
                         },
-                        "outdated": false
+                        "outdated": true
                     },
                     "19.0.0.5.0.0": {
                         "comment": "StorPool fixes for Xena (iSCSI transport, detach snapshots)",
