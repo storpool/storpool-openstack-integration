@@ -13,6 +13,18 @@
             ],
             "branches": {
                 "yoga": {
+                    "20.0.1.7.0.0": {
+                        "comment": "StorPool fixes for Yoga (retype, image-to-volume)",
+                        "files": {
+                            "volume/driver.py": {
+                                "sha256": "fd83b933a061e6dee7edccf4f60d4f165f86dfa2361ceae1acf83f9758b466d0"
+                            },
+                            "volume/drivers/storpool.py": {
+                                "sha256": "f96418081b75475364bf8e8cd1815942aa2a1e0f090463d622bf31a7898936b7"
+                            }
+                        },
+                        "outdated": false
+                    },
                     "20.0.1.6.0.0": {
                         "comment": "StorPool fixes for Yoga (revert to snapshot)",
                         "files": {
@@ -23,7 +35,7 @@
                                 "sha256": "ec585ee7c2fd95c27889020546ac2158284e0ed9330fed367058098f55d49219"
                             }
                         },
-                        "outdated": false
+                        "outdated": true
                     },
                     "20.0.1.5.0.0": {
                         "comment": "StorPool fixes for Yoga (iSCSI, attach/detach, etc)",
@@ -49,6 +61,18 @@
                         },
                         "outdated": true
                     },
+                    "20.0.0.7.0.0": {
+                        "comment": "StorPool fixes for Yoga (retype, image-to-volume)",
+                        "files": {
+                            "volume/driver.py": {
+                                "sha256": "1c356c3251640566aeddbe04c4bca63e5de267b565a680d8935bb93d2d572127"
+                            },
+                            "volume/drivers/storpool.py": {
+                                "sha256": "f96418081b75475364bf8e8cd1815942aa2a1e0f090463d622bf31a7898936b7"
+                            }
+                        },
+                        "outdated": false
+                    },
                     "20.0.0.6.0.0": {
                         "comment": "StorPool fixes for Yoga (iSCSI, attach/detach, etc)",
                         "files": {
@@ -59,7 +83,7 @@
                                 "sha256": "ec585ee7c2fd95c27889020546ac2158284e0ed9330fed367058098f55d49219"
                             }
                         },
-                        "outdated": false
+                        "outdated": true
                     },
                     "20.0.0.5.0.0": {
                         "comment": "StorPool fixes for Yoga (iSCSI, attach/detach, etc)",
