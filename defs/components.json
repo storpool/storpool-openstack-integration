@@ -123,6 +123,30 @@
                     }
                 },
                 "xena": {
+                    "19.1.1.7.0.0": {
+                        "comment": "StorPool fixes for Xena (retype, image-to-volume)",
+                        "files": {
+                            "volume/driver.py": {
+                                "sha256": "15f23ff9f76cbe311de21e33f806c7853796170267c055616af9ac7381ff4ed6"
+                            },
+                            "volume/drivers/storpool.py": {
+                                "sha256": "f96418081b75475364bf8e8cd1815942aa2a1e0f090463d622bf31a7898936b7"
+                            }
+                        },
+                        "outdated": false
+                    },
+                    "19.1.1.0.0.0": {
+                        "comment": "upstream Xena 19.1.1",
+                        "files": {
+                            "volume/driver.py": {
+                                "sha256": "15f23ff9f76cbe311de21e33f806c7853796170267c055616af9ac7381ff4ed6"
+                            },
+                            "volume/drivers/storpool.py": {
+                                "sha256": "1692231956ff69bf68d2c669834b94bbe1e8682e68c19c5fcd62b020195c8a9d"
+                            }
+                        },
+                        "outdated": true
+                    },
                     "19.0.0.7.0.0": {
                         "comment": "StorPool fixes for Xena (retype, image-to-volume)",
                         "files": {
