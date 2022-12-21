@@ -233,6 +233,18 @@
                     }
                 },
                 "wallaby": {
+                    "18.2.1.7.0.0": {
+                        "comment": "StorPool fixes for Wallaby (iSCSI attach)",
+                        "files": {
+                            "volume/driver.py": {
+                                "sha256": "53d70a542625a4d663496fa64e7dffdc761d0970ab7a50ec88ceea635607099f"
+                            },
+                            "volume/drivers/storpool.py": {
+                                "sha256": "f96418081b75475364bf8e8cd1815942aa2a1e0f090463d622bf31a7898936b7"
+                            }
+                        },
+                        "outdated": false
+                    },
                     "18.2.1.6.0.0": {
                         "comment": "StorPool fixes for Wallaby (retype, image-to-volume)",
                         "files": {
@@ -243,7 +255,7 @@
                                 "sha256": "8f215427954d62158c97f2702fa6682f67c298877d16191a40e77fc7131578ff"
                             }
                         },
-                        "outdated": false
+                        "outdated": true
                     },
                     "18.2.1.5.0.0": {
                         "comment": "StorPool fixes for Wallaby (detach, revert to snapshot)",
@@ -281,6 +293,18 @@
                         },
                         "outdated": true
                     },
+                    "18.1.0.7.0.0": {
+                        "comment": "StorPool fixes for Wallaby (iSCSI attach)",
+                        "files": {
+                            "volume/driver.py": {
+                                "sha256": "d6a0a48a9e92d3805839e3ae7035d4edb5127aed203c1fdd4afae4675d2f5d43"
+                            },
+                            "volume/drivers/storpool.py": {
+                                "sha256": "f96418081b75475364bf8e8cd1815942aa2a1e0f090463d622bf31a7898936b7"
+                            }
+                        },
+                        "outdated": false
+                    },
                     "18.1.0.6.0.0": {
                         "comment": "StorPool fixes for Wallaby (retype, image-to-volume)",
                         "files": {
@@ -291,7 +315,7 @@
                                 "sha256": "8f215427954d62158c97f2702fa6682f67c298877d16191a40e77fc7131578ff"
                             }
                         },
-                        "outdated": false
+                        "outdated": true
                     },
                     "18.1.0.5.0.0": {
                         "comment": "StorPool fixes for Wallaby (detach, revert to snapshot)",

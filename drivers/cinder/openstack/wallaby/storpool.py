@@ -15,6 +15,7 @@
 
 """StorPool block device driver"""
 
+import fnmatch
 import platform
 
 from oslo_config import cfg
@@ -45,6 +46,31 @@ if storpool:
 
 
 storpool_opts = [
+    cfg.BoolOpt('iscsi_cinder_volume',
+                default=False,
+                help='Let the cinder-volume service use iSCSI instead of '
+                     'the StorPool block device driver for accessing '
+                     'StorPool volumes, e.g. when creating a volume from '
+                     'an image or vice versa.'),
+    cfg.StrOpt('iscsi_export_to',
+               default='',
+               help='Whether to export volumes using iSCSI. '
+                    'An empty string (the default) makes the driver export '
+                    'all volumes using the StorPool native network protocol. '
+                    'The value "*" makes the driver export all volumes using '
+                    'iSCSI. '
+                    'Any other value leads to an experimental not fully '
+                    'supported configuration and is interpreted as '
+                    'a whitespace-separated list of patterns for IQNs for '
+                    'hosts that need volumes to be exported via iSCSI, e.g. '
+                    '"iqn.1991-05.com.microsoft:\\*" for Windows hosts.'),
+    cfg.BoolOpt('iscsi_learn_initiator_iqns',
+                default=True,
+                help='Create a StorPool record for a new initiator as soon as '
+                     'Cinder asks for a volume to be exported to it.'),
+    cfg.StrOpt('iscsi_portal_group',
+               default=None,
+               help='The portal group to export volumes via iSCSI in.'),
     cfg.StrOpt('storpool_template',
                default=None,
                help='The StorPool template for volumes with no type.'),
@@ -124,6 +150,7 @@ class StorPoolDriver(driver.VolumeDriver):
                 - Avoid data duplication in create_cloned_volume()
                 - Implement clone_image()
                 - Implement revert_to_snapshot().
+                - Add support for exporting volumes via iSCSI
     """
 
     VERSION = '2.0.0'
@@ -136,6 +163,7 @@ class StorPoolDriver(driver.VolumeDriver):
         self._ourId = None
         self._ourIdInt = None
         self._attach = None
+        self._use_iscsi = None
 
     @staticmethod
     def get_driver_options():
@@ -193,10 +221,312 @@ class StorPoolDriver(driver.VolumeDriver):
             raise StorPoolConfigurationInvalid(
                 section=hostname, param='SP_OURID', error=e)
 
+    def _connector_wants_iscsi(self, connector):
+        """Should we do this export via iSCSI?
+
+        Check the configuration to determine whether this connector is
+        expected to provide iSCSI exports as opposed to native StorPool
+        protocol ones.  Match the initiator's IQN against the list of
+        patterns supplied in the "iscsi_export_to" configuration setting.
+        """
+        if connector is None:
+            return False
+        if self._use_iscsi:
+            LOG.debug('  - forcing iSCSI for all exported volumes')
+            return True
+        if connector.get('storpool_wants_iscsi'):
+            LOG.debug('  - forcing iSCSI for the controller')
+            return True
+
+        try:
+            iqn = connector.get('initiator')
+        except Exception:
+            iqn = None
+        try:
+            host = connector.get('host')
+        except Exception:
+            host = None
+        if iqn is None or host is None:
+            LOG.debug('  - this connector certainly does not want iSCSI')
+            return False
+
+        LOG.debug('  - check whether %(host)s (%(iqn)s) wants iSCSI',
+                  {
+                      'host': host,
+                      'iqn': iqn,
+                  })
+
+        export_to = self.configuration.iscsi_export_to
+        if export_to is None:
+            return False
+
+        for pat in export_to.split():
+            LOG.debug('    - matching against %(pat)s', {'pat': pat})
+            if fnmatch.fnmatch(iqn, pat):
+                LOG.debug('      - got it!')
+                return True
+        LOG.debug('    - nope')
+        return False
+
     def validate_connector(self, connector):
+        if self._connector_wants_iscsi(connector):
+            return True
         return self._storpool_client_id(connector) >= 0
 
+    def _get_iscsi_config(self, iqn, volume_id):
+        """Get the StorPool iSCSI config items pertaining to this volume.
+
+        Find the elements of the StorPool iSCSI configuration tree that
+        will be needed to create, ensure, or remove the iSCSI export of
+        the specified volume to the specified initiator.
+        """
+        cfg = self._attach.api().iSCSIConfig()
+
+        pg_name = self.configuration.iscsi_portal_group
+        pg_found = [
+            pg for pg in cfg.iscsi.portalGroups.values() if pg.name == pg_name
+        ]
+        if not pg_found:
+            raise Exception('StorPool Cinder iSCSI configuration error: '
+                            'no portal group "{pg}"'.format(pg=pg_name))
+        pg = pg_found[0]
+
+        # Do we know about this initiator?
+        i_found = [
+            init for init in cfg.iscsi.initiators.values() if init.name == iqn
+        ]
+        if i_found:
+            initiator = i_found[0]
+        else:
+            initiator = None
+
+        # Is this volume already being exported?
+        volname = self._attach.volumeName(volume_id)
+        t_found = [
+            tgt for tgt in cfg.iscsi.targets.values() if tgt.volume == volname
+        ]
+        if t_found:
+            target = t_found[0]
+        else:
+            target = None
+
+        # OK, so is this volume being exported to this initiator?
+        export = None
+        if initiator is not None and target is not None:
+            e_found = [
+                exp for exp in initiator.exports
+                if exp.portalGroup == pg.name and exp.target == target.name
+            ]
+            if e_found:
+                export = e_found[0]
+
+        return {
+            'cfg': cfg,
+            'pg': pg,
+            'initiator': initiator,
+            'target': target,
+            'export': export,
+            'volume_name': volname,
+            'volume_id': volume_id,
+        }
+
+    def _create_iscsi_export(self, volume, connector):
+        """Create (if needed) an iSCSI export for the StorPool volume."""
+        LOG.debug(
+            '_create_iscsi_export() invoked for volume '
+            '"%(vol_name)s" (%(vol_id)s) connector %(connector)s',
+            {
+                'vol_name': volume['display_name'],
+                'vol_id': volume['id'],
+                'connector': connector,
+            }
+        )
+        iqn = connector['initiator']
+        try:
+            cfg = self._get_iscsi_config(iqn, volume['id'])
+        except Exception as exc:
+            LOG.error(
+                'Could not fetch the iSCSI config: %(exc)s', {'exc': exc}
+            )
+            raise
+
+        if cfg['initiator'] is None:
+            if not (self.configuration.iscsi_learn_initiator_iqns or
+                    self.configuration.iscsi_cinder_volume and
+                    connector.get('storpool_wants_iscsi')):
+                raise Exception('The "{iqn}" initiator IQN for the "{host}" '
+                                'host is not defined in the StorPool '
+                                'configuration.'
+                                .format(iqn=iqn, host=connector['host']))
+            else:
+                LOG.info('Creating a StorPool iSCSI initiator '
+                         'for "{host}s" ({iqn}s)',
+                         {'host': connector['host'], 'iqn': iqn})
+                self._attach.api().iSCSIConfigChange({
+                    'commands': [
+                        {
+                            'createInitiator': {
+                                'name': iqn,
+                                'username': '',
+                                'secret': '',
+                            },
+                        },
+                        {
+                            'initiatorAddNetwork': {
+                                'initiator': iqn,
+                                'net': '0.0.0.0/0',
+                            },
+                        },
+                    ]
+                })
+
+        if cfg['target'] is None:
+            LOG.info(
+                'Creating a StorPool iSCSI target '
+                'for the "%(vol_name)s" volume (%(vol_id)s)',
+                {
+                    'vol_name': volume['display_name'],
+                    'vol_id': volume['id'],
+                }
+            )
+            self._attach.api().iSCSIConfigChange({
+                'commands': [
+                    {
+                        'createTarget': {
+                            'volumeName': cfg['volume_name'],
+                        },
+                    },
+                ]
+            })
+            cfg = self._get_iscsi_config(iqn, volume['id'])
+
+        if cfg['export'] is None:
+            LOG.info('Creating a StorPool iSCSI export '
+                     'for the "{vol_name}s" volume ({vol_id}s) '
+                     'to the "{host}s" initiator ({iqn}s) '
+                     'in the "{pg}s" portal group',
+                     {
+                         'vol_name': volume['display_name'],
+                         'vol_id': volume['id'],
+                         'host': connector['host'],
+                         'iqn': iqn,
+                         'pg': cfg['pg'].name
+                     })
+            self._attach.api().iSCSIConfigChange({
+                'commands': [
+                    {
+                        'export': {
+                            'initiator': iqn,
+                            'portalGroup': cfg['pg'].name,
+                            'volumeName': cfg['volume_name'],
+                        },
+                    },
+                ]
+            })
+
+        res = {
+            'driver_volume_type': 'iscsi',
+            'data': {
+                'target_discovered': False,
+                'target_iqn': cfg['target'].name,
+                'target_portal': '{}:3260'.format(
+                    cfg['pg'].networks[0].address
+                ),
+                'target_lun': 0,
+                'volume_id': volume['id'],
+                'discard': True,
+            },
+        }
+        LOG.debug('returning %(res)s', {'res': res})
+        return res
+
+    def _remove_iscsi_export(self, volume, connector):
+        """Remove an iSCSI export for the specified StorPool volume."""
+        LOG.debug(
+            '_remove_iscsi_export() invoked for volume '
+            '"%(vol_name)s" (%(vol_id)s) connector %(conn)s',
+            {
+                'vol_name': volume['display_name'],
+                'vol_id': volume['id'],
+                'conn': connector,
+            }
+        )
+        try:
+            cfg = self._get_iscsi_config(connector['initiator'], volume['id'])
+        except Exception as exc:
+            LOG.error(
+                'Could not fetch the iSCSI config: %(exc)s', {'exc': exc}
+            )
+            raise
+
+        if cfg['export'] is not None:
+            LOG.info('Removing the StorPool iSCSI export '
+                     'for the "%(vol_name)s" volume (%(vol_id)s) '
+                     'to the "%(host)s" initiator (%(iqn)s) '
+                     'in the "%(pg)s" portal group',
+                     {
+                         'vol_name': volume['display_name'],
+                         'vol_id': volume['id'],
+                         'host': connector['host'],
+                         'iqn': connector['initiator'],
+                         'pg': cfg['pg'].name,
+                     })
+            try:
+                self._attach.api().iSCSIConfigChange({
+                    'commands': [
+                        {
+                            'exportDelete': {
+                                'initiator': cfg['initiator'].name,
+                                'portalGroup': cfg['pg'].name,
+                                'volumeName': cfg['volume_name'],
+                            },
+                        },
+                    ]
+                })
+            except spapi.ApiError as e:
+                if e.name not in ('objectExists', 'objectDoesNotExist'):
+                    raise
+                LOG.info('Looks like somebody beat us to it')
+
+        if cfg['target'] is not None:
+            last = True
+            for initiator in cfg['cfg'].iscsi.initiators.values():
+                if initiator.name == cfg['initiator'].name:
+                    continue
+                for exp in initiator.exports:
+                    if exp.target == cfg['target'].name:
+                        last = False
+                        break
+                if not last:
+                    break
+
+            if last:
+                LOG.info(
+                    'Removing the StorPool iSCSI target '
+                    'for the "{vol_name}s" volume ({vol_id}s)',
+                    {
+                        'vol_name': volume['display_name'],
+                        'vol_id': volume['id'],
+                    }
+                )
+                try:
+                    self._attach.api().iSCSIConfigChange({
+                        'commands': [
+                            {
+                                'deleteTarget': {
+                                    'volumeName': cfg['volume_name'],
+                                },
+                            },
+                        ]
+                    })
+                except spapi.ApiError as e:
+                    if e.name not in ('objectDoesNotExist', 'invalidParam'):
+                        raise
+                    LOG.info('Looks like somebody beat us to it')
+
     def initialize_connection(self, volume, connector):
+        if self._connector_wants_iscsi(connector):
+            return self._create_iscsi_export(volume, connector)
         return {'driver_volume_type': 'storpool',
                 'data': {
                     'client_id': self._storpool_client_id(connector),
@@ -205,6 +535,9 @@ class StorPoolDriver(driver.VolumeDriver):
                 }}
 
     def terminate_connection(self, volume, connector, **kwargs):
+        if self._connector_wants_iscsi(connector):
+            LOG.debug('- removing an iSCSI export')
+            self._remove_iscsi_export(volume, connector)
         pass
 
     def create_snapshot(self, snapshot):
@@ -343,10 +676,19 @@ class StorPoolDriver(driver.VolumeDriver):
                     )
 
     def create_export(self, context, volume, connector):
-        pass
+        if self._connector_wants_iscsi(connector):
+            LOG.debug('- creating an iSCSI export')
+            self._create_iscsi_export(volume, connector)
 
     def remove_export(self, context, volume):
         pass
+
+    def _attach_volume(self, context, volume, properties, remote=False):
+        if self.configuration.iscsi_cinder_volume and not remote:
+            LOG.debug('- adding the "storpool_wants_iscsi" flag')
+            properties['storpool_wants_iscsi'] = True
+
+        return super()._attach_volume(context, volume, properties, remote)
 
     def delete_volume(self, volume):
         name = self._attach.volumeName(volume['id'])
@@ -384,6 +726,17 @@ class StorPoolDriver(driver.VolumeDriver):
             LOG.error("StorPoolDriver API initialization failed: %s", e)
             raise
 
+        export_to = self.configuration.iscsi_export_to
+        export_to_set = export_to is not None and export_to.split()
+        vol_iscsi = self.configuration.iscsi_cinder_volume
+        pg_name = self.configuration.iscsi_portal_group
+        if (export_to_set or vol_iscsi) and pg_name is None:
+            msg = _('The "iscsi_portal_group" option is required if '
+                    'any patterns are listed in "iscsi_export_to"')
+            raise exception.VolumeDriverException(message=msg)
+
+        self._use_iscsi = export_to == "*"
+
     def _update_volume_stats(self):
         try:
             dl = self._attach.api().disksList()
@@ -409,7 +762,7 @@ class StorPoolDriver(driver.VolumeDriver):
             'total_capacity_gb': total / units.Gi,
             'free_capacity_gb': free / units.Gi,
             'reserved_percentage': 0,
-            'multiattach': True,
+            'multiattach': not self._use_iscsi,
             'QoS_support': False,
             'thick_provisioning_support': False,
             'thin_provisioning_support': True,
@@ -427,7 +780,9 @@ class StorPoolDriver(driver.VolumeDriver):
                 'volume_backend_name') or 'storpool',
             'vendor_name': 'StorPool',
             'driver_version': self.VERSION,
-            'storage_protocol': 'storpool',
+            'storage_protocol': (
+                'iSCSI' if self._use_iscsi else 'storpool'
+            ),
 
             'sparse_copy_volume': True,
 
