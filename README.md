@@ -59,6 +59,7 @@ section must be created in the `/etc/cinder/cinder.conf` file:
     [storpool]
     volume_driver=cinder.volume.drivers.storpool.StorPoolDriver
     storpool_template=hybrid-r3
+    report_discard_supported=True
 
 If StorPool should be the only storage backend, all the
 `enabled_backends` and `volume_backend` lines should be removed from
