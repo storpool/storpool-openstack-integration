@@ -5,85 +5,85 @@ Change log for the StorPool OpenStack integration
 -----
 
 - Cinder drivers:
-  - Victoria:
-    - add a fix for always detaching Glance image volumes after conversions
-    - implement the "revert a volume to a snapshot" Cinder feature
-  - Wallaby:
-    - add a fix for always detaching Glance image volumes after conversions
-    - implement the "revert a volume to a snapshot" Cinder feature
-    - drop the `copy_image_to_volume()` and `copy_volume_to_image()` methods
-    - fix retyping a volume to another StorPool template
-    - add iSCSI attach support
-    - add multipath support when attaching a volume via iSCSI
-  - Xena:
-    - implement the "revert a volume to a snapshot" Cinder feature
-    - drop the `copy_image_to_volume()` and `copy_volume_to_image()` methods
-    - fix retyping a volume to another StorPool template
-    - add multipath support when attaching a volume via iSCSI
-    - recognize the 19.1.1 upstream and Ubuntu cloud archive version
-  - Yoga:
-    - implement the "revert a volume to a snapshot" Cinder feature
-    - drop the `copy_image_to_volume()` and `copy_volume_to_image()` methods
-    - fix retyping a volume to another StorPool template
-    - add multipath support when attaching a volume via iSCSI
+    - Victoria:
+        - add a fix for always detaching Glance image volumes after conversions
+        - implement the "revert a volume to a snapshot" Cinder feature
+    - Wallaby:
+        - add a fix for always detaching Glance image volumes after conversions
+        - implement the "revert a volume to a snapshot" Cinder feature
+        - drop the `copy_image_to_volume()` and `copy_volume_to_image()` methods
+        - fix retyping a volume to another StorPool template
+        - add iSCSI attach support
+        - add multipath support when attaching a volume via iSCSI
+    - Xena:
+        - implement the "revert a volume to a snapshot" Cinder feature
+        - drop the `copy_image_to_volume()` and `copy_volume_to_image()` methods
+        - fix retyping a volume to another StorPool template
+        - add multipath support when attaching a volume via iSCSI
+        - recognize the 19.1.1 upstream and Ubuntu cloud archive version
+    - Yoga:
+        - implement the "revert a volume to a snapshot" Cinder feature
+        - drop the `copy_image_to_volume()` and `copy_volume_to_image()` methods
+        - fix retyping a volume to another StorPool template
+        - add multipath support when attaching a volume via iSCSI
 - Nova drivers:
-  - Wallaby:
-    - recognize the 23.2.2 upstream and Ubuntu cloud archive version
-  - Xena:
-    - recognize the 24.2.0 upstream and Ubuntu cloud archive version
-  - Yoga:
-    - recognize the 25.1.0 upstream and Ubuntu cloud archive version
+    - Wallaby:
+        - recognize the 23.2.2 upstream and Ubuntu cloud archive version
+    - Xena:
+        - recognize the 24.2.0 upstream and Ubuntu cloud archive version
+    - Yoga:
+        - recognize the 25.1.0 upstream and Ubuntu cloud archive version
 - documentation:
-  - add the "our Cinder driver supports trim/discard operations" flag to
-    the Cinder backend configuration example
+    - add the "our Cinder driver supports trim/discard operations" flag to
+      the Cinder backend configuration example
 - build infrastructure:
-  - add setuptools infrastructure for use with setuptools version 61 or later
-  - add the py.typed marker file
+    - add setuptools infrastructure for use with setuptools version 61 or later
+    - add the py.typed marker file
 - testing infrastructure:
-  - drop the "flake8 + hacking" test environment
-  - add version constraints to the dependencies in all test environments
-  - add the "validate" test environment to make sure the components.json file
-    remains sane
-  - when validating the components.json file, make sure each outdated version
-    has exactly one non-outdated version in the same component and branch to
-    update to
-  - add Nox test definitions
-  - move the lists of test environment dependencies to separate files to
-    help Nox and Tox use the same ones
-  - do not build diagnostic messages unless we need to (use lambdas in diag calls)
+    - drop the "flake8 + hacking" test environment
+    - add version constraints to the dependencies in all test environments
+    - add the "validate" test environment to make sure the components.json file
+      remains sane
+    - when validating the components.json file, make sure each outdated version
+      has exactly one non-outdated version in the same component and branch to
+      update to
+    - add Nox test definitions
+    - move the lists of test environment dependencies to separate files to
+      help Nox and Tox use the same ones
+    - do not build diagnostic messages unless we need to (use lambdas in diag calls)
 - start a HACKING.md how-to document for developers
 
 2.0.1
 -----
 
 - Cinder drivers:
-  - Wallaby:
-    - add an entry for the StorPool updated driver for the 18.1.0 Ubuntu
-      cloud archive version
-    - recognize the 18.2.1 upstream version
-    - bump the StorPool Cinder driver version so that it is higher than
-      the upstream one
-  - Xena:
-    - add iSCSI support to the StorPool driver
-  - Yoga:
-    - recognize the 20.0.0 and 20.0.1 upstream versions
-    - install an updated driver with iSCSI support
+    - Wallaby:
+        - add an entry for the StorPool updated driver for the 18.1.0 Ubuntu
+          cloud archive version
+        - recognize the 18.2.1 upstream version
+        - bump the StorPool Cinder driver version so that it is higher than
+          the upstream one
+    - Xena:
+        - add iSCSI support to the StorPool driver
+    - Yoga:
+        - recognize the 20.0.0 and 20.0.1 upstream versions
+        - install an updated driver with iSCSI support
 - Glance drivers:
-  - Yoga:
-    - recognize the 24.0.0 upstream version
+    - Yoga:
+        - recognize the 24.0.0 upstream version
 - Nova drivers:
-  - Victora:
-    - recognize the 22.4.0 upstream version
-    - recognize the 22.4.0 Ubuntu cloud archive version
-  - Wallaby:
-    - recognize the 23.2.0 and 23.2.1 upstream versions
-    - recognize the 23.2.1 Ubuntu cloud archive version
-  - Xena:
-    - recognize the 24.1.0 and 24.1.1 upstream versions
-    - recognize the 24.1.1 Ubuntu cloud archive version
-  - Yoga:
-    - recognize the 25.0.0 upstream version
-    - recognize the 25.0.0 Ubuntu cloud archive version
+    - Victora:
+        - recognize the 22.4.0 upstream version
+        - recognize the 22.4.0 Ubuntu cloud archive version
+    - Wallaby:
+        - recognize the 23.2.0 and 23.2.1 upstream versions
+        - recognize the 23.2.1 Ubuntu cloud archive version
+    - Xena:
+        - recognize the 24.1.0 and 24.1.1 upstream versions
+        - recognize the 24.1.1 Ubuntu cloud archive version
+    - Yoga:
+        - recognize the 25.0.0 upstream version
+        - recognize the 25.0.0 Ubuntu cloud archive version
 
 2.0.0
 -----
@@ -97,9 +97,9 @@ Change log for the StorPool OpenStack integration
 - detect the Xena release of OpenStack
 - add some StorPool driver fixes for the OpenStack Victoria, Wallaby, and
   Xena releases:
-  - drop `_attach_volume()`, `_detach_volume()`, and `backup_volume()`
-  - reimplement `create_cloned_volume()` in a much more efficient way
-  - implement `clone_image()`
+    - drop `_attach_volume()`, `_detach_volume()`, and `backup_volume()`
+    - reimplement `create_cloned_volume()` in a much more efficient way
+    - implement `clone_image()`
 
 1.5.0
 -----
