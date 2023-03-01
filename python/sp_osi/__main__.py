@@ -188,7 +188,7 @@ def main() -> None:
         cfg, func = parse_args()
         func(cfg)  # pylint: disable=not-callable
     except defs.OSIError as err:
-        sys.exit(err)
+        sys.exit(str(err))
 
 
 if __name__ == "__main__":
