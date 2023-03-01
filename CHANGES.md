@@ -36,6 +36,8 @@ Change log for the StorPool OpenStack integration
 - documentation:
     - add the "our Cinder driver supports trim/discard operations" flag to
       the Cinder backend configuration example
+- sp-openstack:
+    - convert an error object to a string before passing it to `sys.exit()`
 - build infrastructure:
     - add setuptools infrastructure for use with setuptools version 61 or later
     - add the py.typed marker file
