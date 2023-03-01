@@ -13,6 +13,18 @@
             ],
             "branches": {
                 "yoga": {
+                    "20.0.1.8.0.0": {
+                        "comment": "StorPool fixes for Yoga (iSCSI multipath)",
+                        "files": {
+                            "volume/driver.py": {
+                                "sha256": "fd83b933a061e6dee7edccf4f60d4f165f86dfa2361ceae1acf83f9758b466d0"
+                            },
+                            "volume/drivers/storpool.py": {
+                                "sha256": "96e7a291b597448364cb438f0a543deee25f312885bdd0b16503c9410526a223"
+                            }
+                        },
+                        "outdated": false
+                    },
                     "20.0.1.7.0.0": {
                         "comment": "StorPool fixes for Yoga (retype, image-to-volume)",
                         "files": {
@@ -23,7 +35,7 @@
                                 "sha256": "f96418081b75475364bf8e8cd1815942aa2a1e0f090463d622bf31a7898936b7"
                             }
                         },
-                        "outdated": false
+                        "outdated": true
                     },
                     "20.0.1.6.0.0": {
                         "comment": "StorPool fixes for Yoga (revert to snapshot)",
@@ -61,6 +73,18 @@
                         },
                         "outdated": true
                     },
+                    "20.0.0.8.0.0": {
+                        "comment": "StorPool fixes for Yoga (multipath)",
+                        "files": {
+                            "volume/driver.py": {
+                                "sha256": "1c356c3251640566aeddbe04c4bca63e5de267b565a680d8935bb93d2d572127"
+                            },
+                            "volume/drivers/storpool.py": {
+                                "sha256": "96e7a291b597448364cb438f0a543deee25f312885bdd0b16503c9410526a223"
+                            }
+                        },
+                        "outdated": false
+                    },
                     "20.0.0.7.0.0": {
                         "comment": "StorPool fixes for Yoga (retype, image-to-volume)",
                         "files": {
@@ -71,7 +95,7 @@
                                 "sha256": "f96418081b75475364bf8e8cd1815942aa2a1e0f090463d622bf31a7898936b7"
                             }
                         },
-                        "outdated": false
+                        "outdated": true
                     },
                     "20.0.0.6.0.0": {
                         "comment": "StorPool fixes for Yoga (iSCSI, attach/detach, etc)",
@@ -123,6 +147,18 @@
                     }
                 },
                 "xena": {
+                    "19.1.1.8.0.0": {
+                        "comment": "StorPool fixes for Xena (iSCSI multipath)",
+                        "files": {
+                            "volume/driver.py": {
+                                "sha256": "15f23ff9f76cbe311de21e33f806c7853796170267c055616af9ac7381ff4ed6"
+                            },
+                            "volume/drivers/storpool.py": {
+                                "sha256": "96e7a291b597448364cb438f0a543deee25f312885bdd0b16503c9410526a223"
+                            }
+                        },
+                        "outdated": false
+                    },
                     "19.1.1.7.0.0": {
                         "comment": "StorPool fixes for Xena (retype, image-to-volume)",
                         "files": {
@@ -133,7 +169,7 @@
                                 "sha256": "f96418081b75475364bf8e8cd1815942aa2a1e0f090463d622bf31a7898936b7"
                             }
                         },
-                        "outdated": false
+                        "outdated": true
                     },
                     "19.1.1.0.0.0": {
                         "comment": "upstream Xena 19.1.1",
@@ -147,6 +183,18 @@
                         },
                         "outdated": true
                     },
+                    "19.0.0.8.0.0": {
+                        "comment": "StorPool fixes for Xena (iSCSI multipath)",
+                        "files": {
+                            "volume/driver.py": {
+                                "sha256": "394d4b2dccf2d6b51e1cc3aedc775ecbd38c80103c90b7c32e68e878903d1c02"
+                            },
+                            "volume/drivers/storpool.py": {
+                                "sha256": "96e7a291b597448364cb438f0a543deee25f312885bdd0b16503c9410526a223"
+                            }
+                        },
+                        "outdated": false
+                    },
                     "19.0.0.7.0.0": {
                         "comment": "StorPool fixes for Xena (retype, image-to-volume)",
                         "files": {
@@ -157,7 +205,7 @@
                                 "sha256": "f96418081b75475364bf8e8cd1815942aa2a1e0f090463d622bf31a7898936b7"
                             }
                         },
-                        "outdated": false
+                        "outdated": true
                     },
                     "19.0.0.6.0.0": {
                         "comment": "StorPool fixes for Xena (revert to snapshot)",
@@ -233,6 +281,18 @@
                     }
                 },
                 "wallaby": {
+                    "18.2.1.8.0.0": {
+                        "comment": "StorPool fixes for Wallaby (iSCSI multipath)",
+                        "files": {
+                            "volume/driver.py": {
+                                "sha256": "53d70a542625a4d663496fa64e7dffdc761d0970ab7a50ec88ceea635607099f"
+                            },
+                            "volume/drivers/storpool.py": {
+                                "sha256": "96e7a291b597448364cb438f0a543deee25f312885bdd0b16503c9410526a223"
+                            }
+                        },
+                        "outdated": false
+                    },
                     "18.2.1.7.0.0": {
                         "comment": "StorPool fixes for Wallaby (iSCSI attach)",
                         "files": {
@@ -243,7 +303,7 @@
                                 "sha256": "f96418081b75475364bf8e8cd1815942aa2a1e0f090463d622bf31a7898936b7"
                             }
                         },
-                        "outdated": false
+                        "outdated": true
                     },
                     "18.2.1.6.0.0": {
                         "comment": "StorPool fixes for Wallaby (retype, image-to-volume)",
@@ -293,6 +353,18 @@
                         },
                         "outdated": true
                     },
+                    "18.1.0.8.0.0": {
+                        "comment": "StorPool fixes for Wallaby (iSCSI multipath)",
+                        "files": {
+                            "volume/driver.py": {
+                                "sha256": "d6a0a48a9e92d3805839e3ae7035d4edb5127aed203c1fdd4afae4675d2f5d43"
+                            },
+                            "volume/drivers/storpool.py": {
+                                "sha256": "96e7a291b597448364cb438f0a543deee25f312885bdd0b16503c9410526a223"
+                            }
+                        },
+                        "outdated": false
+                    },
                     "18.1.0.7.0.0": {
                         "comment": "StorPool fixes for Wallaby (iSCSI attach)",
                         "files": {
@@ -303,7 +375,7 @@
                                 "sha256": "f96418081b75475364bf8e8cd1815942aa2a1e0f090463d622bf31a7898936b7"
                             }
                         },
-                        "outdated": false
+                        "outdated": true
                     },
                     "18.1.0.6.0.0": {
                         "comment": "StorPool fixes for Wallaby (retype, image-to-volume)",

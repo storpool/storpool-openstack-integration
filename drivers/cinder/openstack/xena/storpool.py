@@ -144,8 +144,6 @@ class StorPoolDriver(driver.VolumeDriver):
         1.2.3   - Advertise some more driver capabilities.
         2.0.0   - Drop _attach_volume() and _detach_volume(), our os-brick
                   connector will handle this.
-                - Detach temporary snapshots and volumes after copying data
-                  to or from from Glance images.
                 - Drop backup_volume()
                 - Avoid data duplication in create_cloned_volume()
                 - Implement clone_image()
@@ -424,15 +422,29 @@ class StorPoolDriver(driver.VolumeDriver):
                 ]
             })
 
+        target_portals = [
+            "{addr}:3260".format(addr=net.address)
+            for net in cfg['pg'].networks
+        ]
+        target_iqns = [cfg['target'].name] * len(target_portals)
+        target_luns = [0] * len(target_portals)
+        if connector.get('multipath', False):
+            multipath_settings = {
+                'target_iqns': target_iqns,
+                'target_portals': target_portals,
+                'target_luns': target_luns,
+            }
+        else:
+            multipath_settings = {}
+
         res = {
             'driver_volume_type': 'iscsi',
             'data': {
+                **multipath_settings,
                 'target_discovered': False,
-                'target_iqn': cfg['target'].name,
-                'target_portal': '{}:3260'.format(
-                    cfg['pg'].networks[0].address
-                ),
-                'target_lun': 0,
+                'target_iqn': target_iqns[0],
+                'target_portal': target_portals[0],
+                'target_lun': target_luns[0],
                 'volume_id': volume['id'],
                 'discard': True,
             },
@@ -776,6 +788,7 @@ class StorPoolDriver(driver.VolumeDriver):
                        ) for t in templates]
 
         self._stats = {
+            # Basic driver properties
             'volume_backend_name': self.configuration.safe_get(
                 'volume_backend_name') or 'storpool',
             'vendor_name': 'StorPool',
@@ -783,9 +796,10 @@ class StorPoolDriver(driver.VolumeDriver):
             'storage_protocol': (
                 'iSCSI' if self._use_iscsi else 'storpool'
             ),
-
+            # Driver capabilities
+            'clone_across_pools': True,
             'sparse_copy_volume': True,
-
+            # The actual pools data
             'pools': pools
         }
 
