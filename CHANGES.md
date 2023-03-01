@@ -1,6 +1,6 @@
 # Change log for the StorPool OpenStack integration
 
-## [2.0.2] - not yet
+## [2.0.2] - 2023-03-01
 
 - Cinder drivers:
     - Victoria:
@@ -157,7 +157,7 @@
 
 - Initial public release.
 
-[2.0.2]: https://github.com/storpool/storpool-openstack-integration/compare/release/2.0.1...master
+[2.0.2]: https://github.com/storpool/storpool-openstack-integration/compare/release/2.0.1...release/2.0.2
 [2.0.1]: https://github.com/storpool/storpool-openstack-integration/compare/release/2.0.0...release/2.0.1
 [2.0.0]: https://github.com/storpool/storpool-openstack-integration/compare/release/1.5.0...release/2.0.0
 [1.5.0]: https://github.com/storpool/storpool-openstack-integration/compare/release/1.4.0...release/1.5.0
