@@ -11,10 +11,31 @@ Change log for the StorPool OpenStack integration
   - Wallaby:
     - add a fix for always detaching Glance image volumes after conversions
     - implement the "revert a volume to a snapshot" Cinder feature
+    - drop the `copy_image_to_volume()` and `copy_volume_to_image()` methods
+    - fix retyping a volume to another StorPool template
+    - add iSCSI attach support
+    - add multipath support when attaching a volume via iSCSI
   - Xena:
     - implement the "revert a volume to a snapshot" Cinder feature
+    - drop the `copy_image_to_volume()` and `copy_volume_to_image()` methods
+    - fix retyping a volume to another StorPool template
+    - add multipath support when attaching a volume via iSCSI
+    - recognize the 19.1.1 upstream and Ubuntu cloud archive version
   - Yoga:
     - implement the "revert a volume to a snapshot" Cinder feature
+    - drop the `copy_image_to_volume()` and `copy_volume_to_image()` methods
+    - fix retyping a volume to another StorPool template
+    - add multipath support when attaching a volume via iSCSI
+- Nova drivers:
+  - Wallaby:
+    - recognize the 23.2.2 upstream and Ubuntu cloud archive version
+  - Xena:
+    - recognize the 24.2.0 upstream and Ubuntu cloud archive version
+  - Yoga:
+    - recognize the 25.1.0 upstream and Ubuntu cloud archive version
+- documentation:
+  - add the "our Cinder driver supports trim/discard operations" flag to
+    the Cinder backend configuration example
 - build infrastructure:
   - add setuptools infrastructure for use with setuptools version 61 or later
   - add the py.typed marker file
@@ -29,6 +50,7 @@ Change log for the StorPool OpenStack integration
   - add Nox test definitions
   - move the lists of test environment dependencies to separate files to
     help Nox and Tox use the same ones
+  - do not build diagnostic messages unless we need to (use lambdas in diag calls)
 - start a HACKING.md how-to document for developers
 
 2.0.1
