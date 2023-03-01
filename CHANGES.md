@@ -1,6 +1,6 @@
 # Change log for the StorPool OpenStack integration
 
-## 2.0.2 - not yet
+## [2.0.2] - not yet
 
 - Cinder drivers:
     - Victoria:
@@ -53,7 +53,7 @@
     - do not build diagnostic messages unless we need to (use lambdas in diag calls)
 - start a HACKING.md how-to document for developers
 
-## 2.0.1 - 2022-08-05
+## [2.0.1] - 2022-08-05
 
 - Cinder drivers:
     - Wallaby:
@@ -84,7 +84,7 @@
         - recognize the 25.0.0 upstream version
         - recognize the 25.0.0 Ubuntu cloud archive version
 
-## 2.0.0 - 2022-05-19
+## [2.0.0] - 2022-05-19
 
 - reimplement the `sp-openstack` tool in Python 3.6 or higher
 - let `sp-openstack` use the `dpkg-divert` tool on Debian/Ubuntu systems
@@ -99,7 +99,7 @@
     - reimplement `create_cloned_volume()` in a much more efficient way
     - implement `clone_image()`
 
-## 1.5.0 - 2021-12-14
+## [1.5.0] - 2021-12-14
 
 - add the "groups" command to the `sp-openstack` tool to only check, create,
   and set up the "spopenstack" group and the service accounts' membership,
@@ -107,29 +107,29 @@
 - detect the Rocky, Stein, Train, Victoria, and Wallaby releases of OpenStack
 - detect and set up the groups for Glance, too
 
-## 1.4.0 - 2018-06-05
+## [1.4.0] - 2018-06-05
 
 - Note that the StorPool drivers have been included in the Queens release.
 - Detect the Queens release of OpenStack and (hopefully) just say that
   the StorPool integration is installed already.
 
-## 1.3.0 - 2017-09-18
+## [1.3.0] - 2017-09-18
 
 - Add the Pike Cinder, Nova, and os-brick drivers.
 - Properly capitalize the 1.2.0 changelog entry.
 - Add the `sp-image-to-volume` tool to save a Glance image to a StorPool volume
   and its manual page.
 
-## 1.2.0 - 2017-08-06
+## [1.2.0] - 2017-08-06
 
 - Add the `-T txn-module` option for use with the txn-install tool.
 
-## 1.1.1 - 2017-08-06
+## [1.1.1] - 2017-08-06
 
 - Add the sp-openstack.1 manual page.
 - Look for the Python modules path in a way compatible with Python 3.
 
-## 1.1.0 - 2017-07-31
+## [1.1.0] - 2017-07-31
 
 - Add the Ocata Cinder volume driver and Nova attachment driver.
 - Add the Newton and Ocata os-brick connector driver.
@@ -140,19 +140,32 @@
   the StorPool CLI tool aligns the output in recent versions.
 - Let the documentation use the "openstack" client tool where possible.
 
-## 1.0.0 - 2016-09-07
+## [1.0.0] - 2016-09-07
 
 - Update the Mitaka os-brick connector.
 - Update the Liberty and Mitaka Cinder volume drivers.
 - Fix the detection of Nova Liberty vs Mitaka.
 - Drop support for the Juno and Kilo releases of OpenStack.
 
-## 0.2.0 - 2016-07-26
+## [0.2.0] - 2016-07-26
 
 - Allow the owner and group of the /var/spool/openstack-storpool/
   shared state directory to be overridden using the -u and -g
   options of the sp-openstack tool.
 
-## 0.1.0 - 2016-07-26
+## [0.1.0] - 2016-07-26
 
 - Initial public release.
+
+[2.0.2]: https://github.com/storpool/storpool-openstack-integration/compare/release/2.0.1...master
+[2.0.1]: https://github.com/storpool/storpool-openstack-integration/compare/release/2.0.0...release/2.0.1
+[2.0.0]: https://github.com/storpool/storpool-openstack-integration/compare/release/1.5.0...release/2.0.0
+[1.5.0]: https://github.com/storpool/storpool-openstack-integration/compare/release/1.4.0...release/1.5.0
+[1.4.0]: https://github.com/storpool/storpool-openstack-integration/compare/release/1.3.0...release/1.4.0
+[1.3.0]: https://github.com/storpool/storpool-openstack-integration/compare/release/1.2.0...release/1.3.0
+[1.2.0]: https://github.com/storpool/storpool-openstack-integration/compare/release/1.1.1...release/1.2.0
+[1.1.1]: https://github.com/storpool/storpool-openstack-integration/compare/release/1.1.0...release/1.1.1
+[1.1.0]: https://github.com/storpool/storpool-openstack-integration/compare/release/1.0.0...release/1.1.0
+[1.0.0]: https://github.com/storpool/storpool-openstack-integration/compare/release/0.2.0...release/1.0.0
+[0.2.0]: https://github.com/storpool/storpool-openstack-integration/compare/release/0.1.0...release/0.2.0
+[0.1.0]: https://github.com/storpool/storpool-openstack-integration/releases/tag/release%2F0.1.0
