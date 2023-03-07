@@ -79,7 +79,7 @@ ignore = [
 
 [tool.ruff.isort]
 force-single-line = true
-known-first-party = ["chroot_test", "sp_osi"]
+known-first-party = ["chroot_test", "kolla_rebuild", "sp_osi"]
 lines-after-imports = 2
 single-line-exclusions = ["typing"]
 

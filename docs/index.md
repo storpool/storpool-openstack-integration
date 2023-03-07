@@ -23,3 +23,4 @@ straight away.
 
 - [A brief introduction to StorPool](storpool.md)
 - [Configure OpenStack](configure.md)
+- [OpenStack Kolla integration](kolla.md)

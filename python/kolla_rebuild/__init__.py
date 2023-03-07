@@ -1,10 +1,3 @@
 # SPDX-FileCopyrightText: 2022, 2023  StorPool <support@storpool.com>
 # SPDX-License-Identifier: Apache-2.0
-
-[flake8]
-max_line_length = 100
-extend_ignore = E203
-
-[mypy]
-python_version = 3.6
-strict = True
+"""Update Kolla containers as needed to support the StorPool backend."""

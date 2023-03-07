@@ -1,0 +1,8 @@
+# SPDX-FileCopyrightText: 2023  StorPool <support@storpool.com>
+# SPDX-License-Identifier: Apache-2.0
+
+cfg-diag >= 0.4, < 0.5
+click >= 8, < 9
+jinja2 >= 3, < 4
+requests >= 2, < 3
+utf8-locale >= 1, < 2

@@ -30,6 +30,7 @@ nav:
   - 'index.md'
   - 'StorPool Distributed Storage': 'storpool.md'
   - 'Configure OpenStack': 'configure.md'
+  - 'OpenStack Kolla integration': 'kolla.md'
   - 'Development': 'hacking.md'
   - 'Changelog': 'changes.md'
 markdown_extensions:
