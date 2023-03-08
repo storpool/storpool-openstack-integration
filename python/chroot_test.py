@@ -28,7 +28,7 @@ DEFAULT_RELEASES = SUPPORTED_RELEASES
 
 
 @dataclasses.dataclass(frozen=True)
-class Config(cfg_diag.ConfigDiag):
+class Config(cfg_diag.Config):
     """Runtime configuration for the chroot tester."""
 
     chroot: str
