@@ -1,5 +1,26 @@
 # Change log for the StorPool OpenStack integration
 
+## [Unreleased]
+
+- Cinder drivers:
+    - Zed:
+        - recognize and support the 21.1.0 upstream version
+    - Antelope:
+        - recognize and support a master branch snapshot
+- Nova drivers:
+    - Zed:
+        - recognize the 26.1.0 upstream version
+    - Antelope:
+        - recognize a master branch snapshot
+- testing infrastructure:
+    - add the tool.test-stages.stages pyproject setting for the tox-stages tool
+    - update to cfg\_diag 0.4.x and inherit from the correct base class in
+      the chroot\_test tool
+    - update to pylint 2.16.x and define our own exception class in
+      the Nox file
+    - use black 23.x, flake8 6.x, mypy 1.x, and utf8-locale 1.x with
+      no code changes
+
 ## [2.0.2] - 2023-03-01
 
 - Cinder drivers:
@@ -157,6 +178,7 @@
 
 - Initial public release.
 
+[Unreleased]: https://github.com/storpool/storpool-openstack-integration/compare/release/2.0.2...master
 [2.0.2]: https://github.com/storpool/storpool-openstack-integration/compare/release/2.0.1...release/2.0.2
 [2.0.1]: https://github.com/storpool/storpool-openstack-integration/compare/release/2.0.0...release/2.0.1
 [2.0.0]: https://github.com/storpool/storpool-openstack-integration/compare/release/1.5.0...release/2.0.0
