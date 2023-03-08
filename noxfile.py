@@ -11,6 +11,10 @@ import nox
 nox.needs_version = ">= 2022.8.7"
 
 
+class BuildError(Exception):
+    """An exception that occurred while trying to build a Python wheel."""
+
+
 def _read_req(flavor: str) -> list[str]:
     """Read a requirements file."""
     return (
@@ -33,7 +37,7 @@ def _build_wheel(session: nox.Session, tempd: pathlib.Path) -> str:
         if item.is_file() and item.name.startswith("sp_osi-") and item.name.endswith(".whl")
     ]
     if len(found) != 1:
-        raise Exception(f"Expected a single sp_osi*.whl file in {tempd}, got {found}")
+        raise BuildError(f"Expected a single sp_osi*.whl file in {tempd}, got {found}")
     return str(found[0])
 
 
