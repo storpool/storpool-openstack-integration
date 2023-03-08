@@ -50,3 +50,6 @@ version = {attr = "sp_osi.VERSION"}
 
 [tool.black]
 line-length = 100
+
+[tool.test-stages]
+stages = ["@check and not @manual", "@tests and not @manual"]
