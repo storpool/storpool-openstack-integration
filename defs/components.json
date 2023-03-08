@@ -588,6 +588,34 @@
                 "virt/libvirt/config.py"
             ],
             "branches": {
+                "antelope": {
+                    "26.99.0.0.0.0": {
+                        "comment": "upstream Antelope snapshot 2023-03-08",
+                        "files": {
+                            "virt/libvirt/driver.py": {
+                                "sha256": "60c5842017c81f7e0e56d0ef4ab4d255bbc39cc13ad1fbe4e58b9245e57e7294"
+                            },
+                            "virt/libvirt/config.py": {
+                                "sha256": "105eb5c226549a9a78c0fadbe2c3a423c3e48df534fc76ddf3e4a1c907e69876"
+                            }
+                        },
+                        "outdated": false
+                    }
+                },
+                "zed": {
+                    "26.1.0.0.0.0": {
+                        "comment": "upstream Zed 26.1.0",
+                        "files": {
+                            "virt/libvirt/driver.py": {
+                                "sha256": "8562038eae909ae1a3fb2712be9d4140f87f92801b6690d315e663047a8422c8"
+                            },
+                            "virt/libvirt/config.py": {
+                                "sha256": "197efbcfded49a4450ecdeb1250b6c5d64808cfe685d0c58069084f6d3388345"
+                            }
+                        },
+                        "outdated": false
+                    }
+                },
                 "yoga": {
                     "25.1.0.0.1.0": {
                         "comment": "Ubuntu cloud archive Yoga 25.1.0",
