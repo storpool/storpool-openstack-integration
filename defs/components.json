@@ -12,6 +12,58 @@
                 "volume/driver.py"
             ],
             "branches": {
+                "antelope": {
+                    "21.99.0.8.0.0": {
+                        "comment": "StorPool fixes for the Antelope snapshot 2023-03-08",
+                        "files": {
+                            "volume/driver.py": {
+                                "sha256": "0e6683aecce0c76830d82723e6026eccee40f54ad29c4d339734ba472f287a51"
+                            },
+                            "volume/drivers/storpool.py": {
+                                "sha256": "dd9ef3a599089a8c6b6e0e19a7c017556504c1e47c07e4b53d3d8a4492757d68"
+                            }
+                        },
+                        "outdated": false
+                    },
+                    "21.99.0.0.0.0": {
+                        "comment": "upstream Antelope snapshot 2023-03-08",
+                        "files": {
+                            "volume/driver.py": {
+                                "sha256": "0e6683aecce0c76830d82723e6026eccee40f54ad29c4d339734ba472f287a51"
+                            },
+                            "volume/drivers/storpool.py": {
+                                "sha256": "c8fbac23cbe51df51d023054a42a7a51cdac124f05fd36a30c5afc21aa769829"
+                            }
+                        },
+                        "outdated": true
+                    }
+                },
+                "zed": {
+                    "21.1.0.8.0.0": {
+                        "comment": "StorPool fixes for Yoga (iSCSI multipath)",
+                        "files": {
+                            "volume/driver.py": {
+                                "sha256": "b321efdba75c06b798e5cb16a733eee0756a63a0aab97ea0b5a79a9512ab98ff"
+                            },
+                            "volume/drivers/storpool.py": {
+                                "sha256": "dd9ef3a599089a8c6b6e0e19a7c017556504c1e47c07e4b53d3d8a4492757d68"
+                            }
+                        },
+                        "outdated": false
+                    },
+                    "21.1.0.0.0.0": {
+                        "comment": "upstream Zed 21.1.0",
+                        "files": {
+                            "volume/driver.py": {
+                                "sha256": "b321efdba75c06b798e5cb16a733eee0756a63a0aab97ea0b5a79a9512ab98ff"
+                            },
+                            "volume/drivers/storpool.py": {
+                                "sha256": "c8fbac23cbe51df51d023054a42a7a51cdac124f05fd36a30c5afc21aa769829"
+                            }
+                        },
+                        "outdated": true
+                    }
+                },
                 "yoga": {
                     "20.0.1.8.0.0": {
                         "comment": "StorPool fixes for Yoga (iSCSI multipath)",
