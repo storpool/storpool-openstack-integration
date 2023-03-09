@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [2.0.4] - 2023-03-09
+
 - Cinder drivers:
     - Zed:
         - recognize and support a Zed branch snapshot
@@ -184,7 +186,8 @@
 
 - Initial public release.
 
-[Unreleased]: https://github.com/storpool/storpool-openstack-integration/compare/release/2.0.3...master
+[Unreleased]: https://github.com/storpool/storpool-openstack-integration/compare/release/2.0.4...master
+[2.0.4]: https://github.com/storpool/storpool-openstack-integration/compare/release/2.0.3...release/2.0.4
 [2.0.3]: https://github.com/storpool/storpool-openstack-integration/compare/release/2.0.2...release/2.0.3
 [2.0.2]: https://github.com/storpool/storpool-openstack-integration/compare/release/2.0.1...release/2.0.2
 [2.0.1]: https://github.com/storpool/storpool-openstack-integration/compare/release/2.0.0...release/2.0.1
