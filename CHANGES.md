@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [2.0.5] - 2023-03-09
+
 - correct the 2.0.4 changelog entry: it is about Nova, not Cinder
 
 ## [2.0.4] - 2023-03-09
@@ -188,7 +190,8 @@
 
 - Initial public release.
 
-[Unreleased]: https://github.com/storpool/storpool-openstack-integration/compare/release/2.0.4...master
+[Unreleased]: https://github.com/storpool/storpool-openstack-integration/compare/release/2.0.5...master
+[2.0.5]: https://github.com/storpool/storpool-openstack-integration/compare/release/2.0.4...release/2.0.5
 [2.0.4]: https://github.com/storpool/storpool-openstack-integration/compare/release/2.0.3...release/2.0.4
 [2.0.3]: https://github.com/storpool/storpool-openstack-integration/compare/release/2.0.2...release/2.0.3
 [2.0.2]: https://github.com/storpool/storpool-openstack-integration/compare/release/2.0.1...release/2.0.2
