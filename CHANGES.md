@@ -4,9 +4,9 @@
 
 ## [2.0.4] - 2023-03-09
 
-- Cinder drivers:
+- Nova drivers:
     - Zed:
-        - recognize and support a Zed branch snapshot
+        - recognize a Zed branch snapshot
 
 ## [2.0.3] - 2023-03-09
 
