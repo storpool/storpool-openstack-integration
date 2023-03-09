@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- correct the 2.0.4 changelog entry: it is about Nova, not Cinder
+
 ## [2.0.4] - 2023-03-09
 
 - Nova drivers:
