@@ -86,7 +86,7 @@ def read_components(cfg: defs.Config) -> defs.ComponentsTop:
         return defs.ComponentsTop(
             components={name: parse_component(value) for name, value in cdata["components"].items()}
         )
-    except TypeError as err:
+    except (TypeError, KeyError, AttributeError) as err:
         raise OSIParseError(cpath, f"Could not parse the components data: {err}") from err
 
 
