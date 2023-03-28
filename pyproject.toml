@@ -51,5 +51,45 @@ version = {attr = "sp_osi.VERSION"}
 [tool.black]
 line-length = 100
 
+[tool.ruff]
+line-length = 100
+select = ["ALL"]
+ignore = [
+  # We know what "self" is... I hope
+  "ANN101",
+
+  # We leave most of the formatting to the "black" tool
+  "COM812",
+
+  # No blank lines before the class docstring, TYVM
+  "D203",
+
+  # The multi-line docstring summary starts on the same line
+  "D213",
+
+  # Our exceptions are simple enough
+  # "EM",
+
+  # ruff does not seem to like the empty line before "from typing import ..."
+  "I",
+
+  # Much too restrictive
+  "TRY003",
+
+  # Fix these or override them soon.
+  "B008",
+  "C401",
+  "D400",
+  "EM102",
+  "EXE001",
+  "FBT001",
+  "FBT002",
+  "FBT003",
+  "INP001",
+  "RUF005",
+  "SIM117",
+  "T201",
+]
+
 [tool.test-stages]
-stages = ["@check and not @manual", "@tests and not @manual"]
+stages = ["ruff and not @manual", "@check and not @manual", "@tests and not @manual"]
