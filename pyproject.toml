@@ -83,8 +83,11 @@ ignore = [
   "EM102",
   "RUF005",
   "SIM117",
-  "T201",
 ]
+
+[tool.ruff.per-file-ignores]
+# This is a command-line test tool, console output is part of its task.
+"*/chroot_test/__main__.py" = ["T201"]
 
 [tool.test-stages]
 stages = ["ruff and not @manual", "@check and not @manual", "@tests and not @manual"]
