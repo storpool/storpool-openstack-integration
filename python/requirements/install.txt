@@ -1,2 +1,2 @@
-cfg_diag >= 0.4, < 0.5
-sp_variant >= 2, < 3
+cfg-diag >= 0.4, < 0.5
+sp-variant >= 2, < 3
