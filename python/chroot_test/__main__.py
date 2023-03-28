@@ -309,7 +309,7 @@ def install_openstack(chroot: Chroot, release: str) -> None:
     )
 
 
-def check_diverted(chroot: Chroot, expected: bool) -> None:
+def check_diverted(chroot: Chroot, *, expected: bool) -> None:
     """Make sure dpkg-divert reports the correct files (possibly none)."""
     print("Checking for diverted Python library files")
     lines = chroot.check_output(
@@ -322,7 +322,7 @@ def check_diverted(chroot: Chroot, expected: bool) -> None:
         sys.exit(f"Did not expect any diverted Python files, found {lines!r}")
 
 
-def check_detect(chroot: Chroot, osipath: pathlib.Path, release: str, outdated: bool) -> None:
+def check_detect(chroot: Chroot, osipath: pathlib.Path, release: str, *, outdated: bool) -> None:
     """Make sure that sp_osi detects the correct release."""
     print(
         # pylint: disable-next=consider-using-f-string
@@ -363,7 +363,7 @@ def check_detect(chroot: Chroot, osipath: pathlib.Path, release: str, outdated: 
         sys.exit("Incomplete 'detect' output")
 
 
-def install_sp_osi(chroot: Chroot, osipath: pathlib.Path, no_divert: bool = False) -> None:
+def install_sp_osi(chroot: Chroot, osipath: pathlib.Path, *, no_divert: bool = False) -> None:
     """Run `sp-openstack install` within the chroot."""
     print("Installing the updated OpenStack driver files")
     cmd: PathList = ["./sp-openstack", "-v"]
@@ -373,7 +373,7 @@ def install_sp_osi(chroot: Chroot, osipath: pathlib.Path, no_divert: bool = Fals
     chroot.run(cmd, cwd=osipath)
 
 
-def uninstall_sp_osi(chroot: Chroot, osipath: pathlib.Path, no_divert: bool = False) -> None:
+def uninstall_sp_osi(chroot: Chroot, osipath: pathlib.Path, *, no_divert: bool = False) -> None:
     """Run `sp-openstack uninstall` within the chroot."""
     print("Restoring the original OpenStack driver files")
     cmd: PathList = ["./sp-openstack", "-v"]
@@ -396,40 +396,40 @@ def main() -> None:
         if lines != ["/opt"]:
             sys.exit(f"Unexpected `find /opt` output: {lines!r}")
 
-        check_diverted(chroot, False)
+        check_diverted(chroot, expected=False)
         osipath = prepare_chroot(cfg, chroot)
 
-        check_diverted(chroot, False)
+        check_diverted(chroot, expected=False)
         if cfg.installed is not None:
-            check_detect(chroot, osipath, cfg.installed, True)
+            check_detect(chroot, osipath, cfg.installed, outdated=True)
         else:
             check_detect_nothing(cfg, chroot, osipath)
 
         for release in cfg.releases:
             if release != cfg.installed:
-                check_diverted(chroot, False)
+                check_diverted(chroot, expected=False)
                 install_openstack(chroot, release)
 
-            check_diverted(chroot, False)
-            check_detect(chroot, osipath, release, True)
+            check_diverted(chroot, expected=False)
+            check_detect(chroot, osipath, release, outdated=True)
 
             install_sp_osi(chroot, osipath)
-            check_diverted(chroot, True)
-            check_detect(chroot, osipath, release, False)
+            check_diverted(chroot, expected=True)
+            check_detect(chroot, osipath, release, outdated=False)
 
             uninstall_sp_osi(chroot, osipath)
-            check_diverted(chroot, False)
-            check_detect(chroot, osipath, release, True)
+            check_diverted(chroot, expected=False)
+            check_detect(chroot, osipath, release, outdated=True)
 
             install_sp_osi(chroot, osipath, no_divert=True)
-            check_diverted(chroot, False)
-            check_detect(chroot, osipath, release, False)
+            check_diverted(chroot, expected=False)
+            check_detect(chroot, osipath, release, outdated=False)
 
             uninstall_sp_osi(chroot, osipath, no_divert=True)
-            check_diverted(chroot, False)
-            check_detect(chroot, osipath, release, True)
+            check_diverted(chroot, expected=False)
+            check_detect(chroot, osipath, release, outdated=True)
 
-        check_diverted(chroot, False)
+        check_diverted(chroot, expected=False)
         print("Everything seems to be in order!")
 
 
