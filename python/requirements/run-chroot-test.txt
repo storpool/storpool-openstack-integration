@@ -1,0 +1,2 @@
+cfg-diag >= 0.4, < 0.5
+utf8-locale >= 1, < 2
