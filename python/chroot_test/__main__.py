@@ -1,4 +1,3 @@
-#!/usr/bin/python3
 """Test the StorPool OpenStack integration in a chroot environment."""
 
 from __future__ import annotations
