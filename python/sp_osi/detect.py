@@ -19,21 +19,33 @@ class NotFoundError(defs.OSIError):
         self.component = component
 
 
-DetectedComponent = NamedTuple(
-    "DetectedComponent",
-    [
-        ("name", str),
-        ("path", pathlib.Path),
-        ("branch", str),
-        ("version", str),
-        ("data", defs.ComponentVersion),
-    ],
-)
+class DetectedComponent(NamedTuple):
+    """An OpenStack component and its version that was detected."""
+
+    name: str
+    """The name of the OpenStack component ("cinder", "nova", etc.)."""
+
+    path: pathlib.Path
+    """The path to the Python module files of the component."""
+
+    branch: str
+    """The OpenStack version control branch of the installed component."""
+
+    version: str
+    """The sp-osi string identifying this particular version of this component."""
+
+    data: defs.ComponentVersion
+    """The information about the component: file checksums, outdated, etc."""
 
 
-DetectedComponents = NamedTuple(
-    "DetectedComponents", [("res", Dict[str, DetectedComponent]), ("consistent", bool)]
-)
+class DetectedComponents(NamedTuple):
+    """The result of the attempt to detect the installed OpenStack components."""
+
+    res: Dict[str, DetectedComponent]
+    """The detected components."""
+
+    consistent: bool
+    """Indicate whether all the components are on the same version control branch."""
 
 
 def get_python_paths(cfg: defs.Config) -> List[pathlib.Path]:

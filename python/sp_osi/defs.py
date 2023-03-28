@@ -7,26 +7,42 @@ from typing import Callable, Dict, List, NamedTuple
 
 from sp_variant import variant as spvariant
 
-ComponentFile = NamedTuple("ComponentFile", [("sha256", str)])
 
-ComponentVersion = NamedTuple(
-    "ComponentVersion",
-    [
-        ("comment", str),
-        ("files", Dict[pathlib.Path, ComponentFile]),
-        ("outdated", bool),
-    ],
-)
+class ComponentFile(NamedTuple):
+    """A single file to be matched in a component definition."""
 
-Component = NamedTuple(
-    "Component",
-    [
-        ("detect_files_order", List[pathlib.Path]),
-        ("branches", Dict[str, Dict[str, ComponentVersion]]),
-    ],
-)
+    sha256: str
+    """The SHA256 checksum of the file."""
 
-ComponentsTop = NamedTuple("ComponentsTop", [("components", Dict[str, Component])])
+
+class ComponentVersion(NamedTuple):
+    """A specific version of an OpenStack component."""
+
+    comment: str
+    """The human-readable description of this component version entry."""
+
+    files: Dict[pathlib.Path, ComponentFile]
+    """The list of files and checkums for this particular version."""
+
+    outdated: bool
+    """Indicate whether this component's files be updated or it is up to date."""
+
+
+class Component(NamedTuple):
+    """An OpenStack component with its various recognized versions."""
+
+    detect_files_order: List[pathlib.Path]
+    """The files to examine (verify checksums) to determine this component's version."""
+
+    branches: Dict[str, Dict[str, ComponentVersion]]
+    """The branches (versions) recognized for this OpenStack component."""
+
+
+class ComponentsTop(NamedTuple):
+    """The top-level structure of the component definitions file."""
+
+    components: Dict[str, Component]
+    """The list of OpenStack components and their versions."""
 
 
 class OSIError(Exception):
