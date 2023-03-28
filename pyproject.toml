@@ -45,7 +45,7 @@ packages = ["sp_osi"]
 sp_osi = ["py.typed"]
 
 [tool.setuptools.dynamic]
-dependencies = {file = "python/requirements.txt"}
+dependencies = {file = "python/requirements/install.txt"}
 version = {attr = "sp_osi.VERSION"}
 
 [tool.black]
