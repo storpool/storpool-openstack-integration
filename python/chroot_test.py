@@ -1,6 +1,8 @@
 #!/usr/bin/python3
 """Test the StorPool OpenStack integration in a chroot environment."""
 
+from __future__ import annotations
+
 import argparse
 import contextlib
 import dataclasses
@@ -9,18 +11,16 @@ import pathlib
 import subprocess
 import sys
 
-from typing import Dict, Iterator, List, Optional, Union, TYPE_CHECKING
+from typing import TYPE_CHECKING
 
 import cfg_diag
 import utf8_locale
 
 
 if TYPE_CHECKING:
-    CompletedProcessStr = subprocess.CompletedProcess[str]  # pylint: disable=unsubscriptable-object
+    from typing import Iterator, List, Union
+
     PathList = List[Union[str, os.PathLike[str]]]  # pylint: disable=unsubscriptable-object
-else:
-    CompletedProcessStr = subprocess.CompletedProcess
-    PathList = List[Union[str, os.PathLike]]
 
 
 SUPPORTED_RELEASES = ("victoria", "wallaby", "xena", "yoga")
@@ -32,9 +32,9 @@ class Config(cfg_diag.Config):
     """Runtime configuration for the chroot tester."""
 
     chroot: str
-    installed: Optional[str]
-    releases: List[str]
-    utf8_env: Dict[str, str]
+    installed: str | None
+    releases: list[str]
+    utf8_env: dict[str, str]
 
 
 @dataclasses.dataclass(frozen=True)
@@ -43,7 +43,7 @@ class Chroot:
 
     sid: str
     mountpoint: pathlib.Path
-    utf8_env: Dict[str, str]
+    utf8_env: dict[str, str]
 
     def _get_command(self, command: PathList, cwd: pathlib.Path) -> PathList:
         """Augment a command to run in the schroot session."""
@@ -75,7 +75,7 @@ class Chroot:
         *,
         check: bool = True,
         cwd: pathlib.Path = pathlib.Path("/"),
-    ) -> CompletedProcessStr:
+    ) -> subprocess.CompletedProcess[str]:
         """Run a command in the chroot session; check=True by default!"""
         return subprocess.run(
             self._get_command(command, cwd),
