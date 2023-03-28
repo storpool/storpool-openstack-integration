@@ -70,7 +70,7 @@ def get_python_paths(cfg: defs.Config) -> List[pathlib.Path]:
         except FileNotFoundError:
             cfg.diag(lambda: f"Apparently there is no {prog} on this system")
             return []
-        except (IOError, subprocess.CalledProcessError) as err:
+        except (OSError, subprocess.CalledProcessError) as err:
             raise defs.OSIEnvError(f"Could not execute {cmd!r}: {err}") from err
 
     return list(itertools.chain(*(query_program(prog) for prog in ("python3", "python2"))))
