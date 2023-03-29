@@ -117,10 +117,10 @@ def detect(cfg: defs.Config) -> DetectedComponents:
                 )
             )
         )
-        cfg.diag(lambda: f"Looking for {name}, {len(versions)} known versions")
+        cfg.diag(lambda: f"Looking for {name}, {len(versions)} known versions")  # noqa: B023
 
         for path in pypaths:
-            cfg.diag(lambda: f"- checking {path}")
+            cfg.diag(lambda: f"- checking {path}")  # noqa: B023
             try:
                 res[name] = next(
                     DetectedComponent(name, path, branch, version, ver)

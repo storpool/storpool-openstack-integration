@@ -109,7 +109,7 @@ def _split_by_existence(
     return res_other, res_driver
 
 
-def validate(cfg: defs.Config) -> List[str]:
+def validate(cfg: defs.Config) -> List[str]:  # noqa: C901
     """Validate the components data, return a list of errors."""
     res: List[str] = []
 

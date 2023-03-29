@@ -81,5 +81,11 @@ ignore = [
 # This is a command-line test tool, console output is part of its task.
 "*/chroot_test/__main__.py" = ["T201"]
 
+# This is a command-line test tool, console output is part of its task; also, Python 3.6.
+"*/sp_osi/**.py" = ["T201", "UP011"]
+
+# This is a unit test suite; also, Python 3.6.
+"*/unit_tests/**.py" = ["S101", "UP011", "UP022"]
+
 [tool.test-stages]
 stages = ["ruff and not @manual", "@check and not @manual", "@tests and not @manual"]

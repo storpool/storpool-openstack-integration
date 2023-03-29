@@ -12,7 +12,7 @@ _GROUP_NAME = "spopenstack"
 _DB_FILE = pathlib.Path("/var/spool/openstack-storpool/openstack-attach.json")
 
 
-def setup_group(cfg: defs.Config) -> grp.struct_group:
+def setup_group(cfg: defs.Config) -> grp.struct_group:  # noqa: C901,PLR0912
     """Create the spopenstack group if necessary, add the user accounts to it."""
     print(f"Checking for the {_GROUP_NAME} group")
     try:
@@ -69,7 +69,7 @@ def setup_group(cfg: defs.Config) -> grp.struct_group:
     return osgrp
 
 
-def _ensure(
+def _ensure(  # noqa: PLR0912
     cfg: defs.Config,
     osgrp: grp.struct_group,
     path: pathlib.Path,
