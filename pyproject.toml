@@ -68,16 +68,13 @@ ignore = [
   "D213",
 
   # Our exceptions are simple enough
-  # "EM",
+  "EM",
 
   # ruff does not seem to like the empty line before "from typing import ..."
   "I",
 
   # Much too restrictive
   "TRY003",
-
-  # Fix these or override them soon.
-  "EM102",
 ]
 
 [tool.ruff.per-file-ignores]
