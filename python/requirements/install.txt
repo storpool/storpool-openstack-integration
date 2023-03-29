@@ -1,2 +1,5 @@
+# SPDX-FileCopyrightText: 2022, 2023  StorPool <support@storpool.com>
+# SPDX-License-Identifier: Apache-2.0
+
 cfg-diag >= 0.4, < 0.5
 sp-variant >= 2, < 3

@@ -1,0 +1,46 @@
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: storpool-openstack-integration
+Upstream-Contact: StorPool <support@storpool.com>
+Source: https://github.com/storpool/storpool-openstack-integration
+
+Files:
+  defs/components.json
+Copyright: 2022, 2023  StorPool
+License: Apache-2.0
+
+Files:
+  drivers/cinder/openstack/*/storpool.py
+  drivers/nova/openstack/*/virt/libvirt/volume/storpool.py
+  drivers/os_brick/openstack/*/initiator/connectors/storpool.py
+Copyright: 2014 - 2023  StorPool
+License: Apache-2.0
+
+Files:
+  drivers/cinder/openstack/*/exception.py
+  drivers/cinder/openstack/ocata/volume/driver.py
+Copyright:
+  2010 United States Government as represented by the
+  Administrator of the National Aeronautics and Space Administration.
+License: Apache-2.0
+
+Files:
+  drivers/nova/openstack/*/virt/libvirt/driver.py
+Copyright:
+  2010 United States Government as represented by the
+       Administrator of the National Aeronautics and Space Administration.
+  2010 Citrix Systems, Inc.
+  2011 Piston Cloud Computing, Inc
+  2012 University Of Minho
+  2013 Hewlett-Packard Development Company, L.P.
+License: Apache-2.0
+
+Files:
+  drivers/os_brick/openstack/*/initiator/__init__.py
+  drivers/os_brick/openstack/*/initiator/connector.py
+Copyright: 2013 - 2015  OpenStack Foundation
+License: Apache-2.0
+
+Files:
+  py-contrib/*
+Copyright: 2021, 2022  StorPool <support@storpool.com>
+License: Apache-2.0

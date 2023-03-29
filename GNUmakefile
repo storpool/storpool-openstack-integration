@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2015 - 2023  StorPool <support@storpool.com>
+# SPDX-License-Identifier: Apache-2.0
+
 name=		storpool-openstack-integration
 version=	1.0.0
 

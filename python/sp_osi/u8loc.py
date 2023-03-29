@@ -1,3 +1,5 @@
+# SPDX-FileCopyrightText: 2023  StorPool <support@storpool.com>
+# SPDX-License-Identifier: Apache-2.0
 """A simplified version of the utf8-locale library."""
 
 import os

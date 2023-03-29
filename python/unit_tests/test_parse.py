@@ -1,3 +1,5 @@
+# SPDX-FileCopyrightText: 2023  StorPool <support@storpool.com>
+# SPDX-License-Identifier: Apache-2.0
 """Test the routines for parsing the component definitions."""
 
 import functools
