@@ -124,7 +124,7 @@ def validate(cfg: defs.Config) -> List[str]:  # noqa: C901
 
         for ver, version in sorted(branch.items()):
             if not RE_VERSION_STRING.match(ver):
-                res.append(f"{comp_name}/{branch_name}: Invalid version string: " "{ver}")
+                res.append(f"{comp_name}/{branch_name}: Invalid version string: {ver}")
 
             other_cksums, driver_cksums = _split_by_existence(comp_name, branch_name, version.files)
             if version.outdated:
@@ -153,10 +153,8 @@ def validate(cfg: defs.Config) -> List[str]:  # noqa: C901
                     uptodate_files = driver_cksums
                 elif uptodate_files != driver_cksums:
                     res.append(
-                        (
-                            f"{comp_name}/{branch_name}: All the up-to-date versions should "
-                            f"define the same set of files with the same checksums"
-                        )
+                        f"{comp_name}/{branch_name}: All the up-to-date versions should "
+                        f"define the same set of files with the same checksums"
                     )
 
             if not any(not version.outdated for version in branch.values()):

@@ -74,7 +74,7 @@ ignore = [
   "I",
 
   # Much too restrictive
-  "TRY003",
+  "TRY",
 ]
 
 [tool.ruff.per-file-ignores]

@@ -132,9 +132,10 @@ def test_parse_bad(tcase: BadParseCase) -> None:
         return json.dumps(tcase.data, indent=2)
 
     cfg = _empty_config()
-    with mock.patch("pathlib.Path.read_text", new=mock_read_text):
-        with pytest.raises(parse.OSIParseError) as err:
-            parse.read_components(cfg)
+    with mock.patch("pathlib.Path.read_text", new=mock_read_text), pytest.raises(
+        parse.OSIParseError
+    ) as err:
+        parse.read_components(cfg)
 
     assert tcase.error in str(err.value)
 

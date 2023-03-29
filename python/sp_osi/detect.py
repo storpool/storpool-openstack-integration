@@ -133,6 +133,4 @@ def detect(cfg: defs.Config) -> DetectedComponents:
         if name not in res:
             raise NotFoundError(component=name)
 
-    return DetectedComponents(
-        res=res, consistent=len(set(comp.branch for comp in res.values())) == 1
-    )
+    return DetectedComponents(res=res, consistent=len({comp.branch for comp in res.values()}) == 1)

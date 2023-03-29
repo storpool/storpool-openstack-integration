@@ -37,10 +37,8 @@ def cmd_check(cfg: defs.Config) -> None:
     outdated = [name for name in cfg.components if res.res[name].data.outdated]
     if outdated:
         sys.exit(
-            (
-                f"The StorPool OpenStack integration is either not installed or "
-                f"not up to date for {', '.join(outdated)}"
-            )
+            f"The StorPool OpenStack integration is either not installed or "
+            f"not up to date for {', '.join(outdated)}"
         )
 
     print("The StorPool OpenStack integration is installed")
@@ -70,7 +68,7 @@ def cmd_validate(cfg: defs.Config) -> None:
     """Validate the components data read from the file."""
     errors = parse.validate(cfg)
     if errors:
-        sys.exit("\n".join(["Errors found in the component definitions:"] + errors))
+        sys.exit("\n".join(["Errors found in the component definitions:", *errors]))
 
     print("The components definition file passed the internal checks")
 
@@ -82,7 +80,7 @@ def _dict_union(left: Mapping[str, str], right: Mapping[str, str]) -> Dict[str, 
     return res
 
 
-def parse_args() -> Tuple[defs.Config, Callable[[defs.Config], None]]:
+def parse_args() -> Tuple[defs.Config, Callable[[defs.Config], None]]:  # noqa: C901
     """Parse the command-line arguments."""
     parser = argparse.ArgumentParser(prog="sp-openstack")
     parser.add_argument(
@@ -156,8 +154,8 @@ def parse_args() -> Tuple[defs.Config, Callable[[defs.Config], None]]:
     if not components:
         if getattr(args, "req_components", False):
             if args.all:
-                assert not cfg.all_components.components
-                assert not cfg.utf8_env
+                if cfg.all_components.components or cfg.utf8_env:
+                    sys.exit(f"Internal error: unexpected config elements: {cfg!r}")
                 cfg = cfg._replace(utf8_env=_dict_union(os.environ, u8loc.detect()))
                 cfg = cfg._replace(all_components=parse.read_components(cfg))
                 components = sorted(cfg.all_components.components.keys())
@@ -166,7 +164,8 @@ def parse_args() -> Tuple[defs.Config, Callable[[defs.Config], None]]:
         else:
             components = []
 
-    assert not cfg.components
+    if cfg.components:
+        sys.exit(f"Internal error: unexpected config elements: {cfg!r}")
     cfg = cfg._replace(components=components)
 
     if not cfg.utf8_env:

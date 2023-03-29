@@ -44,7 +44,7 @@ def setup_group(cfg: defs.Config) -> grp.struct_group:  # noqa: C901,PLR0912
         if _GROUP_NAME in current:
             raise defs.OSIError(f"Internal inconsistency: osgrp {osgrp!r}, current {current!r}")
 
-        wanted = ",".join(sorted(current + [_GROUP_NAME]))
+        wanted = ",".join(sorted([*current, _GROUP_NAME]))
         print(f"Setting the group list of {name} to {wanted}")
         if cfg.noop:
             print(f"- usermod -G {wanted} -- {name}")
@@ -61,10 +61,8 @@ def setup_group(cfg: defs.Config) -> grp.struct_group:  # noqa: C901,PLR0912
         missing = sorted(name for name in cfg.components if name not in osgrp.gr_mem)
         if missing:
             raise defs.OSIError(
-                (
-                    f"Some of the service accounts are still not in "
-                    f"the {_GROUP_NAME} group: {' '.join(missing)}"
-                )
+                f"Some of the service accounts are still not in "
+                f"the {_GROUP_NAME} group: {' '.join(missing)}"
             )
     return osgrp
 
@@ -105,11 +103,11 @@ def _ensure(  # noqa: PLR0912
             print(f"- chmod {mode:03o} -- {path}")
         else:
             try:
-                os.chmod(path, mode)
+                path.chmod(mode)
             except OSError as err:
                 raise defs.OSIError(
                     f"Could not set the permissions mode of {path} to {mode:03o}: {err}"
-                )
+                ) from err
 
 
 def setup_files(cfg: defs.Config, osgrp: grp.struct_group) -> None:
