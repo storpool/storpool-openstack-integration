@@ -51,6 +51,14 @@ version = {attr = "sp_osi.VERSION"}
 [tool.black]
 line-length = 100
 
+[tool.isort]
+force_single_line = true
+known_first_party = ["chroot_test", "sp_osi"]
+known_typing = ["typing"]
+lines_after_imports = 2
+sections = ["FUTURE", "STDLIB", "TYPING", "THIRDPARTY", "FIRSTPARTY", "LOCALFOLDER"]
+single_line_exclusions = ["typing"]
+
 [tool.ruff]
 line-length = 100
 select = ["ALL"]
@@ -70,7 +78,7 @@ ignore = [
   # Our exceptions are simple enough
   "EM",
 
-  # ruff does not seem to like the empty line before "from typing import ..."
+  # We have a bit more complicated isort configuration
   "I",
 
   # Much too restrictive

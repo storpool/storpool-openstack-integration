@@ -8,6 +8,7 @@ import subprocess
 
 from . import defs
 
+
 _GROUP_NAME = "spopenstack"
 _DB_FILE = pathlib.Path("/var/spool/openstack-storpool/openstack-attach.json")
 

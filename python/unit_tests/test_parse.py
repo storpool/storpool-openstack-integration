@@ -8,7 +8,6 @@ from unittest import mock
 from typing import Any, NamedTuple
 
 import pytest
-
 from sp_variant import variant as spvariant
 
 from sp_osi import defs
