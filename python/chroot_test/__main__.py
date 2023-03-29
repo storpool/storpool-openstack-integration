@@ -24,6 +24,7 @@ if TYPE_CHECKING:
 
 SUPPORTED_RELEASES = ("victoria", "wallaby", "xena", "yoga")
 DEFAULT_RELEASES = SUPPORTED_RELEASES
+ROOT_DIR = pathlib.Path("/")
 
 
 @dataclasses.dataclass(frozen=True)
@@ -62,7 +63,7 @@ class Chroot:
         ]
         return base + command
 
-    def check_output(self, command: PathList, *, cwd: pathlib.Path = pathlib.Path("/")) -> str:
+    def check_output(self, command: PathList, *, cwd: pathlib.Path = ROOT_DIR) -> str:
         """Run a command in the chroot session, return its output."""
         return subprocess.check_output(
             self._get_command(command, cwd), encoding="UTF-8", env=self.utf8_env
@@ -73,9 +74,9 @@ class Chroot:
         command: PathList,
         *,
         check: bool = True,
-        cwd: pathlib.Path = pathlib.Path("/"),
+        cwd: pathlib.Path = ROOT_DIR,
     ) -> subprocess.CompletedProcess[str]:
-        """Run a command in the chroot session; check=True by default!"""
+        """Run a command in the chroot session; check=True by default."""
         return subprocess.run(
             self._get_command(command, cwd),
             check=check,
@@ -239,25 +240,24 @@ def prepare_chroot(cfg: Config, chroot: Chroot) -> pathlib.Path:
 
     print(f"Got {len(files)} files")
     with subprocess.Popen(
-        ["tar", "-cf", "-", "--"] + files, stdout=subprocess.PIPE, env=cfg.utf8_env
-    ) as tar_out:
-        with subprocess.Popen(
-            [
-                "tar",
-                "-xf",
-                "-",
-                "-C",
-                str(chroot.mountpoint / (destdir.relative_to(pathlib.Path("/")))),
-            ],
-            stdin=tar_out.stdout,
-            env=cfg.utf8_env,
-        ) as tar_in:
-            if tar_out.wait() != 0:
-                sys.exit("Could not pack up the source directory")
-            if tar_in.wait() != 0:
-                sys.exit("Could not extract the files to the chroot directory")
+        ["tar", "-cf", "-", "--", *files], stdout=subprocess.PIPE, env=cfg.utf8_env
+    ) as tar_out, subprocess.Popen(
+        [
+            "tar",
+            "-xf",
+            "-",
+            "-C",
+            str(chroot.mountpoint / (destdir.relative_to(ROOT_DIR))),
+        ],
+        stdin=tar_out.stdout,
+        env=cfg.utf8_env,
+    ) as tar_in:
+        if tar_out.wait() != 0:
+            sys.exit("Could not pack up the source directory")
+        if tar_in.wait() != 0:
+            sys.exit("Could not extract the files to the chroot directory")
 
-    topfiles = sorted(set(pathlib.Path(line).parts[0] for line in files))
+    topfiles = sorted({pathlib.Path(line).parts[0] for line in files})
     print("Let us see what we have there")
     lines = sorted(chroot.check_output(["ls", "-A", "/opt/osi"]).splitlines())
     print(repr(lines))
