@@ -110,7 +110,7 @@ def parse_args() -> Tuple[defs.Config, Callable[[defs.Config], None]]:
     subp = parser.add_subparsers()
 
     def add_subcommand(
-        name: str, handler: Callable[[defs.Config], None], desc: str, req_components: bool = True
+        name: str, handler: Callable[[defs.Config], None], desc: str, *, req_components: bool = True
     ) -> None:
         """Add a subcommand to the parser."""
         subcmd = subp.add_parser(name, help=desc)

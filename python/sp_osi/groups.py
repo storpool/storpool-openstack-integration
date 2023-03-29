@@ -74,6 +74,7 @@ def _ensure(  # noqa: PLR0912
     osgrp: grp.struct_group,
     path: pathlib.Path,
     pstat: os.stat_result,
+    *,
     is_dir: bool,
 ) -> None:
     """Ensure the ownership and permissions of a directory or file."""
@@ -126,7 +127,7 @@ def setup_files(cfg: defs.Config, osgrp: grp.struct_group) -> None:
             parent.mkdir(mode=0o770)
             pstat = parent.stat()
 
-    _ensure(cfg, osgrp, parent, pstat, True)
+    _ensure(cfg, osgrp, parent, pstat, is_dir=True)
 
     print(f"Examining the {_DB_FILE} file")
     try:
@@ -140,4 +141,4 @@ def setup_files(cfg: defs.Config, osgrp: grp.struct_group) -> None:
             _DB_FILE.write_text("{}\n", encoding="us-ascii")
             pstat = _DB_FILE.stat()
 
-    _ensure(cfg, osgrp, _DB_FILE, pstat, False)
+    _ensure(cfg, osgrp, _DB_FILE, pstat, is_dir=False)
