@@ -183,7 +183,7 @@ def parse_args() -> Tuple[defs.Config, Callable[[defs.Config], None]]:
 
 
 def main() -> None:
-    """Main program: parse command-line options, execute requests."""
+    """Parse command-line options, execute requests."""
     try:
         cfg, func = parse_args()
         func(cfg)  # pylint: disable=not-callable

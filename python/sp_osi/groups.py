@@ -113,7 +113,6 @@ def _ensure(  # noqa: PLR0912
 
 def setup_files(cfg: defs.Config, osgrp: grp.struct_group) -> None:
     """Set up the shared directory."""
-
     parent = _DB_FILE.parent
     print(f"Examining the {parent} directory")
     try:
