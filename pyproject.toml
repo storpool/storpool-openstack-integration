@@ -54,12 +54,6 @@ version = {attr = "sp_osi.VERSION"}
 [tool.black]
 line-length = 100
 
-[tool.isort]
-force_single_line = true
-known_first_party = ["chroot_test", "sp_osi"]
-lines_after_imports = 2
-single_line_exclusions = ["typing"]
-
 [tool.ruff]
 line-length = 100
 select = ["ALL"]
@@ -79,12 +73,15 @@ ignore = [
   # Our exceptions are simple enough
   "EM",
 
-  # We have a bit more complicated isort configuration
-  "I",
-
   # Much too restrictive
   "TRY",
 ]
+
+[tool.ruff.isort]
+force-single-line = true
+known-first-party = ["chroot_test", "sp_osi"]
+lines-after-imports = 2
+single-line-exclusions = ["typing"]
 
 [tool.ruff.per-file-ignores]
 # This is a command-line test tool, console output is part of its task.
