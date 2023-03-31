@@ -603,6 +603,18 @@
                     }
                 },
                 "zed": {
+                    "26.1.0.0.0.91": {
+                        "comment": "upstream Zed snapshot 2023-03-31",
+                        "files": {
+                            "virt/libvirt/driver.py": {
+                                "sha256": "09a1b418f1613814c600d66ab9a2186b79cffbb970b1b5da9a72e2672188eb10"
+                            },
+                            "virt/libvirt/config.py": {
+                                "sha256": "f0491bd4bb35d8202ff637975a76ad51a62cd7e5aacff77020fcec9f15baaa31"
+                            }
+                        },
+                        "outdated": false
+                    },
                     "26.1.0.0.0.90": {
                         "comment": "upstream Zed snapshot 2023-03-09",
                         "files": {
