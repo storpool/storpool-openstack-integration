@@ -9,7 +9,6 @@ the StorPool driver is up-to-date, and replace it if necessary.
 import argparse
 import os
 import sys
-
 from typing import Callable, Dict, Mapping, Tuple
 
 from sp_variant import variant as spvariant

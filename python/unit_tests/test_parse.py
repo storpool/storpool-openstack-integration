@@ -5,9 +5,8 @@
 import functools
 import json
 import pathlib
-from unittest import mock
-
 from typing import Any, NamedTuple
+from unittest import mock
 
 import pytest
 from sp_variant import variant as spvariant

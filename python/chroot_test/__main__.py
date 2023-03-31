@@ -11,7 +11,6 @@ import os
 import pathlib
 import subprocess
 import sys
-
 from typing import TYPE_CHECKING
 
 import cfg_diag

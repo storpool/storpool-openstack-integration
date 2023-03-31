@@ -4,7 +4,6 @@
 
 import pathlib
 import sys
-
 from typing import Callable, Dict, List, NamedTuple
 
 from sp_variant import variant as spvariant

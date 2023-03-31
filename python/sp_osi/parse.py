@@ -5,7 +5,6 @@
 import json
 import pathlib
 import re
-
 from typing import Any, Dict, List, Tuple
 
 from . import defs

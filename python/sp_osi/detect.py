@@ -5,7 +5,6 @@
 import itertools
 import pathlib
 import subprocess
-
 from typing import Dict, List, NamedTuple
 
 from . import defs

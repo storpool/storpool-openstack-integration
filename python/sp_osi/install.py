@@ -4,7 +4,6 @@
 
 import pathlib
 import subprocess
-
 from typing import Tuple
 
 from . import defs

@@ -57,9 +57,7 @@ line-length = 100
 [tool.isort]
 force_single_line = true
 known_first_party = ["chroot_test", "sp_osi"]
-known_typing = ["typing"]
 lines_after_imports = 2
-sections = ["FUTURE", "STDLIB", "TYPING", "THIRDPARTY", "FIRSTPARTY", "LOCALFOLDER"]
 single_line_exclusions = ["typing"]
 
 [tool.ruff]
