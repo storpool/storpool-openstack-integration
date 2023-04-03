@@ -30,6 +30,7 @@ nav:
   - 'index.md'
   - 'StorPool Distributed Storage': 'storpool.md'
   - 'Configure OpenStack': 'configure.md'
+  - 'Development': 'hacking.md'
 markdown_extensions:
   - toc:
   - pymdownx.highlight:
