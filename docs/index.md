@@ -5,6 +5,8 @@ SPDX-License-Identifier: Apache-2.0
 
 # StorPool Integration with OpenStack
 
+\[[Home][storpool-sp-osi] | [GitHub][github] | [Changelog][github-changelog]\]
+
 ## Overview
 
 Most of the time, the the StorPool drivers in the upstream OpenStack Git
@@ -24,3 +26,7 @@ straight away.
 - [A brief introduction to StorPool](storpool.md)
 - [Configure OpenStack](configure.md)
 - [OpenStack Kolla integration](kolla.md)
+
+[github]: https://github.com/storpool/storpool-openstack-integration "The StorPool OpenStack integration GitHub repository"
+[github-changelog]: https://github.com/storpool/storpool-openstack-integration/blob/master/docs/changes.md "The changelog file"
+[storpool-sp-osi]: https://repo.storpool.com/public/doc/storpool-openstack-integration/ "The StorPool OpenStack integration documentation"
