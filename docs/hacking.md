@@ -13,13 +13,16 @@ SPDX-License-Identifier: Apache-2.0
   non-outdated.
 - Make sure to mark any entries referring to the old version of
   the file (with the old checksum) as outdated now.
-- Run the internal validation suite: either `tox -e validate` or
-  `nox -s validate`.
-- Optionally, run the full test suite using Tox: either `tox -p all` or,
-  using the [tox-delay utility][tox-delay], `tox-delay -p all -e validate`.
+- Run the internal validation suite: <!-- either `tox -e validate` or
+  `nox -s validate` -->
+  `tox -e validate`.
+- Run the full test suite using Tox: either `tox -p all` or,
+  using the [tox-stages utility][tox-stages], `tox-stages run`.
+<!--
 - Optionally, run the full test suite using Nox: either `nox` or,
   using the [nox-stages utility][nox-stages],
   `nox-stages -p1 -q1 @check @tests`.
+  -->
 
-[tox-delay]: https://gitlab.com/ppentchev/tox-delay "Run some Tox tests after others have completed"
+[tox-stages]: https://devel.ringlet.net/devel/test-stages/ "Run Tox tests in groups, stopping on errors"
 [nox-stages]: https://gitlab.com/ppentchev/nox-dump "The nox-stages tool from the nox-dump package"
