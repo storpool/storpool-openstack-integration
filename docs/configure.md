@@ -12,8 +12,8 @@ needs the client services; the actual disks that store the data may be
 on a separate storage cluster.
 
 This section describes the configuration of the OpenStack Cinder (block
-storage) service.  Note that for OpenStack releases before Queens
-(February 2018), the StorPool Cinder drivers may need to be installed
+storage) service.
+Note that the StorPool Cinder drivers may need to be installed
 beforehand; see the "Installing the StorPool drivers" section for
 details.
 
@@ -84,23 +84,10 @@ To create a snapshot of this volume:
 ## Nova attachment driver
 
 This section describes the configuration of the OpenStack Nova (compute)
-service to use StorPool-backed volumes created by Cinder.  Note that for
-OpenStack releases before Queens (February 2018), the StorPool Nova
-drivers may need to be installed beforehand; see the "Installing the
-StorPool drivers" section for details.
+service to use StorPool-backed volumes created by Cinder.
 
-### Configuring the Nova volume attachment driver
-
-Edit the `/etc/nova/nova.conf` file.  If there is a `volume_drivers`
-line in the `[DEFAULT]` section, add to it the following definition.
-If there is no such line, add it:
-
-    volume_drivers=storpool=nova.virt.libvirt.volume.LibvirtStorPoolVolumeDriver
-
-Then restart the relevant Nova services:
-
-    # service nova-compute restart
-    # service nova-api-metadata restart
+The changes needed to let Nova recognize StorPool volumes as exported by
+Cinder were merged into the OpenStack Queens (February 2018) release.
 
 ### Using StorPool volumes as instance root disks
 
@@ -124,12 +111,9 @@ there shall be no needless copying of data and no overuse of disk space.
 
 ## Installing the StorPool drivers
 
-For the OpenStack releases before Queens, namely Mitaka (April 2016),
-Newton (October 2016), Ocata (February 2017), and Pike (August 2017),
-the StorPool drivers for Cinder and Nova are not part of the OpenStack
-distribution and must be installed separately.  The tools referenced in
-this section may be obtained from the [StorPool OpenStack
-Integration][github] Git repository.
+Most of the time, the StorPool Cinder driver in the OpenStack Git
+repository or the released versions is not completely up-to-date with
+the latest features and bugfixes.
 
 ### Preliminary setup
 
@@ -141,7 +125,9 @@ Integration][github] Git repository.
    `storpool_block` services) on the OpenStack controller node and on
    each of the hypervisor nodes.
 
-4. On the controller and all the hypervisor nodes, install the
+4. On the node that will run the `cinder-volume` service and all
+   the hypervisor nodes that will run the `nova-compute` service,
+   install the
    [`storpool`][py-storpool] and
    [`storpool-spopenstack`][py-spopenstack] Python packages:
 
@@ -153,7 +139,7 @@ Integration][github] Git repository.
         pip install storpool
         pip install storpool.spopenstack
 
-5. On the controller and all the hypervisor nodes, clone
+5. On the same nodes, clone
    the [StorPool OpenStack Integration][github] Git repository
    or copy it from some other host where it has been cloned:
 
