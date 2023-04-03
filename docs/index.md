@@ -5,10 +5,21 @@ SPDX-License-Identifier: Apache-2.0
 
 # StorPool Integration with OpenStack
 
-This document describes the ways to configure the OpenStack Cinder block
-storage component to use the StorPool distributed storage as a backend
-and provide StorPool-backed volumes to the other OpenStack services
-such as Nova Compute.
+## Overview
+
+Most of the time, the the StorPool drivers in the upstream OpenStack Git
+repositories (Cinder, Nova, os-brick) do not all contain the latest
+bugfixes and features that the StorPool team has developed.
+This may happen for several reasons: recent fixes and features have not
+yet been merged, others have not yet been backported to previous releases,
+some are considered too intrusive to backport, etc.
+The StorPool OpenStack Integration repository contains the latest versions
+of the StorPool Cinder backend driver, as well as several tools to help with
+configuring a deployed OpenStack cluster to use StorPool-backed volumes or
+assisting an OpenStack deployment system to configure a new cluster
+straight away.
+
+## Sections
 
 - [A brief introduction to StorPool](storpool.md)
 - [Configure OpenStack](configure.md)
