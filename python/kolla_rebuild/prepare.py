@@ -71,37 +71,39 @@ def pack_osi_release(cfg: defs.Config, basename: str, tarball: pathlib.Path) -> 
         )
 
 
+def _write_out_and_rename(
+    cfg: defs.Config, resp: requests.Response, tmpfile: IO[bytes], url: str, tarball: pathlib.Path
+) -> bool:
+    """Read the response data, write it out to the file, rename it when done."""
+    cfg.diag_("Storing the HTTP response into a temporary file")
+    while True:
+        try:
+            cbuf = resp.raw.read(32768)
+        except (OSError, requests.HTTPError) as err:
+            sys.exit(f"Could not download {url} to {tarball}: read error: {err}")
+        if not cbuf:
+            break
+        try:
+            tmpfile.write(cbuf)
+        except OSError as err:
+            sys.exit(f"Could not download {url} to {tarball}: write error: {err}")
+
+    try:
+        tmpfile.flush()
+    except OSError as err:
+        sys.exit(f"Could not download {url} to {tarball}: flush error: {err}")
+
+    cfg.diag(lambda: f"Renaming the temporary file to {tarball}")
+    try:
+        os.rename(tmpfile.name, tarball)  # noqa: PTH104
+    except OSError as err:
+        sys.exit(f"Could not download {url} to {tarball}: rename error: {err}")
+
+    return True
+
+
 def download_osi_release(cfg: defs.Config, tarball: pathlib.Path) -> None:
     """Download the sp-osi release tarball from GitHub."""
-
-    def write_out_and_rename(tmpfile: IO[bytes]) -> bool:
-        """Read the response data, write it out to the file, rename it when done."""
-        cfg.diag_("Storing the HTTP response into a temporary file")
-        while True:
-            try:
-                cbuf = resp.raw.read(32768)
-            except (OSError, requests.HTTPError) as err:
-                sys.exit(f"Could not download {url} to {tarball}: read error: {err}")
-            if not cbuf:
-                break
-            try:
-                tmpfile.write(cbuf)
-            except OSError as err:
-                sys.exit(f"Could not download {url} to {tarball}: write error: {err}")
-
-        try:
-            tmpfile.flush()
-        except OSError as err:
-            sys.exit(f"Could not download {url} to {tarball}: flush error: {err}")
-
-        cfg.diag(lambda: f"Renaming the temporary file to {tarball}")
-        try:
-            os.rename(tmpfile.name, tarball)  # noqa: PTH104
-        except OSError as err:
-            sys.exit(f"Could not download {url} to {tarball}: rename error: {err}")
-
-        return True
-
     url: Final = f"{GITHUB_BASE}{cfg.sp_osi_version}{SP_EXT}"
     cfg.diag(lambda: f"Sending a GET request for {url}")
     try:
@@ -119,7 +121,7 @@ def download_osi_release(cfg: defs.Config, tarball: pathlib.Path) -> None:
         dir=tarball.parent, prefix=f"osi-{cfg.sp_osi_version}.", delete=False
     ) as tmpfile:
         try:
-            renamed = write_out_and_rename(tmpfile)
+            renamed = _write_out_and_rename(cfg, resp, tmpfile, url, tarball)
         finally:
             if not renamed:
                 try:
