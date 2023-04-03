@@ -28,6 +28,8 @@ site_url: https://repo.storpool.com/public/doc/storpool-openstack-integration/
 site_dir: site/docs
 nav:
   - 'index.md'
+  - 'StorPool Distributed Storage': 'storpool.md'
+  - 'Configure OpenStack': 'configure.md'
 markdown_extensions:
   - toc:
   - pymdownx.highlight:
