@@ -1,0 +1,48 @@
+# SPDX-FileCopyrightText: 2023  StorPool <support@storpool.com>
+# SPDX-License-Identifier: Apache-2.0
+
+theme:
+  name: material
+  features:
+    - navigation.instant
+    - navigation.tracking
+    - toc.integrate
+    - toc.follow
+    - content.code.copy
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      toggle:
+        icon: material/weather-night
+        name: Switch to light mode
+site_name: storpool-openstack-integration
+repo_url: https://github.com/storpool/storpool-openstack-integration
+repo_name: storpool-openstack-integration
+site_author: StorPool
+site_url: https://repo.storpool.com/public/doc/storpool-openstack-integration/
+site_dir: site/docs
+nav:
+  - 'index.md'
+markdown_extensions:
+  - toc:
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite:
+  - pymdownx.superfences:
+plugins:
+  - mkdocstrings:
+      handlers:
+        python:
+          paths: [python]
+          options:
+            heading_level: 3
+            show_root_heading: true
+  - search
+watch:
+  - 'python/chroot_test'
+  - 'python/sp_osi'
