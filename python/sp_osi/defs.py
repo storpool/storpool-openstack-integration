@@ -23,7 +23,7 @@ class ComponentVersion(NamedTuple):
     """The human-readable description of this component version entry."""
 
     files: Dict[pathlib.Path, ComponentFile]
-    """The list of files and checkums for this particular version."""
+    """The list of files and checksums for this particular version."""
 
     outdated: bool
     """Indicate whether this component's files be updated or it is up to date."""
