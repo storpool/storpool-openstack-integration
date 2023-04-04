@@ -7,6 +7,8 @@ SPDX-License-Identifier: Apache-2.0
 
 ## [Unreleased]
 
+## [2.1.0] - 2023-04-04
+
 ### Fixes
 
 - build infrastructure:
@@ -249,7 +251,8 @@ SPDX-License-Identifier: Apache-2.0
 
 - Initial public release.
 
-[Unreleased]: https://github.com/storpool/storpool-openstack-integration/compare/release/2.0.5...master
+[Unreleased]: https://github.com/storpool/storpool-openstack-integration/compare/release/2.1.0...master
+[2.1.0]: https://github.com/storpool/storpool-openstack-integration/compare/release/2.0.5...release/2.1.0
 [2.0.5]: https://github.com/storpool/storpool-openstack-integration/compare/release/2.0.4...release/2.0.5
 [2.0.4]: https://github.com/storpool/storpool-openstack-integration/compare/release/2.0.3...release/2.0.4
 [2.0.3]: https://github.com/storpool/storpool-openstack-integration/compare/release/2.0.2...release/2.0.3
