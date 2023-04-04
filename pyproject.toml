@@ -29,7 +29,6 @@ classifiers = [
     "Topic :: Software Development :: Libraries",
     "Topic :: Software Development :: Libraries :: Python Modules",
 ]
-urls = {"Source" = "https://github.com/storpool/storpool-openstack-integration"}
 dynamic = ["dependencies", "version"]
 
 [[project.authors]]
@@ -38,6 +37,11 @@ email = "support@storpool.com"
 
 [project.scripts]
 sp-openstack = "sp_osi.__main__:main"
+
+[project.urls]
+Home = "https://repo.storpool.com/public/doc/storpool-openstack-integration/"
+Source = "https://github.com/storpool/storpool-openstack-integration"
+Changelog = "https://github.com/storpool/storpool-openstack-integration/blob/master/docs/changes.md"
 
 [tool.setuptools]
 zip-safe = true
