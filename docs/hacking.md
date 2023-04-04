@@ -43,5 +43,15 @@ SPDX-License-Identifier: Apache-2.0
   `nox-stages -p1 -q1 @check @tests`.
   -->
 
+## Updating the documentation
+
+- Use the Tox `docs` environment to build a local copy in the `site/docs`
+  directory: `tox -e docs`
+- Use the `mkdocs serve` command (it may be invoked as
+  `.tox/docs/bin/mkdocs serve` if the Tox environment has recently been used)
+  to view changes made to the Markdown files in real time
+  (after saving the files)
+- Add new top-level documentation pages to the `nav` section of `mkdocs.yml`
+
 [tox-stages]: https://devel.ringlet.net/devel/test-stages/ "Run Tox tests in groups, stopping on errors"
 [nox-stages]: https://gitlab.com/ppentchev/nox-dump "The nox-stages tool from the nox-dump package"
