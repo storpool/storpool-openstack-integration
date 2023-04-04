@@ -7,6 +7,60 @@ SPDX-License-Identifier: Apache-2.0
 
 ## [Unreleased]
 
+### Fixes
+
+- build infrastructure:
+    - correct the requirements path in the pyproject.toml file
+    - correct the sp-osi requirements, only leave the ones that are
+      relevant to sp\_osi itself
+    - use the canonical names for the cfg-diag and sp-variant libraries
+- sp-osi:
+    - catch more exceptions when parsing the components file
+    - various minor fixes and refactoring as suggested by ruff
+
+### Additions
+
+- documentation:
+    - convert the `CHANGES.md`, `HACKING.md`, and `README.md` files
+      into a MkDocs-based documentation site within the `docs/` directory
+    - add a brief overview blurb to the documentation main page
+- sp-openstack:
+    - include a simplified version of the `utf8-locale` library to
+      make reading commands output a bit more reliable
+- kolla-rebuild:
+    - new tool for rebuilding the upstream Kolla container images
+      (the `cinder-volume` and `nova-compute` ones) to support the StorPool
+      Cinder backend
+- testing infrastructure:
+    - add a Python unit test suite
+    - add separate environments for running the command-line tools
+      other than sp-openstack itself
+    - run ruff 0.0.260 with most of its checks enabled and satisfied
+    - run ruff's isort emulation in a separate Tox environment
+
+### Other changes
+
+- Drop the drivers for OpenStack releases earlier than Victoria;
+  the Kilo through Queens drivers are of historical value only at
+  this point, and they were not described in the components file or
+  handled by the new `sp-openstack` tool anyway
+- Switch to SPDX license identifiers
+- documentation:
+    - README: split this long file into several documentation sections
+    - configure: drop some outdated information
+    - hacking: minor updates:
+        - running the full test suite is not optional
+        - refer to `tox-stages` instead of `tox-delay`
+        - temporarily comment out the Nox parts
+- sp-openstack:
+    - sort the import section, fold `typing` into the main group
+- chroot-test:
+    - turn this file into a full-fledged Python module (not installed,
+      only used for running the program itself)
+    - simplify the file structure using deferred type annotations
+    - various minor fixes and refactoring as suggested by ruff
+    - sort the import section, fold `typing` into the main group
+
 ## [2.0.5] - 2023-03-09
 
 - correct the 2.0.4 changelog entry: it is about Nova, not Cinder
