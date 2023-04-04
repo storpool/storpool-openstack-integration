@@ -27,6 +27,13 @@ straight away.
 - [Configure OpenStack](configure.md)
 - [OpenStack Kolla integration](kolla.md)
 
+## Contact
+
+The StorPool OpenStack integration repository is developed by
+[StorPool][storpool-support] in [a GitHub repository][github].
+This documentation is hosted [at StorPool][storpool-sp-osi].
+
 [github]: https://github.com/storpool/storpool-openstack-integration "The StorPool OpenStack integration GitHub repository"
 [github-changelog]: https://github.com/storpool/storpool-openstack-integration/blob/master/docs/changes.md "The changelog file"
 [storpool-sp-osi]: https://repo.storpool.com/public/doc/storpool-openstack-integration/ "The StorPool OpenStack integration documentation"
+[storpool-support]: mailto:support@storpool.com "The StorPool team"
