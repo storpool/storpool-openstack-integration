@@ -11,6 +11,8 @@ SPDX-License-Identifier: Apache-2.0
 
 - build infrastructure:
     - note the documentation URLs in the project metadata
+- documentation:
+    - hacking: add a couple of words about the MkDocs-based documentation
 
 ## [2.1.0] - 2023-04-04
 
