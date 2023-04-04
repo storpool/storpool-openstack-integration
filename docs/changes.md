@@ -7,6 +7,11 @@ SPDX-License-Identifier: Apache-2.0
 
 ## [Unreleased]
 
+### Additions
+
+- build infrastructure:
+    - note the documentation URLs in the project metadata
+
 ## [2.1.0] - 2023-04-04
 
 ### Fixes
