@@ -76,9 +76,9 @@ After the virtual environment has been prepared, run the `kolla-rebuild` tool
 from its executable programs directory:
 
 ``` sh
-venv-kolla-rebuild/bin/kolla-rebuild --help
-venv-kolla-rebuild/bin/kolla-rebuild -r 'zed' --pull
-venv-kolla-rebuild/bin/kolla-rebuild -r 'yoga' --tag-suffix '.sp' -c 'cinder-volume'
+env PYTHONPATH=python venv-kolla-rebuild/bin/python3 -m kolla_rebuild --help
+env PYTHONPATH=python venv-kolla-rebuild/bin/python3 -m kolla_rebuild -r 'zed' --pull
+env PYTHONPATH=python venv-kolla-rebuild/bin/python3 -m kolla_rebuild -r 'yoga' --tag-suffix '.sp' -c 'cinder-volume'
 ```
 
 ### Running kolla-rebuild using Tox
