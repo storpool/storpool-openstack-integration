@@ -15,7 +15,7 @@ if TYPE_CHECKING:
     from typing import Final
 
 
-CHANGELOG_FILE: Final = pathlib.Path("CHANGES.md")
+CHANGELOG_FILE: Final = pathlib.Path("docs/changes.md")
 """The relative path to the changelog file from the project's top-level directory."""
 
 CHANGELOG_SKIP_HEADINGS: Final = (
@@ -87,7 +87,7 @@ def find_sp_osi_version(*, changelog: pathlib.Path | None = None) -> str:
 
     skip = iter(CHANGELOG_SKIP_HEADINGS)
     for line in changelog.read_text(encoding="UTF-8").splitlines():
-        if not line.startswith("#"):
+        if not line.startswith(("# ", "## ")):
             continue
 
         expected = next(skip, None)
