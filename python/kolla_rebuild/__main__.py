@@ -24,13 +24,17 @@ if TYPE_CHECKING:
     from typing import Final
 
 
-ALL_CONTAINERS: Final = ("cinder-volume", "nova-compute")
+ALL_CONTAINERS: Final = [
+    defs.Container(name="cinder-volume", extra_components=[]),
+    defs.Container(name="nova-compute", extra_components=["os_brick"]),
+]
+
 """The known containers that we want to rebuild."""
 
 DEFAULT_RELEASE: Final = "master"
 """The default OpenStack release (or "master") to rebuild the containers for."""
 
-DEFAULT_CONTAINERS: Final = list(ALL_CONTAINERS)
+DEFAULT_CONTAINERS: Final = [cont.name for cont in ALL_CONTAINERS]
 """The components to build containers for by default."""
 
 
@@ -70,6 +74,24 @@ def build_config(
         tag_suffix=tag_suffix if tag_suffix is not None else _build_tag_suffix(),
         verbose=not quiet,
     )
+
+
+def get_containers(container_names: list[str]) -> list[defs.Container]:
+    """Find the containers corresponding to the provided names."""
+    containers: list[defs.Container] = []
+    for container_name in container_names:
+        container = None
+        for cont in ALL_CONTAINERS:
+            if container_name == cont.name:
+                container = cont
+        if container is None:
+            sys.exit(
+                f"Unrecognized container: {container_name}, "
+                f"must be one or more of {' '.join([c.name for c in ALL_CONTAINERS])}"
+            )
+        containers.append(container)
+
+    return containers
 
 
 @click.command(
@@ -117,13 +139,15 @@ def main(
 ) -> None:
     """Parse command-line options, gather files, invoke docker-build."""
 
-    def build_component(container: str) -> None:
+    def build_component(container: defs.Container) -> None:
         """Rebuild the container for a single component."""
-        parts: Final = container.split("-", maxsplit=1)
+        parts: Final = container.name.split("-", maxsplit=1)
         if len(parts) != 2:  # noqa: PLR2004  # this will go away with match/case
             sys.exit(f"Internal error: build_component() invoked with {container=!r}")
         kolla_component, kolla_service = parts
-        build: Final = prepare.build_dockerfile(cfg, files, kolla_component, kolla_service)
+        build: Final = prepare.build_dockerfile(
+            cfg, files, kolla_component, kolla_service, container.extra_components
+        )
 
         with tempfile.NamedTemporaryFile(
             mode="wt", encoding="UTF-8", prefix="Dockerfile."
@@ -157,15 +181,13 @@ def main(
         sys.exit(
             f"Unsupported release {release!r}, must be one of {' '.join(prepare.ALL_RELEASES)}"
         )
-    if any(cont for cont in container if cont not in ALL_CONTAINERS):
-        sys.exit(f"Unrecognized containers, must be one or more of {' '.join(ALL_CONTAINERS)}")
     cfg: Final = build_config(quiet=quiet, release=release, sp_osi=sp_osi, tag_suffix=tag_suffix)
-
+    containers = get_containers(container)
     datadir: Final = cfg.topdir / defs.DATA_DIR
     files: Final = prepare.prepare_data_files(cfg, datadir)
 
-    for comp in container:
-        build_component(comp)
+    for cont in containers:
+        build_component(cont)
 
 
 if __name__ == "__main__":

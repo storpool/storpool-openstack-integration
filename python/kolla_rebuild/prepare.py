@@ -163,7 +163,11 @@ def prepare_data_files(cfg: defs.Config, datadir: pathlib.Path) -> defs.DataFile
 
 
 def build_dockerfile(
-    cfg: defs.Config, files: defs.DataFiles, kolla_component: str, kolla_service: str
+    cfg: defs.Config,
+    files: defs.DataFiles,
+    kolla_component: str,
+    kolla_service: str,
+    extra_components: list[str],
 ) -> defs.BuildSource:
     """Render the Jinja template."""
     legacy_names: Final = cfg.release in LEGACY_RELEASES
@@ -182,6 +186,7 @@ def build_dockerfile(
     jvars: Final = {
         "container_name": kolla_container_name,
         "component": kolla_component,
+        "extra_components": extra_components,
         "registry": defs.KOLLA_REGISTRY,
         "release": cfg.release,
         "sp_osi_name": files.basename,

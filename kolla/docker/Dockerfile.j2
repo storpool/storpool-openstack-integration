@@ -27,6 +27,10 @@ WORKDIR /opt/sp-osi/${SP_OSI_NAME}/
 RUN ./sp-openstack -v detect -- "${KOLLA_COMPONENT}"
 RUN ./sp-openstack -v install -- "${KOLLA_COMPONENT}"
 RUN ./sp-openstack -v groups -- "${KOLLA_COMPONENT}"
+{% for component in extra_components %}
+RUN ./sp-openstack -v detect -- "{{ component }}"
+RUN ./sp-openstack -v install -- "{{ component }}"
+{% endfor %}
 
 RUN python3 -m pip install 'storpool >= 7.3.0, < 8' 'storpool.spopenstack >= 3.1.0, < 4'
 
