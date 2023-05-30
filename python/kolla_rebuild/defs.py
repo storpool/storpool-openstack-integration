@@ -68,3 +68,14 @@ class BuildSource:
 
     dockerfile: str
     """The contents of the Dockerfile to rebuild with."""
+
+
+@dataclasses.dataclass(frozen=True)
+class Container:
+    """A Kolla Container."""
+
+    name: str
+    """The name of the container, in a {component}-{service} format"""
+
+    extra_components: list[str]
+    """List of extra components inside the container"""
