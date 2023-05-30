@@ -925,6 +925,40 @@
                     }
                 }
             }
+        },
+        "os_brick": {
+            "detect_files_order": [
+                "initiator/connectors/fibre_channel.py",
+                "initiator/connectors/storpool.py"
+            ],
+            "branches": {
+                "zed": {
+                    "6.1.1.1.0.0": {
+                        "comment": "StorPool Updates for Snapshot 2023-05-30",
+                        "files": {
+                            "initiator/connectors/fibre_channel.py": {
+                                "sha256": "8ed61b07ec9baea762f766932d48afb4821b990d0ecd7cdfcdcd2fd2bdd28243"
+                            },
+                            "initiator/connectors/storpool.py": {
+                                "sha256": "5f14e6fd13471245a0da20aca2b2d1c02d3a1e4bb4b4255402a9f00262e25385"
+                            }
+                        },
+                        "outdated": false
+                    },
+                    "6.1.1.0.0.1": {
+                        "comment": "upstream Zed snapshot 2023-05-30",
+                        "files": {
+                            "initiator/connectors/fibre_channel.py": {
+                                "sha256": "8ed61b07ec9baea762f766932d48afb4821b990d0ecd7cdfcdcd2fd2bdd28243"
+                            },
+                            "initiator/connectors/storpool.py": {
+                                "sha256": "1f24d4f7033c2585678341fb0b114d89e12af6070e758f111c9a505610c3d41c"
+                            }
+                        },
+                        "outdated": true
+                    }
+                }
+            }
         }
     }
 }
