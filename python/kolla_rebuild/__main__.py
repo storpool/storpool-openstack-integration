@@ -24,13 +24,13 @@ if TYPE_CHECKING:
     from typing import Final
 
 
-ALL_COMPONENTS: Final = ("cinder-volume", "nova-compute")
+ALL_CONTAINERS: Final = ("cinder-volume", "nova-compute")
 """The known containers that we want to rebuild."""
 
 DEFAULT_RELEASE: Final = "master"
 """The default OpenStack release (or "master") to rebuild the containers for."""
 
-DEFAULT_COMPONENTS: Final = list(ALL_COMPONENTS)
+DEFAULT_CONTAINERS: Final = list(ALL_CONTAINERS)
 """The components to build containers for by default."""
 
 
@@ -77,10 +77,10 @@ def build_config(
 )
 @click.option(
     "-c",
-    "--component",
+    "--container",
     type=str,
     multiple=True,
-    default=DEFAULT_COMPONENTS,
+    default=DEFAULT_CONTAINERS,
     help="the OpenStack component containers to rebuild",
 )
 @click.option("--no-cache", is_flag=True, help="flush the Docker build cache")
@@ -107,7 +107,7 @@ def build_config(
 )
 def main(
     *,
-    component: list[str],
+    container: list[str],
     no_cache: bool,
     pull: bool,
     quiet: bool,
@@ -117,11 +117,11 @@ def main(
 ) -> None:
     """Parse command-line options, gather files, invoke docker-build."""
 
-    def build_component(component: str) -> None:
+    def build_component(container: str) -> None:
         """Rebuild the container for a single component."""
-        parts: Final = component.split("-", maxsplit=1)
+        parts: Final = container.split("-", maxsplit=1)
         if len(parts) != 2:  # noqa: PLR2004  # this will go away with match/case
-            sys.exit(f"Internal error: build_component() invoked with {component=!r}")
+            sys.exit(f"Internal error: build_component() invoked with {container=!r}")
         kolla_component, kolla_service = parts
         build: Final = prepare.build_dockerfile(cfg, files, kolla_component, kolla_service)
 
@@ -157,14 +157,14 @@ def main(
         sys.exit(
             f"Unsupported release {release!r}, must be one of {' '.join(prepare.ALL_RELEASES)}"
         )
-    if any(comp for comp in component if comp not in ALL_COMPONENTS):
-        sys.exit(f"Unrecognized components, must be one or more of {' '.join(ALL_COMPONENTS)}")
+    if any(cont for cont in container if cont not in ALL_CONTAINERS):
+        sys.exit(f"Unrecognized containers, must be one or more of {' '.join(ALL_CONTAINERS)}")
     cfg: Final = build_config(quiet=quiet, release=release, sp_osi=sp_osi, tag_suffix=tag_suffix)
 
     datadir: Final = cfg.topdir / defs.DATA_DIR
     files: Final = prepare.prepare_data_files(cfg, datadir)
 
-    for comp in component:
+    for comp in container:
         build_component(comp)
 
 
