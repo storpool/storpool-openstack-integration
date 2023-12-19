@@ -44,9 +44,12 @@ SP_EXT: Final = ".tar.gz"
 
 LEGACY_RELEASES = ("yoga",)
 
-NON_LEGACY_RELEASES = ("zed", "2023.1", "master")
+NON_LEGACY_RELEASES = ("zed", "2023.1", "2023.2", "master")
 
-RELEASE_ALIASES = {"antelope": "2023.1"}
+RELEASE_ALIASES = {
+    "antelope": "2023.1",
+    "bobcat": "2023.2",
+}
 
 ALL_RELEASES = (*LEGACY_RELEASES, *NON_LEGACY_RELEASES, *RELEASE_ALIASES.keys())
 
