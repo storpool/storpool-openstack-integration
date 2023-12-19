@@ -615,7 +615,7 @@
                     }
                 },
                 "zed": {
-                    "27.1.0.0.0.1": {
+                    "26.1.0.0.0.92": {
                         "comment": "upstream Zed snapshot 2023-05-29",
                         "files": {
                             "virt/libvirt/driver.py": {
