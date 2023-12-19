@@ -12,6 +12,32 @@
                 "volume/driver.py"
             ],
             "branches": {
+                "bobcat": {
+                    "23.0.0.8.0.0": {
+                        "comment": "StorPool fixes for Bobcat (iSCSI multipath)",
+                        "files": {
+                            "volume/driver.py": {
+                                "sha256": "f39116608c1b95bc0f31f185c07475da8114317a9c39b7e2bbf2a173dc5e5c55"
+                            },
+                            "volume/drivers/storpool.py": {
+                                "sha256": "dd9ef3a599089a8c6b6e0e19a7c017556504c1e47c07e4b53d3d8a4492757d68"
+                            }
+                        },
+                        "outdated": false
+                    },
+                    "23.0.0.0.0.0": {
+                        "comment": "upstream Bobcat 23.0.0",
+                        "files": {
+                            "volume/driver.py": {
+                                "sha256": "f39116608c1b95bc0f31f185c07475da8114317a9c39b7e2bbf2a173dc5e5c55"
+                            },
+                            "volume/drivers/storpool.py": {
+                                "sha256": "c8fbac23cbe51df51d023054a42a7a51cdac124f05fd36a30c5afc21aa769829"
+                            }
+                        },
+                        "outdated": true
+                    }
+                },
                 "antelope": {
                     "22.0.0.8.0.0": {
                         "comment": "StorPool fixes for Antelope (iSCSI multipath)",
@@ -588,6 +614,20 @@
                 "virt/libvirt/config.py"
             ],
             "branches": {
+                "bobcat": {
+                    "28.0.0.0.0.0": {
+                        "comment": "upstream Bobcat 28.0.0",
+                        "files": {
+                            "virt/libvirt/driver.py": {
+                                "sha256": "f4eb4a266e15b4ad20dc470afae5dba0eacaa5d5d0ee3ae7bbe11dbcf087e242"
+                            },
+                            "virt/libvirt/config.py": {
+                                "sha256": "1432cf104dc22aec4a2785877c458621ddab40392b2d260aea38d114bac4c5f0"
+                            }
+                        },
+                        "outdated": false
+                    }
+                },
                 "antelope": {
                     "27.1.0.0.0.0": {
                         "comment": "upstream Antelope 27.1.0",
@@ -956,6 +996,32 @@
                 "initiator/connectors/storpool.py"
             ],
             "branches": {
+                "bobcat": {
+                    "6.4.0.1.0.0": {
+                        "comment": "StorPool updates for Bobcat 6.4.0",
+                        "files": {
+                            "initiator/connectors/fibre_channel.py": {
+                                "sha256": "718f8253d4ac697b428c1dca4c622d73227f912ba5cf2baa51c081e767b28523"
+                            },
+                            "initiator/connectors/storpool.py": {
+                                "sha256": "1598c49dab93c198241d78dd171b09c37550c3af8de8ad59fc55a2d67e225c50"
+                            }
+                        },
+                        "outdated": false
+                    },
+                    "6.4.0.0.0.0": {
+                        "comment": "upstream Bobcat 6.4.0",
+                        "files": {
+                            "initiator/connectors/fibre_channel.py": {
+                                "sha256": "718f8253d4ac697b428c1dca4c622d73227f912ba5cf2baa51c081e767b28523"
+                            },
+                            "initiator/connectors/storpool.py": {
+                                "sha256": "1f24d4f7033c2585678341fb0b114d89e12af6070e758f111c9a505610c3d41c"
+                            }
+                        },
+                        "outdated": true
+                    }
+                },
                 "antelope": {
                     "6.2.0.1.0.0": {
                         "comment": "StorPool updates for Antelope 6.2.0",
