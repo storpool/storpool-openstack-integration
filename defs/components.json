@@ -589,6 +589,18 @@
             ],
             "branches": {
                 "antelope": {
+                    "27.1.0.0.0.0": {
+                        "comment": "upstream Antelope 27.1.0",
+                        "files": {
+                            "virt/libvirt/driver.py": {
+                                "sha256": "e110e335b5f9f8e24cc695004bad5183e0b1a6e30251f8948ab7516ae6dec38d"
+                            },
+                            "virt/libvirt/config.py": {
+                                "sha256": "105eb5c226549a9a78c0fadbe2c3a423c3e48df534fc76ddf3e4a1c907e69876"
+                            }
+                        },
+                        "outdated": false
+                    },
                     "27.0.0.0.0.0": {
                         "comment": "upstream Antelope 27.0.0",
                         "files": {
