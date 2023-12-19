@@ -933,14 +933,14 @@
             ],
             "branches": {
                 "zed": {
-                    "6.1.1.1.0.0": {
+                    "6.1.1.1.0.1": {
                         "comment": "StorPool Updates for Snapshot 2023-05-30",
                         "files": {
                             "initiator/connectors/fibre_channel.py": {
                                 "sha256": "8ed61b07ec9baea762f766932d48afb4821b990d0ecd7cdfcdcd2fd2bdd28243"
                             },
                             "initiator/connectors/storpool.py": {
-                                "sha256": "5f14e6fd13471245a0da20aca2b2d1c02d3a1e4bb4b4255402a9f00262e25385"
+                                "sha256": "1598c49dab93c198241d78dd171b09c37550c3af8de8ad59fc55a2d67e225c50"
                             }
                         },
                         "outdated": false
