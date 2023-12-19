@@ -44,9 +44,11 @@ SP_EXT: Final = ".tar.gz"
 
 LEGACY_RELEASES = ("yoga",)
 
-NON_LEGACY_RELEASES = ("zed", "antelope", "master")
+NON_LEGACY_RELEASES = ("zed", "2023.1", "master")
 
-ALL_RELEASES = (*LEGACY_RELEASES, *NON_LEGACY_RELEASES)
+RELEASE_ALIASES = {"antelope": "2023.1"}
+
+ALL_RELEASES = (*LEGACY_RELEASES, *NON_LEGACY_RELEASES, *RELEASE_ALIASES.keys())
 
 
 def pack_osi_release(cfg: defs.Config, basename: str, tarball: pathlib.Path) -> None:

@@ -181,6 +181,7 @@ def main(
         sys.exit(
             f"Unsupported release {release!r}, must be one of {' '.join(prepare.ALL_RELEASES)}"
         )
+    release = prepare.RELEASE_ALIASES.get(release, release)
     cfg: Final = build_config(quiet=quiet, release=release, sp_osi=sp_osi, tag_suffix=tag_suffix)
     containers = get_containers(container)
     datadir: Final = cfg.topdir / defs.DATA_DIR
