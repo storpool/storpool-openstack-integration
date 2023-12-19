@@ -932,6 +932,32 @@
                 "initiator/connectors/storpool.py"
             ],
             "branches": {
+                "antelope": {
+                    "6.2.0.1.0.0": {
+                        "comment": "StorPool updates for Antelope 6.2.0",
+                        "files": {
+                            "initiator/connectors/fibre_channel.py": {
+                                "sha256": "11eea30d2dd053e8c8cf420065885680580baec2a6caa72c4763d5b86f752485"
+                            },
+                            "initiator/connectors/storpool.py": {
+                                "sha256": "1598c49dab93c198241d78dd171b09c37550c3af8de8ad59fc55a2d67e225c50"
+                            }
+                        },
+                        "outdated": false
+                    },
+                    "6.2.0.0.0.0": {
+                        "comment": "upstream Antelope 6.2.0",
+                        "files": {
+                            "initiator/connectors/fibre_channel.py": {
+                                "sha256": "11eea30d2dd053e8c8cf420065885680580baec2a6caa72c4763d5b86f752485"
+                            },
+                            "initiator/connectors/storpool.py": {
+                                "sha256": "1f24d4f7033c2585678341fb0b114d89e12af6070e758f111c9a505610c3d41c"
+                            }
+                        },
+                        "outdated": true
+                    }
+                },
                 "zed": {
                     "6.1.1.1.0.1": {
                         "comment": "StorPool Updates for Snapshot 2023-05-30",
