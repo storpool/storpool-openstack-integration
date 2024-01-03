@@ -615,6 +615,18 @@
             ],
             "branches": {
                 "bobcat": {
+                    "28.0.0.0.0.1": {
+                        "comment": "upstream Bobcat snapshot 2024-01-02",
+                        "files": {
+                            "virt/libvirt/driver.py": {
+                                "sha256": "3dbdb2d90cd39ab0aa7c8f0a5c0faf3159d939d9e0ea5db5d51b36bb40e9e227"
+                            },
+                            "virt/libvirt/config.py": {
+                                "sha256": "1432cf104dc22aec4a2785877c458621ddab40392b2d260aea38d114bac4c5f0"
+                            }
+                        },
+                        "outdated": false
+                    },
                     "28.0.0.0.0.0": {
                         "comment": "upstream Bobcat 28.0.0",
                         "files": {
@@ -625,7 +637,7 @@
                                 "sha256": "1432cf104dc22aec4a2785877c458621ddab40392b2d260aea38d114bac4c5f0"
                             }
                         },
-                        "outdated": false
+                        "outdated": true
                     }
                 },
                 "antelope": {
