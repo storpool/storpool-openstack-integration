@@ -36,6 +36,7 @@ name = "StorPool"
 email = "support@storpool.com"
 
 [project.scripts]
+kolla-rebuild = "kolla_rebuild.__main__:main"
 sp-openstack = "sp_osi.__main__:main"
 
 [project.urls]
@@ -46,7 +47,7 @@ Changelog = "https://github.com/storpool/storpool-openstack-integration/blob/mas
 [tool.setuptools]
 zip-safe = true
 package-dir = {"" = "python"}
-packages = ["sp_osi"]
+packages = ["kolla_rebuild", "sp_osi"]
 
 [tool.setuptools.package-data]
 sp_osi = ["py.typed"]

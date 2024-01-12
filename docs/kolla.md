@@ -69,16 +69,16 @@ a virtual environment in a new directory:
 ``` sh
 python3 -m venv venv-kolla-rebuild
 venv-kolla-rebuild/bin/python3 -m pip install -U pip setuptools
-venv-kolla-rebuild/bin/python3 -m pip install -r python/requirements/run-kolla-rebuild.txt
+venv-kolla-rebuild/bin/python3 -m pip install /path/to/storpool-openstack-integration
 ```
 
 After the virtual environment has been prepared, run the `kolla-rebuild` tool
 from its executable programs directory:
 
 ``` sh
-env PYTHONPATH=python venv-kolla-rebuild/bin/python3 -m kolla_rebuild --help
-env PYTHONPATH=python venv-kolla-rebuild/bin/python3 -m kolla_rebuild -r 'zed' --pull
-env PYTHONPATH=python venv-kolla-rebuild/bin/python3 -m kolla_rebuild -r 'yoga' --tag-suffix '.sp' -c 'cinder-volume'
+venv-kolla-rebuild/bin/python3 -m kolla_rebuild --help
+venv-kolla-rebuild/bin/python3 -m kolla_rebuild -r 'zed' --pull
+venv-kolla-rebuild/bin/python3 -m kolla_rebuild -r 'yoga' --tag-suffix '.sp' -c 'cinder-volume'
 ```
 
 ### Running kolla-rebuild using Tox
