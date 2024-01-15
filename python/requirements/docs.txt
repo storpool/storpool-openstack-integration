@@ -3,5 +3,5 @@
 
 mkdocs >= 1.4.2, < 2
 mkdocs-material >= 9.1.2, < 10
-mkdocstrings >= 0.20, < 0.21
-mkdocstrings-python >= 0.8.3, < 0.9
+mkdocstrings >= 0.23, < 0.24
+mkdocstrings-python >= 1, < 2
