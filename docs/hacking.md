@@ -1,5 +1,5 @@
 <!--
-SPDX-FileCopyrightText: 2022 - 2023  StorPool <support@storpool.com>
+SPDX-FileCopyrightText: 2022 - 2024  StorPool <support@storpool.com>
 SPDX-License-Identifier: Apache-2.0
 -->
 
@@ -23,6 +23,17 @@ SPDX-License-Identifier: Apache-2.0
 - the rest of the Python tools should use common Python libraries such as
   `click`, `requests`, etc. and also libraries commonly used in other
   StorPool software such as `cfg-diag`, `sp-variant`, or `utf8-locale`
+
+## Adding a new upstream version to be detected
+
+- Add a new record to the `defs/components.json` file with
+  the new checksum of the driver file.
+- Mark it as non-outdated if there is no StorPool driver version that
+  should replace it, i.e. if this record is there for detection
+  purposes only and `sp-openstack install` should not replace any
+  files.
+- Mark it as outdated if there is a StorPool driver version to
+  replace it (or if one is being added in the same commit).
 
 ## Adding a new version of a StorPool driver
 
