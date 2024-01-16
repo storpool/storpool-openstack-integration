@@ -7,12 +7,71 @@ SPDX-License-Identifier: Apache-2.0
 
 ## [Unreleased]
 
-### Additions
+### Fixes
 
+- Cinder drivers:
+    - Antelope:
+        - change the entry version: this is 22.0.0, no longer a snapshot
+- Nova drivers:
+    - Antelope:
+        - change the entry version: this is 27.0.0, no longer a snapshot
 - build infrastructure:
     - note the documentation URLs in the project metadata
+    - install the `kolla_rebuild` module and the `kolla-rebuild` executable,
+      also updating the requirements files
 - documentation:
-    - hacking: add a couple of words about the MkDocs-based documentation
+    - fix a couple of duplicate words as spotted by the `spellintian` tool
+
+### Additions
+
+- Cinder drivers:
+    - Bobcat:
+        - recognize 23.0.0 and add the StorPool updates
+- Nova drivers:
+    - Bobcat:
+        - recognize 28.0.0, 28.0.1, and a couple of snapshots
+    - Antelope:
+        - recognize some more upstream snapshots
+    - Zed:
+        - recognize a couple of snapshots
+    - Yoga:
+        - recognize 25.2.1
+- os-brick:
+    - add it as a new component
+    - Bobcat:
+        - recognize 6.4.0 and add the StorPool updates
+    - Antelope:
+        - recognize 6.2.0 and add the StorPool updates
+    - Zed:
+        - recognize a snapshot and add the StorPool updates
+    - Yoga:
+        - recognize 5.2.2 (both upstream and the Ubuntu Cloud Archive version)
+          and add the StorPool updates
+- documentation:
+    - hacking:
+        - add a couple of words about the MkDocs-based documentation
+        - add a brief section about adding a detect-only component entry
+- kolla-rebuild:
+    - handle containers that need more than one component updated
+      (e.g. with Nova we also need to update the os-brick drivers)
+    - use the canonical 2023.1 name for Antelope and 2023.2 for Bobcat
+      but still recognize "antelope" and "bobcat" as aliases
+    - add the `-d` / `--topdir` option to specify the path to
+      the `storpool-openstack-integration` directory so that `kolla-rebuild`
+      may be invoked directly from a virtual environment
+
+### Other changes
+
+- testing infrastructure:
+    - update the Tox configuration file to the 4.x format
+- documentation:
+    - kolla: update the documentation for using a virtual environment
+    - use MkDocs 1.5 and mkdocstrings 0.24 with no changes
+- sp-osi:
+    - update the bundled copy of sp-variant to version 3.4.2
+- kolla-rebuild:
+    - catch up with the changes in the changelog formatting
+    - rename "component" to the more specific "container"
 
 ## [2.1.0] - 2023-04-04
 
