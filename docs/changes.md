@@ -7,6 +7,8 @@ SPDX-License-Identifier: Apache-2.0
 
 ## [Unreleased]
 
+## [2.2.0] - 2024-01-16
+
 ### Fixes
 
 - Cinder drivers:
@@ -317,7 +319,8 @@ SPDX-License-Identifier: Apache-2.0
 
 - Initial public release.
 
-[Unreleased]: https://github.com/storpool/storpool-openstack-integration/compare/release/2.1.0...master
+[Unreleased]: https://github.com/storpool/storpool-openstack-integration/compare/release/2.2.0...master
+[2.2.0]: https://github.com/storpool/storpool-openstack-integration/compare/release/2.1.0...release/2.2.0
 [2.1.0]: https://github.com/storpool/storpool-openstack-integration/compare/release/2.0.5...release/2.1.0
 [2.0.5]: https://github.com/storpool/storpool-openstack-integration/compare/release/2.0.4...release/2.0.5
 [2.0.4]: https://github.com/storpool/storpool-openstack-integration/compare/release/2.0.3...release/2.0.4

@@ -2,4 +2,4 @@
 # SPDX-License-Identifier: Apache-2.0
 """Update the StorPool drivers in an existing OpenStack installation."""
 
-VERSION = "2.1.0"
+VERSION = "2.2.0"
