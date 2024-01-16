@@ -7,6 +7,13 @@ SPDX-License-Identifier: Apache-2.0
 
 ## [Unreleased]
 
+### Fixes
+
+- documentation:
+    - document the `--topdir` / `-d` option to `kolla-rebuild` and
+      reflect it in the instructions for running the tool from
+      a virtual environment
+
 ## [2.2.0] - 2024-01-16
 
 ### Fixes
