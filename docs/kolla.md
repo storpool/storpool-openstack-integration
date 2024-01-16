@@ -58,6 +58,10 @@ The `kolla-rebuild` tool accepts the following command-line options:
   `storpool/cinder-volume:zed-ubuntu-jammy.20230403.0`.
   An empty string may be specified to not add anything to the tag of
   the source container image.
+- `--topdir` / `-d`: the path to the `storpool-openstack-integration`
+  directory where the `kolla-rebuild` tool can find its data files.
+  This needs to be specified when `kolla-rebuild` has been installed into
+  a virtual environment.
 
 ### Running kolla-rebuild in a virtual environment
 
@@ -73,12 +77,13 @@ venv-kolla-rebuild/bin/python3 -m pip install /path/to/storpool-openstack-integr
 ```
 
 After the virtual environment has been prepared, run the `kolla-rebuild` tool
-from its executable programs directory:
+from its executable programs directory, once again specifying the path to
+the `storpool-openstack-integration` directory:
 
 ``` sh
-venv-kolla-rebuild/bin/python3 -m kolla_rebuild --help
-venv-kolla-rebuild/bin/python3 -m kolla_rebuild -r 'zed' --pull
-venv-kolla-rebuild/bin/python3 -m kolla_rebuild -r 'yoga' --tag-suffix '.sp' -c 'cinder-volume'
+venv-kolla-rebuild/bin/python3 -m kolla_rebuild -d /path/to/storpool-openstack-integration --help
+venv-kolla-rebuild/bin/python3 -m kolla_rebuild -d /path/to/storpool-openstack-integration -r 'zed' --pull
+venv-kolla-rebuild/bin/python3 -m kolla_rebuild -d /path/to/storpool-openstack-integration -r 'yoga' --tag-suffix '.sp' -c 'cinder-volume'
 ```
 
 ### Running kolla-rebuild using Tox
