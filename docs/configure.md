@@ -172,7 +172,7 @@ the latest features and bugfixes.
    setup" section above).
 
 2. Let the StorPool OpenStack integration suite find your Nova drivers and
-   and make the necessary modifications in its own work directory:
+   make the necessary modifications in its own work directory:
 
         ./sp-openstack check
         ./sp-openstack install nova

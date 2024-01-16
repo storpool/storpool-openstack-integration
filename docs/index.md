@@ -9,7 +9,7 @@ SPDX-License-Identifier: Apache-2.0
 
 ## Overview
 
-Most of the time, the the StorPool drivers in the upstream OpenStack Git
+Most of the time, the StorPool drivers in the upstream OpenStack Git
 repositories (Cinder, Nova, os-brick) do not all contain the latest
 bugfixes and features that the StorPool team has developed.
 This may happen for several reasons: recent fixes and features have not
