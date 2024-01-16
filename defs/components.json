@@ -615,7 +615,7 @@
             ],
             "branches": {
                 "bobcat": {
-                    "28.0.0.0.0.1": {
+                    "28.0.1.0.0.1": {
                         "comment": "upstream Bobcat snapshot 2024-01-02",
                         "files": {
                             "virt/libvirt/driver.py": {
@@ -637,7 +637,7 @@
                                 "sha256": "1432cf104dc22aec4a2785877c458621ddab40392b2d260aea38d114bac4c5f0"
                             }
                         },
-                        "outdated": true
+                        "outdated": false
                     }
                 },
                 "antelope": {
