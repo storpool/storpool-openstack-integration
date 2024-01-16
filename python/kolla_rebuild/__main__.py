@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2023  StorPool <support@storpool.com>
+# SPDX-FileCopyrightText: 2023, 2024  StorPool <support@storpool.com>
 # SPDX-License-Identifier: Apache-2.0
 """Update Kolla containers as needed to support the StorPool backend."""
 
