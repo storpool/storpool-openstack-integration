@@ -6,6 +6,7 @@ from __future__ import annotations
 
 import dataclasses
 import datetime
+import pathlib
 import shlex
 import subprocess
 import sys
@@ -20,7 +21,6 @@ from kolla_rebuild import prepare
 
 
 if TYPE_CHECKING:
-    import pathlib
     from typing import Final
 
 
@@ -53,22 +53,27 @@ def _build_tag_suffix() -> str:
 
 
 def build_config(
-    *, quiet: bool, release: str, sp_osi: str | None, tag_suffix: str | None
+    *,
+    quiet: bool,
+    release: str,
+    sp_osi: str | None,
+    tag_suffix: str | None,
+    topdir: pathlib.Path | None,
 ) -> Config:
     """Prepare the runtime configuration object."""
 
     def osi_version() -> str:
         """Determine the sp-osi version to use; parse "wip" in a special way."""
         if sp_osi is None:
-            return find.find_sp_osi_version()
+            return find.find_sp_osi_version(topdir=topdir)
 
         if sp_osi == "wip":
-            return find.find_sp_osi_version() + defs.VERSION_WIP_SUFFIX
+            return find.find_sp_osi_version(topdir=topdir) + defs.VERSION_WIP_SUFFIX
 
         return sp_osi
 
     return Config(
-        topdir=find.find_topdir(),
+        topdir=find.find_topdir(topdir=topdir),
         release=release,
         sp_osi_version=osi_version(),
         tag_suffix=tag_suffix if tag_suffix is not None else _build_tag_suffix(),
@@ -105,6 +110,14 @@ def get_containers(container_names: list[str]) -> list[defs.Container]:
     default=DEFAULT_CONTAINERS,
     help="the OpenStack component containers to rebuild",
 )
+@click.option(
+    "-d",
+    "--topdir",
+    type=click.Path(
+        exists=True, file_okay=False, dir_okay=True, resolve_path=True, path_type=pathlib.Path
+    ),
+    help="the path to the storpool-openstack-integration repository",
+)
 @click.option("--no-cache", is_flag=True, help="flush the Docker build cache")
 @click.option("--pull", is_flag=True, help="update the upstream container image before rebuilding")
 @click.option("-q", "--quiet", is_flag=True, help="quiet operation; no diagnostic output")
@@ -136,6 +149,7 @@ def main(
     release: str,
     sp_osi: str | None,
     tag_suffix: str | None,
+    topdir: pathlib.Path | None,
 ) -> None:
     """Parse command-line options, gather files, invoke docker-build."""
 
@@ -182,7 +196,9 @@ def main(
             f"Unsupported release {release!r}, must be one of {' '.join(prepare.ALL_RELEASES)}"
         )
     release = prepare.RELEASE_ALIASES.get(release, release)
-    cfg: Final = build_config(quiet=quiet, release=release, sp_osi=sp_osi, tag_suffix=tag_suffix)
+    cfg: Final = build_config(
+        quiet=quiet, release=release, sp_osi=sp_osi, tag_suffix=tag_suffix, topdir=topdir
+    )
     containers = get_containers(container)
     datadir: Final = cfg.topdir / defs.DATA_DIR
     files: Final = prepare.prepare_data_files(cfg, datadir)

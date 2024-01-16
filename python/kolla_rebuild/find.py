@@ -52,36 +52,37 @@ OURSELF: Final = ("python", "kolla_rebuild", "find.py")
 
 
 @functools.lru_cache
-def find_topdir() -> pathlib.Path:
+def find_topdir(topdir: pathlib.Path | None) -> pathlib.Path:
     """Find the project's top-level directory based on our own location."""
-    try:
-        ourself: Final = pathlib.Path(__file__).resolve()
-    except OSError as err:
-        sys.exit(f"Could not resolve the path to our own source file: {err}")
-    if ourself.parts[-len(OURSELF) :] != OURSELF:
-        sys.exit(
-            f"Unexpected path to our own source file {ourself};"
-            f" expected it to end in {OURSELF!r}"
-        )
+    if topdir is None:
+        try:
+            ourself: Final = pathlib.Path(__file__).resolve()
+        except OSError as err:
+            sys.exit(f"Could not resolve the path to our own source file: {err}")
+        if ourself.parts[-len(OURSELF) :] != OURSELF:
+            sys.exit(
+                f"Unexpected path to our own source file {ourself};"
+                f" expected it to end in {OURSELF!r}"
+            )
 
-    topdir: Final = ourself.parents[len(OURSELF) - 1]
+        topdir = ourself.parents[len(OURSELF) - 1]
+
     if not (topdir / MARKER_FILE).is_file():
-        sys.exit(f"No {MARKER_FILE} in the autodetect project top-level directory {topdir}")
+        sys.exit(f"No {MARKER_FILE} in the project top-level directory {topdir}")
     return topdir
 
 
-def find_changelog_file() -> pathlib.Path:
+def find_changelog_file(*, topdir: pathlib.Path | None = None) -> pathlib.Path:
     """Find the default changelog file for the project."""
-    return find_topdir() / CHANGELOG_FILE
+    return find_topdir(topdir) / CHANGELOG_FILE
 
 
-def find_sp_osi_version(*, changelog: pathlib.Path | None = None) -> str:
+def find_sp_osi_version(*, topdir: pathlib.Path | None = None) -> str:
     """Determine the last released version of the storpool-openstack-integration package.
 
     This function cheats a little bit by reading the changelog file.
     """
-    if changelog is None:
-        changelog = find_changelog_file()
+    changelog = find_changelog_file(topdir=topdir)
     if not changelog.is_file():
         sys.exit(f"The changelog file {changelog} does not exist or is not a regular file")
 
