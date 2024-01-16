@@ -717,6 +717,30 @@
                     }
                 },
                 "yoga": {
+                    "25.2.1.0.1.0": {
+                        "comment": "Ubuntu cloud archive Yoga 25.2.1",
+                        "files": {
+                            "virt/libvirt/driver.py": {
+                                "sha256": "d30a403e4cae8f41a1294a755ec0007b77134c0c15d77a083ef11c14b764a0ef"
+                            },
+                            "virt/libvirt/config.py": {
+                                "sha256": "72eec12db54ead373c12b62d326f92b9af2bbc5e1214f5cdf4c6ff89c6f094d2"
+                            }
+                        },
+                        "outdated": false
+                    },
+                    "25.2.1.0.0.0": {
+                        "comment": "upstream Yoga 25.2.1",
+                        "files": {
+                            "virt/libvirt/driver.py": {
+                                "sha256": "c108975f25c5f1dd4ffb4d86509be16b01d47abc069df0058ac9adb06844d02f"
+                            },
+                            "virt/libvirt/config.py": {
+                                "sha256": "72eec12db54ead373c12b62d326f92b9af2bbc5e1214f5cdf4c6ff89c6f094d2"
+                            }
+                        },
+                        "outdated": false
+                    },
                     "25.1.0.0.1.0": {
                         "comment": "Ubuntu cloud archive Yoga 25.1.0",
                         "files": {
