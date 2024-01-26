@@ -7,6 +7,15 @@ SPDX-License-Identifier: Apache-2.0
 
 ## [Unreleased]
 
+### Additions
+
+- Glance drivers:
+    - Bobcat:
+        - recognize 27.0.0.0rc2
+- kolla-rebuild:
+    - also rebuild the `glance-api` container, since Glance also needs
+      the StorPool API bindings and OpenStack helper modules installed
+
 ## [2.2.1] - 2024-01-16
 
 ### Fixes
