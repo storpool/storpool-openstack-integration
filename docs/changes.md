@@ -7,6 +7,8 @@ SPDX-License-Identifier: Apache-2.0
 
 ## [Unreleased]
 
+## [2.3.0] - 2024-01-26
+
 ### Additions
 
 - Glance drivers:
@@ -337,7 +339,8 @@ SPDX-License-Identifier: Apache-2.0
 
 - Initial public release.
 
-[Unreleased]: https://github.com/storpool/storpool-openstack-integration/compare/release/2.2.1...master
+[Unreleased]: https://github.com/storpool/storpool-openstack-integration/compare/release/2.3.0...master
+[2.3.0]: https://github.com/storpool/storpool-openstack-integration/compare/release/2.2.1...release/2.3.0
 [2.2.1]: https://github.com/storpool/storpool-openstack-integration/compare/release/2.2.0...release/2.2.1
 [2.2.0]: https://github.com/storpool/storpool-openstack-integration/compare/release/2.1.0...release/2.2.0
 [2.1.0]: https://github.com/storpool/storpool-openstack-integration/compare/release/2.0.5...release/2.1.0
