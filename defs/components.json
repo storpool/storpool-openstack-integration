@@ -550,6 +550,20 @@
                 "api/v2/images.py"
             ],
             "branches": {
+                "bobcat": {
+                    "26.0.0.0.0.90": {
+                        "comment": "upstream Glance 27.0.0.0rc2",
+                        "files": {
+                            "async_/__init__.py": {
+                                "sha256": "6f3869b89401197d1ddc1df53ec4fc6f55546fb4d88ec9eaf837e9fdc00cebc5"
+                            },
+                            "api/v2/images.py": {
+                                "sha256": "eb6f698668461023d273feca101548d8c9f9cbb5bf4c2d94dfa38e5475e636a0"
+                            }
+                        },
+                        "outdated": false
+                    }
+                },
                 "yoga": {
                     "24.0.0.0.0.0": {
                         "comment": "upstream Yoga 24.0.0",
