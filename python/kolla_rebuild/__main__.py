@@ -27,6 +27,7 @@ if TYPE_CHECKING:
 ALL_CONTAINERS: Final = [
     defs.Container(name="cinder-volume", extra_components=[]),
     defs.Container(name="nova-compute", extra_components=["os_brick"]),
+    defs.Container(name="glance-api", extra_components=["os_brick"]),
 ]
 
 """The known containers that we want to rebuild."""
