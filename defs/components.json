@@ -1147,7 +1147,7 @@
                         },
                         "outdated": false
                     },
-                    "6.1.1.1.0.1": {
+                    "6.1.1.1.0.0": {
                         "comment": "StorPool Updates for Snapshot 2023-05-30",
                         "files": {
                             "initiator/connectors/fibre_channel.py": {
@@ -1159,7 +1159,7 @@
                         },
                         "outdated": true
                     },
-                    "6.1.1.0.0.1": {
+                    "6.1.1.0.0.0": {
                         "comment": "upstream Zed snapshot 2023-05-30",
                         "files": {
                             "initiator/connectors/fibre_channel.py": {
