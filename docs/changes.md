@@ -7,6 +7,8 @@ SPDX-License-Identifier: Apache-2.0
 
 ## [Unreleased]
 
+## [2.3.1] - 2024-02-01
+
 ### Fixes
 
 - os-brick drivers:
@@ -353,7 +355,8 @@ SPDX-License-Identifier: Apache-2.0
 
 - Initial public release.
 
-[Unreleased]: https://github.com/storpool/storpool-openstack-integration/compare/release/2.3.0...master
+[Unreleased]: https://github.com/storpool/storpool-openstack-integration/compare/release/2.3.1...master
+[2.3.1]: https://github.com/storpool/storpool-openstack-integration/compare/release/2.3.0...release/2.3.1
 [2.3.0]: https://github.com/storpool/storpool-openstack-integration/compare/release/2.2.1...release/2.3.0
 [2.2.1]: https://github.com/storpool/storpool-openstack-integration/compare/release/2.2.0...release/2.2.1
 [2.2.0]: https://github.com/storpool/storpool-openstack-integration/compare/release/2.1.0...release/2.2.0
