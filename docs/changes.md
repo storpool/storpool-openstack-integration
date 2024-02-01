@@ -7,6 +7,20 @@ SPDX-License-Identifier: Apache-2.0
 
 ## [Unreleased]
 
+### Fixes
+
+- os-brick drivers:
+    - Zed:
+        - drop the .1 snapshot suffix, the recorded files match version 6.1.1
+
+### Other changes
+
+- os-brick drivers:
+    - add a new StorPool update with two changes:
+        - use the StorPool API for attaching and detaching volumes
+        - raise the "invalid StorPool configuration" errors early,
+          during the driver initialization step
+
 ## [2.3.0] - 2024-01-26
 
 ### Additions
