@@ -1059,6 +1059,18 @@
             ],
             "branches": {
                 "bobcat": {
+                    "6.4.0.2.0.0": {
+                        "comment": "StorPool updates for Bobcat 6.4.0 (attach-globalid, raise-on-spopenstack-issues)",
+                        "files": {
+                            "initiator/connectors/fibre_channel.py": {
+                                "sha256": "718f8253d4ac697b428c1dca4c622d73227f912ba5cf2baa51c081e767b28523"
+                            },
+                            "initiator/connectors/storpool.py": {
+                                "sha256": "b85eacdb358603ecd976190d96a059d7c5f444803cc4e88d5019b5913dd6e6b5"
+                            }
+                        },
+                        "outdated": false
+                    },
                     "6.4.0.1.0.0": {
                         "comment": "StorPool updates for Bobcat 6.4.0",
                         "files": {
@@ -1069,7 +1081,7 @@
                                 "sha256": "1598c49dab93c198241d78dd171b09c37550c3af8de8ad59fc55a2d67e225c50"
                             }
                         },
-                        "outdated": false
+                        "outdated": true
                     },
                     "6.4.0.0.0.0": {
                         "comment": "upstream Bobcat 6.4.0",
@@ -1085,6 +1097,18 @@
                     }
                 },
                 "antelope": {
+                    "6.2.0.2.0.0": {
+                        "comment": "StorPool updates for Antelope 6.2.0 (attach-globalid, raise-on-spopenstack-issues)",
+                        "files": {
+                            "initiator/connectors/fibre_channel.py": {
+                                "sha256": "11eea30d2dd053e8c8cf420065885680580baec2a6caa72c4763d5b86f752485"
+                            },
+                            "initiator/connectors/storpool.py": {
+                                "sha256": "b85eacdb358603ecd976190d96a059d7c5f444803cc4e88d5019b5913dd6e6b5"
+                            }
+                        },
+                        "outdated": false
+                    },
                     "6.2.0.1.0.0": {
                         "comment": "StorPool updates for Antelope 6.2.0",
                         "files": {
@@ -1095,7 +1119,7 @@
                                 "sha256": "1598c49dab93c198241d78dd171b09c37550c3af8de8ad59fc55a2d67e225c50"
                             }
                         },
-                        "outdated": false
+                        "outdated": true
                     },
                     "6.2.0.0.0.0": {
                         "comment": "upstream Antelope 6.2.0",
@@ -1111,6 +1135,18 @@
                     }
                 },
                 "zed": {
+                    "6.1.1.2.0.0": {
+                        "comment": "StorPool Updates for Snapshot 2023-05-30 (attach-globalid, raise-on-spopenstack-issues)",
+                        "files": {
+                            "initiator/connectors/fibre_channel.py": {
+                                "sha256": "8ed61b07ec9baea762f766932d48afb4821b990d0ecd7cdfcdcd2fd2bdd28243"
+                            },
+                            "initiator/connectors/storpool.py": {
+                                "sha256": "b85eacdb358603ecd976190d96a059d7c5f444803cc4e88d5019b5913dd6e6b5"
+                            }
+                        },
+                        "outdated": false
+                    },
                     "6.1.1.1.0.1": {
                         "comment": "StorPool Updates for Snapshot 2023-05-30",
                         "files": {
@@ -1121,7 +1157,7 @@
                                 "sha256": "1598c49dab93c198241d78dd171b09c37550c3af8de8ad59fc55a2d67e225c50"
                             }
                         },
-                        "outdated": false
+                        "outdated": true
                     },
                     "6.1.1.0.0.1": {
                         "comment": "upstream Zed snapshot 2023-05-30",
@@ -1137,6 +1173,30 @@
                     }
                 },
                 "yoga": {
+                    "5.2.2.2.1.0": {
+                        "comment": "StorPool updates for the Ubuntu cloud archive Yoga 5.2.2 (attach-globalid, raise-on-spopenstack-issues)",
+                        "files": {
+                            "initiator/connectors/fibre_channel.py": {
+                                "sha256": "c8d7fe1221aa5e103dc29eb26ce7e26feb0fce470d65ae8f7e53335f0ca9e0de"
+                            },
+                            "initiator/connectors/storpool.py": {
+                                "sha256": "5e1cd88787038ecba370afce9b32914d3abde9ee4c57c2216599683eba1c42d4"
+                            }
+                        },
+                        "outdated": false
+                    },
+                    "5.2.2.2.0.0": {
+                        "comment": "StorPool updates for Yoga 5.2.2 (attach-globalid, raise-on-spopenstack-issues)",
+                        "files": {
+                            "initiator/connectors/fibre_channel.py": {
+                                "sha256": "11e2b3e35a31cd8ee2869d4afee3782b8f9c1e3253f30f71950cef5277b5b588"
+                            },
+                            "initiator/connectors/storpool.py": {
+                                "sha256": "5e1cd88787038ecba370afce9b32914d3abde9ee4c57c2216599683eba1c42d4"
+                            }
+                        },
+                        "outdated": false
+                    },
                     "5.2.2.1.1.0": {
                         "comment": "StorPool updates for the Ubuntu cloud archive Yoga 5.2.2",
                         "files": {
@@ -1147,7 +1207,7 @@
                                 "sha256": "b352b5020d65901179615827e8b358bf4858dfcd09846ca00bb828e1f3c95fd4"
                             }
                         },
-                        "outdated": false
+                        "outdated": true
                     },
                     "5.2.2.1.0.0": {
                         "comment": "StorPool updates for Yoga 5.2.2",
@@ -1159,7 +1219,7 @@
                                 "sha256": "b352b5020d65901179615827e8b358bf4858dfcd09846ca00bb828e1f3c95fd4"
                             }
                         },
-                        "outdated": false
+                        "outdated": true
                     },
                     "5.2.2.0.1.0": {
                         "comment": "Ubuntu cloud archive Zed 5.2.2",
