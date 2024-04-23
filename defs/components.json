@@ -625,10 +625,62 @@
         "nova": {
             "detect_files_order": [
                 "virt/libvirt/driver.py",
-                "virt/libvirt/config.py"
+                "virt/libvirt/config.py",
+                "conf/libvirt.py",
+                "tests/fixtures/libvirt_data.py",
+                "tests/unit/virt/libvirt/test_config.py",
+                "virt/libvirt/volume/volume.py"
             ],
             "branches": {
                 "bobcat": {
+                    "28.0.0.1.0.0": {
+                        "comment": "StorPool fixes for Bobcat 28.0.0 (iothread)",
+                        "files": {
+                            "virt/libvirt/driver.py": {
+                                "sha256": "c1aab27add8ebde6eb20b496c02a119a29e2df1fc518fe5cf2f35e8b6b775a21"
+                            },
+                            "virt/libvirt/config.py": {
+                                "sha256": "b449939fb19c91384f90c6aa5480446fe34d0104a1ce051b7669b0b14db7ccd7"
+                            },
+                            "conf/libvirt.py": {
+                                "sha256": "6a48a179a8c45fcb568bb3785af2f88fd1e22c5f3f43c1d87c1f54058ce82e9f"
+                            },
+                            "tests/fixtures/libvirt_data.py": {
+                                "sha256": "97c441c46658d586cba7047731bbec063377403f20294acf5984e3781695c1c9"
+                            },
+                            "tests/unit/virt/libvirt/test_config.py": {
+                                "sha256": "7a49354ea661a7ef3f1f6f1d64ebaa2140141088df9eca0e8ba4ffe056a58611"
+                            },
+                            "virt/libvirt/volume/volume.py": {
+                                "sha256": "27e7f62d25c29d04ea6f43abe473aec7db729b9defc5f800c6b94c2472b22200"
+                            }
+                        },
+                        "outdated": false
+                    },
+                    "28.0.1.0.0.2": {
+                        "comment": "upstream Bobcat snapshot 2024-04-23",
+                        "files": {
+                            "virt/libvirt/driver.py": {
+                                "sha256": "5b2114f308aa12d2ea3be31c0ccf785d9a9d9ebe8a9209e1894c1bf3e535affb"
+                            },
+                            "virt/libvirt/config.py": {
+                                "sha256": "1432cf104dc22aec4a2785877c458621ddab40392b2d260aea38d114bac4c5f0"
+                            },
+                            "conf/libvirt.py": {
+                                "sha256": "d670cf7805e73c68a137bdc525a09b2fbce1ce3bd56f931b45ee9c02f4c618b4"
+                            },
+                            "tests/fixtures/libvirt_data.py": {
+                                "sha256": "b9d1d763825343efb01d158defd1630ac4569923951b1b140a633421bc313fbb"
+                            },
+                            "tests/unit/virt/libvirt/test_config.py": {
+                                "sha256": "e7572541968919529aac1fb2f6c90a46a17e972a800f360d5034650c7ef2bdc2"
+                            },
+                            "virt/libvirt/volume/volume.py": {
+                                "sha256": "da9268880d3dc8d7146cea9866fb30855cb528d4179e11b7fa2cf6b7b85acab3"
+                            }
+                        },
+                        "outdated": true
+                    },
                     "28.0.1.0.0.1": {
                         "comment": "upstream Bobcat snapshot 2024-01-02",
                         "files": {
