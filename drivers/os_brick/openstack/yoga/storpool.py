@@ -24,6 +24,8 @@ from os_brick import exception
 from os_brick.initiator.connectors import base
 from os_brick import utils
 
+VM_UUID_TAG='osvm'
+ATTACHMENT_TAG='attach'
 LOG = logging.getLogger(__name__)
 
 spopenstack = importutils.try_import('storpool.spopenstack')
@@ -156,6 +158,7 @@ class StorPoolConnector(base.BaseLinuxConnector):
                 'Communication with the StorPool API '
                 'failed: %s' % (exc)) from exc
 
+        self._tag_volume_with_server_instance(volume_id, connection_properties.get('instance', None), connection_properties.get('device_name', None))
         sp_global_id = volume_info.globalId
         return {'type': 'block', 'path': str(DEV_STORPOOL_BYID / sp_global_id)}
 
@@ -212,6 +215,7 @@ class StorPoolConnector(base.BaseLinuxConnector):
             raise exception.BrickException(
                 'Communication with the StorPool API '
                 'failed: %s' % (exc)) from exc
+        self._untag_volume_with_server_instance(volume_id, connection_properties.get('instance', None))
 
     def get_search_path(self):
         return '/dev/storpool'
@@ -271,6 +275,55 @@ class StorPoolConnector(base.BaseLinuxConnector):
                    not os.path.isdir(full):
                     names.append(entry[prefixlen:])
         return names
+
+    def _volume_attachments(self, volume_name):
+        attachments = self._attach.api().attachmentsList()
+        return [volume for volume in attachments if volume.volume == volume_name]
+
+    def _tag_volume_with_server_instance(self, volume_uuid, instance_uuid=None, device_name=None):
+        if instance_uuid is None:
+            LOG.debug('Instance UUID not provided; will not tag the volume %(volume)s with a VM', {'volume': volume_uuid})
+            return
+
+        volume_name = self._attach.volumeName(volume_uuid)
+        volume = self._attach.api().volumeList(volume_name)[0]
+        LOG.debug('Found volume %(volume)s', {'volume': volume})
+
+        if hasattr(volume, 'tags') and VM_UUID_TAG in volume.tags:
+            LOG.warning('The tag %(tag)s exists for volume %(volume)s; will not overwrite', {'tag': VM_UUID_TAG, 'volume': volume})
+            return
+
+        volume.tags[VM_UUID_TAG] = instance_uuid
+
+        if device_name is None:
+            LOG.debug('Device name not provided; will not tag the volume %(volume) with a device', {'volume', volume_uuid})
+        else:
+            volume.tags[ATTACHMENT_TAG] = device_name.translate(str.maketrans({"/": "____"}))
+
+        self._attach.api().volumeUpdate(volume_name, {'tags': volume.tags})
+
+    def _untag_volume_with_server_instance(self, volume_uuid, instance_uuid=None):
+        if instance_uuid is None:
+            LOG.debug('Instance UUID not provided; will not tag the volume %(volume)s', {'volume': volume_uuid})
+            return
+
+        volume_name = self._attach.volumeName(volume_uuid)
+        volume = self._attach.api().volumeList(volume_name)[0]
+        LOG.debug('Found volume %(volume)s', {'volume': volume})
+
+        # Take care when live migration attaches the volume at the src and dst at the same time
+        if len(self._volume_attachments(volume_name)) > 0:
+            LOG.warning('The volume %(volume)s is still attached somewhere; will not untag it', {'volume': volume})
+            return
+
+        if not hasattr(volume, 'tags') or VM_UUID_TAG not in volume.tags:
+            LOG.warning('The tag %(tag)s does not exist for volume %(volume)s; will not untag the volume', {'tag': VM_UUID_TAG, 'volume': volume})
+            return
+
+        volume.tags[VM_UUID_TAG] = ''
+        volume.tags[ATTACHMENT_TAG] = ''
+
+        self._attach.api().volumeUpdate(volume_name, {'tags': volume.tags})
 
     def _get_device_size(self, device):
         """Get the size in bytes of a volume."""

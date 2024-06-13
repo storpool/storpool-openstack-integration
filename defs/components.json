@@ -1370,6 +1370,30 @@
                     }
                 },
                 "yoga": {
+                    "5.2.2.3.1.0": {
+                        "comment": "StorPool updates for the Ubuntu cloud archive Yoga 5.2.2 (attach-globalid, raise-on-spopenstack-issues, volume-tag)",
+                        "files": {
+                            "initiator/connectors/fibre_channel.py": {
+                                "sha256": "c8d7fe1221aa5e103dc29eb26ce7e26feb0fce470d65ae8f7e53335f0ca9e0de"
+                            },
+                            "initiator/connectors/storpool.py": {
+                                "sha256": "22c09fc0de63af523f9fbbcf99c9f0ebf014455168f217e64d0b9b957524a0e9"
+                            }
+                        },
+                        "outdated": false
+                    },
+                    "5.2.2.3.0.0": {
+                        "comment": "StorPool updates for Yoga 5.2.2 (attach-globalid, raise-on-spopenstack-issues)",
+                        "files": {
+                            "initiator/connectors/fibre_channel.py": {
+                                "sha256": "11e2b3e35a31cd8ee2869d4afee3782b8f9c1e3253f30f71950cef5277b5b588"
+                            },
+                            "initiator/connectors/storpool.py": {
+                                "sha256": "22c09fc0de63af523f9fbbcf99c9f0ebf014455168f217e64d0b9b957524a0e9"
+                            }
+                        },
+                        "outdated": false
+                    },
                     "5.2.2.2.1.0": {
                         "comment": "StorPool updates for the Ubuntu cloud archive Yoga 5.2.2 (attach-globalid, raise-on-spopenstack-issues)",
                         "files": {
@@ -1380,7 +1404,7 @@
                                 "sha256": "5e1cd88787038ecba370afce9b32914d3abde9ee4c57c2216599683eba1c42d4"
                             }
                         },
-                        "outdated": false
+                        "outdated": true
                     },
                     "5.2.2.2.0.0": {
                         "comment": "StorPool updates for Yoga 5.2.2 (attach-globalid, raise-on-spopenstack-issues)",
@@ -1392,7 +1416,7 @@
                                 "sha256": "5e1cd88787038ecba370afce9b32914d3abde9ee4c57c2216599683eba1c42d4"
                             }
                         },
-                        "outdated": false
+                        "outdated": true
                     },
                     "5.2.2.1.1.0": {
                         "comment": "StorPool updates for the Ubuntu cloud archive Yoga 5.2.2",
