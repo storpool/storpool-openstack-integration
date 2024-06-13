@@ -807,6 +807,18 @@
                     }
                 },
                 "yoga": {
+                    "25.2.1.0.2.0": {
+                        "comment": "Ubuntu cloud archive Yoga 25.2.1 25.2.1-0ubuntu2~cloud0",
+                        "files": {
+                            "virt/libvirt/driver.py": {
+                                "sha256": "2d48799120888b5e659b02cd7e531971168e2beed1dd959881cb7f0a505a60ac"
+                            },
+                            "virt/libvirt/config.py": {
+                                "sha256": "72eec12db54ead373c12b62d326f92b9af2bbc5e1214f5cdf4c6ff89c6f094d2"
+                            }
+                        },
+                        "outdated": true
+                    },
                     "25.2.1.0.1.0": {
                         "comment": "Ubuntu cloud archive Yoga 25.2.1",
                         "files": {
