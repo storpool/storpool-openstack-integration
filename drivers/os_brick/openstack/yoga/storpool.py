@@ -25,7 +25,7 @@ from os_brick.initiator.connectors import base
 from os_brick import utils
 
 VM_UUID_TAG='osvm'
-ATTACHMENT_TAG='attach'
+ATTACHMENT_TAG='disk'
 LOG = logging.getLogger(__name__)
 
 spopenstack = importutils.try_import('storpool.spopenstack')
@@ -298,7 +298,7 @@ class StorPoolConnector(base.BaseLinuxConnector):
         if device_name is None:
             LOG.debug('Device name not provided; will not tag the volume %(volume) with a device', {'volume', volume_uuid})
         else:
-            volume.tags[ATTACHMENT_TAG] = device_name.translate(str.maketrans({"/": "____"}))
+            volume.tags[ATTACHMENT_TAG] = pathlib.Path(device_name).name
 
         self._attach.api().volumeUpdate(volume_name, {'tags': volume.tags})
 
