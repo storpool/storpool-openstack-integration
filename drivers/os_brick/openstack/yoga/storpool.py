@@ -194,6 +194,10 @@ class StorPoolConnector(base.BaseLinuxConnector):
         if client_id is None:
             raise exception.BrickException(
                 'Invalid StorPool connection data, no client ID specified.')
+        volume_id = connection_properties.get('volume', None)
+        if volume_id is None:
+            raise exception.BrickException(
+                'Invalid StorPool connection data, no volume ID specified.')
         device_path = connection_properties.get('device_path', None)
         if device_path is None:
             LOG.debug('connection_properties is missing "device_path",'
