@@ -91,6 +91,19 @@
                     }
                 },
                 "yoga": {
+                    "20.0.1.9.0.0": {
+                        "comment": "StorPool fixes for Yoga (iSCSI multipath, StorPool QoS)",
+                        "files": {
+                            "volume/driver.py": {
+                                "sha256": "fd83b933a061e6dee7edccf4f60d4f165f86dfa2361ceae1acf83f9758b466d0"
+                            },
+                            "volume/drivers/storpool.py": {
+                                "sha256": "e3ccf857046a5b3d7b59f388bba1c725e9ddce8ba35cca5542cb028606794639"
+
+                            }
+                        },
+                        "outdated": false
+                    },
                     "20.0.1.8.0.0": {
                         "comment": "StorPool fixes for Yoga (iSCSI multipath)",
                         "files": {
@@ -101,7 +114,7 @@
                                 "sha256": "96e7a291b597448364cb438f0a543deee25f312885bdd0b16503c9410526a223"
                             }
                         },
-                        "outdated": false
+                        "outdated": true
                     },
                     "20.0.1.7.0.0": {
                         "comment": "StorPool fixes for Yoga (retype, image-to-volume)",
