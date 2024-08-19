@@ -219,7 +219,9 @@ class StorPoolConnector(base.BaseLinuxConnector):
             raise exception.BrickException(
                 'Communication with the StorPool API '
                 'failed: %s' % (exc)) from exc
-        self._untag_volume_with_server_instance(volume_id, connection_properties.get('instance', None))
+
+        if not connection_properties.get('is_shelve', False):
+            self._untag_volume_with_server_instance(volume_id, connection_properties.get('instance', None))
 
     def get_search_path(self):
         return '/dev/storpool'
