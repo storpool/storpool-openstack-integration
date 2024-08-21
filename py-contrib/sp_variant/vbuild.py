@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2021 - 2023  StorPool <support@storpool.com>
+# SPDX-FileCopyrightText: 2021 - 2024  StorPool <support@storpool.com>
 # SPDX-License-Identifier: BSD-2-Clause
 """Build the hierarchical structure of variant definitions."""
 
@@ -101,7 +101,7 @@ _VARIANT_DEF: Final[list[defs.Variant | defs.VariantUpdate]] = [
                 ],
             ),
         ),
-        min_sys_python="3.9",
+        min_sys_python="3.11",
         repo=defs.DebRepo(
             vendor="debian",
             codename="unstable",
@@ -174,7 +174,7 @@ _VARIANT_DEF: Final[list[defs.Variant | defs.VariantUpdate]] = [
             os_version_regex=re.compile(r"^11$"),
         ),
         updates={
-            "supported": {"repo": True},
+            "min_sys_python": "3.9",
             "repo": {"codename": "bullseye"},
             "package": {
                 "LIBSSL": "libssl1.1",
@@ -204,10 +204,11 @@ _VARIANT_DEF: Final[list[defs.Variant | defs.VariantUpdate]] = [
             os_version_regex=re.compile(r"^10$"),
         ),
         updates={
+            "supported": {"repo": False},
             "repo": {
                 "codename": "buster",
             },
-            "min_sys_python": "2.7",
+            "min_sys_python": "3.7",
             "package": {
                 "BINDINGS_PYTHON": "python",
                 "BINDINGS_PYTHON_CONFGET": "python-confget",
@@ -221,67 +222,39 @@ _VARIANT_DEF: Final[list[defs.Variant | defs.VariantUpdate]] = [
         },
     ),
     defs.VariantUpdate(
-        name="DEBIAN9",
-        descr="Debian 9.x (stretch)",
-        parent="DEBIAN10",
+        name="UBUNTU2404",
+        descr="Ubuntu 24.04 LTS (Noble Numbat)",
+        parent="DEBIAN13",
         detect=defs.Detect(
             filename="/etc/os-release",
             regex=re.compile(
-                r"""^
-                    PRETTY_NAME= .*
-                    Debian \s+ GNU/Linux \s+
-                    (?: stretch | 9 ) (?: \s | / )
-                """,
+                r"^ PRETTY_NAME= .* Ubuntu \s+ .* Noble ",
                 re.X,
             ),
-            os_id="debian",
-            os_version_regex=re.compile(r"^9$"),
+            os_id="ubuntu",
+            os_version_regex=re.compile(r"^24\.04$"),
         ),
         updates={
             "supported": {"repo": False},
             "repo": {
-                "codename": "stretch",
-                "req_packages": ["apt-transport-https", "ca-certificates"],
-            },
-            "builder": {
-                "alias": "debian9",
-                "base_image": "debian:stretch",
-                "branch": "debian/stretch",
-            },
-        },
-    ),
-    defs.VariantUpdate(
-        name="UBUNTU2304",
-        descr="Ubuntu 23.04 LTS (Lunar Lobster)",
-        parent="DEBIAN12",
-        detect=defs.Detect(
-            filename="/etc/os-release",
-            regex=re.compile(
-                r"^ PRETTY_NAME= .* Ubuntu \s+ 23 \. 04 ",
-                re.X,
-            ),
-            os_id="ubuntu",
-            os_version_regex=re.compile(r"^23\.04$"),
-        ),
-        updates={
-            "repo": {
                 "vendor": "ubuntu",
-                "codename": "lunar",
+                "codename": "noble",
             },
+            "min_sys_python": "3.12",
             "package": {
                 "CPUPOWER": "linux-tools-generic",
             },
             "builder": {
-                "alias": "ubuntu-23.04",
-                "base_image": "ubuntu:lunar",
-                "branch": "ubuntu/lunar",
+                "alias": "ubuntu-24.04",
+                "base_image": "ubuntu:noble",
+                "branch": "ubuntu/noble",
             },
         },
     ),
     defs.VariantUpdate(
         name="UBUNTU2204",
         descr="Ubuntu 22.04 LTS (Jammy Jellyfish)",
-        parent="UBUNTU2304",
+        parent="UBUNTU2404",
         detect=defs.Detect(
             filename="/etc/os-release",
             regex=re.compile(
@@ -293,6 +266,7 @@ _VARIANT_DEF: Final[list[defs.Variant | defs.VariantUpdate]] = [
         ),
         updates={
             "supported": {"repo": True},
+            "min_sys_python": "3.10",
             "repo": {
                 "vendor": "ubuntu",
                 "codename": "jammy",
@@ -351,7 +325,7 @@ _VARIANT_DEF: Final[list[defs.Variant | defs.VariantUpdate]] = [
             "repo": {
                 "codename": "bionic",
             },
-            "min_sys_python": "2.7",
+            "min_sys_python": "3.6",
             "package": {
                 "BINDINGS_PYTHON": "python",
                 "BINDINGS_PYTHON_CONFGET": "python-confget",
@@ -361,36 +335,6 @@ _VARIANT_DEF: Final[list[defs.Variant | defs.VariantUpdate]] = [
                 "alias": "ubuntu-18.04",
                 "base_image": "ubuntu:bionic",
                 "branch": "ubuntu/bionic",
-            },
-        },
-    ),
-    defs.VariantUpdate(
-        name="UBUNTU1604",
-        descr="Ubuntu 16.04 LTS (Xenial Xerus)",
-        parent="UBUNTU1804",
-        detect=defs.Detect(
-            filename="/etc/os-release",
-            regex=re.compile(
-                r"^ PRETTY_NAME= .* Ubuntu \s+ 16 \. 04 ",
-                re.X,
-            ),
-            os_id="ubuntu",
-            os_version_regex=re.compile(r"^16\.04$"),
-        ),
-        updates={
-            "supported": {"repo": False},
-            "repo": {
-                "codename": "xenial",
-                "req_packages": ["apt-transport-https", "ca-certificates"],
-            },
-            "package": {
-                "LIBSSL": "libssl1.0.0",
-                "mcelog": "mcelog",
-            },
-            "builder": {
-                "alias": "ubuntu-16.04",
-                "base_image": "ubuntu:xenial",
-                "branch": "ubuntu/xenial",
             },
         },
     ),
@@ -478,7 +422,7 @@ fi
                 ],
             ),
         ),
-        min_sys_python="2.7",
+        min_sys_python="3.9",
         repo=defs.YumRepo(
             yumdef="redhat/repo/storpool-centos.repo",
             keyring="redhat/repo/RPM-GPG-KEY-StorPool",
@@ -523,6 +467,7 @@ fi
                 "LIBCGROUP": "libcgroup-tools",
                 "PYTHON_SIMPLEJSON": "python2-simplejson",
             },
+            "min_sys_python": "3.6",
             "commands": {
                 "package": {
                     "install": [
@@ -663,39 +608,6 @@ fi
         },
     ),
     defs.VariantUpdate(
-        name="CENTOS6",
-        descr="CentOS 6.x",
-        parent="CENTOS7",
-        detect=defs.Detect(
-            filename="/etc/redhat-release",
-            regex=re.compile(r"^ CentOS \s .* \s 6 \.", re.X),
-            os_id="centos",
-            os_version_regex=re.compile(r"^6(?:$|\.[0-9])"),
-        ),
-        updates={
-            "supported": {"repo": False},
-            "min_sys_python": "2.6",
-            "package": {
-                "KMOD": "module-init-tools",
-                "LIBCGROUP": "libcgroup",
-                "LIBUDEV": "libudev",
-                "OPENSSL": "openssl",
-                "PERL_AUTODIE": "perl",
-                "PERL_FILE_PATH": "perl",
-                "PERL_LWP_PROTO_HTTPS": "perl",
-                "PERL_SYS_SYSLOG": "perl",
-                "PYTHON_SIMPLEJSON": "python-simplejson",
-                "PROCPS": "procps",
-                "UDEV": "udev",
-            },
-            "builder": {
-                "alias": "centos6",
-                "base_image": "centos:6",
-                "branch": "centos/6",
-            },
-        },
-    ),
-    defs.VariantUpdate(
         name="ORACLE7",
         descr="Oracle Linux 7.x",
         parent="CENTOS7",
@@ -709,6 +621,68 @@ fi
             "builder": {
                 "alias": "oracle7",
                 "base_image": "IGNORE",
+                "branch": "",
+            },
+        },
+    ),
+    defs.VariantUpdate(
+        name="ORACLE8",
+        descr="Oracle Linux 8.x",
+        parent="ALMA8",
+        detect=defs.Detect(
+            filename="/etc/oracle-release",
+            regex=re.compile(
+                r"^ Oracle \s+ Linux \s+ Server \s+ release \s .* "
+                r"\s 8 \. (?: [4-9] | [1-9][0-9] )",
+                re.X,
+            ),
+            os_id="ol",
+            os_version_regex=re.compile(r"^8(?:$|\.[4-9]|\.[1-9][0-9])"),
+        ),
+        updates={
+            "commands": {
+                "package": {
+                    "install": [
+                        "dnf",
+                        "--disablerepo=*",
+                        "--enablerepo=ol8_appstream",
+                        "--enablerepo=ol8_baseos_latest",
+                        "--enablerepo=ol8_codeready_builder",
+                        "--enablerepo=storpool-contrib",
+                        "install",
+                        "-q",
+                        "-y",
+                        "--",
+                    ],
+                },
+                "pkgfile": {
+                    "install": [
+                        "sh",
+                        "-c",
+                        """
+unset to_install to_reinstall
+for f in $packages; do
+    package="$(rpm -qp "$f")"
+    if rpm -q -- "$package"; then
+        to_reinstall="$to_reinstall ./$f"
+    else
+        to_install="$to_install ./$f"
+    fi
+done
+
+if [ -n "$to_install" ]; then
+    dnf install -y --disablerepo='*' --enablerepo=ol8_appstream,ol8_baseos_latest,ol8_codeready_builder,storpool-contrib --setopt=localpkg_gpgcheck=0 -- $to_install
+fi
+if [ -n "$to_reinstall" ]; then
+    dnf reinstall -y --disablerepo='*' --enablerepo=ol8_appstream,ol8_baseos_latest,ol8_codeready_builder,storpool-contrib --setopt=localpkg_gpgcheck=0 -- $to_reinstall
+fi
+""",  # noqa: E501
+                    ],
+                },
+            },
+            "builder": {
+                "alias": "oracle8",
+                "base_image": "oraclelinux:8",
                 "branch": "",
             },
         },
@@ -741,7 +715,7 @@ fi
                         "-q",
                         "-y",
                         "--",
-                    ]
+                    ],
                 },
                 "pkgfile": {
                     "install": [
@@ -765,7 +739,7 @@ if [ -n "$to_reinstall" ]; then
     dnf reinstall -y --disablerepo='*' --enablerepo=appstream,baseos,storpool-contrib,codeready-builder-for-rhel-8-x86_64-rpms --setopt=localpkg_gpgcheck=0 -- $to_reinstall
 fi
 """,  # noqa: E501
-                    ]
+                    ],
                 },
             },
             "builder": {
@@ -902,7 +876,7 @@ def update_namedtuple(data: _TNamedTuple, updates: dict[str, Any]) -> _TNamedTup
                 break
         else:
             raise defs.VariantConfigError(
-                f"{prefix}: weird {type(value).__name__} update for {name}"
+                f"{prefix}: weird {type(value).__name__} update for {name}",
             )
 
     updated: Final[_TNamedTuple] = type(data)(**newv)  # type: ignore[call-overload]
@@ -910,7 +884,9 @@ def update_namedtuple(data: _TNamedTuple, updates: dict[str, Any]) -> _TNamedTup
 
 
 def merge_into_parent(
-    cfg: defs.Config, parent: defs.Variant, child: defs.VariantUpdate
+    cfg: defs.Config,
+    parent: defs.Variant,
+    child: defs.VariantUpdate,
 ) -> defs.Variant:
     """Merge a child's definitions into the parent."""
     cfg.diag(f"- merging {child.name} into {parent.name}")

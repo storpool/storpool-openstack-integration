@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2021 - 2023  StorPool <support@storpool.com>
+# SPDX-FileCopyrightText: 2021 - 2024  StorPool <support@storpool.com>
 # SPDX-License-Identifier: BSD-2-Clause
 """Support for different OS distributions and StorPool build variants."""
 
@@ -73,7 +73,7 @@ def repo_name_with_extension(cfg: defs.Config, path: pathlib.Path) -> str:
     """Get the path basename, add the extension for the specified repository type."""
     if len(path.suffixes) != 1:
         raise variant.VariantFileError(
-            f"Unexpected repository file name without an extension: {path}"
+            f"Unexpected repository file name without an extension: {path}",
         )
     return f"{path.stem}{cfg.repotype.extension}{path.suffix}"
 
@@ -86,7 +86,7 @@ def repo_add_deb(cfg: defs.Config, var: defs.Variant, vardir: pathlib.Path) -> N
         subprocess.check_call(var.commands.package.install + var.repo.req_packages, shell=False)
     except subprocess.CalledProcessError as err:
         raise variant.VariantFileError(
-            f"Could not install the required packages {' '.join(var.repo.req_packages)}: {err}"
+            f"Could not install the required packages {' '.join(var.repo.req_packages)}: {err}",
         ) from err
 
     copy_file(
@@ -124,7 +124,7 @@ def repo_add_yum(cfg: defs.Config, var: defs.Variant, vardir: pathlib.Path) -> N
         )
     except subprocess.CalledProcessError as err:
         raise variant.VariantFileError(
-            f"Could not install the required ca-certificates package: {err}"
+            f"Could not install the required ca-certificates package: {err}",
         ) from err
 
     copy_file(
@@ -164,7 +164,7 @@ def repo_add_yum(cfg: defs.Config, var: defs.Variant, vardir: pathlib.Path) -> N
         )
     except subprocess.CalledProcessError as err:
         raise variant.VariantFileError(
-            f"Could not clean the Yum repository metadata: {err}"
+            f"Could not clean the Yum repository metadata: {err}",
         ) from err
 
 
@@ -203,14 +203,14 @@ def command_find(cfg: defs.Config, var: defs.Variant) -> list[str]:
         fields: tuple[str, ...] = current._fields
         if comp not in fields:
             raise defs.VariantConfigError(
-                f"Invalid command component '{comp}', should be one of {' '.join(fields)}"
+                f"Invalid command component '{comp}', should be one of {' '.join(fields)}",
             )
         current = getattr(current, comp)
 
     if not isinstance(current, list):
         fields = current._fields
         raise defs.VariantConfigError(
-            f"Incomplete command specification, should continue with one of {' '.join(fields)}"
+            f"Incomplete command specification, should continue with one of {' '.join(fields)}",
         )
 
     return current
@@ -261,7 +261,7 @@ def cmd_features(_cfg: defs.Config) -> None:
     """Display the features supported by storpool_variant."""
     print(
         f"Features: repo=0.2 variant={defs.VERSION} "
-        f"format={defs.FORMAT_VERSION[0]}.{defs.FORMAT_VERSION[1]}"
+        f"format={defs.FORMAT_VERSION[0]}.{defs.FORMAT_VERSION[1]}",
     )
 
 
@@ -278,12 +278,12 @@ def cmd_show(cfg: defs.Config) -> None:
                         "version": {
                             "major": defs.FORMAT_VERSION[0],
                             "minor": defs.FORMAT_VERSION[1],
-                        }
+                        },
                     },
                     "version": defs.VERSION,
                     "variants": vbuild.VARIANTS,
                     "order": [var.name for var in vbuild.DETECT_ORDER],
-                }
+                },
             )
 
         assert cfg.command is not None  # noqa: S101  # mypy needs this
@@ -301,11 +301,11 @@ def cmd_show(cfg: defs.Config) -> None:
                     "version": {
                         "major": defs.FORMAT_VERSION[0],
                         "minor": defs.FORMAT_VERSION[1],
-                    }
+                    },
                 },
                 "version": defs.VERSION,
                 "variant": var,
-            }
+            },
         )
 
     print(json.dumps(get_data(), sort_keys=True, indent=2))
