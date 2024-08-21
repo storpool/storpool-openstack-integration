@@ -12,6 +12,32 @@
                 "volume/driver.py"
             ],
             "branches": {
+                "caracal": {
+                    "24.1.0.1.0.0": {
+                        "comment": "StorPool updates for Caracal 24.1.0",
+                        "files": {
+                            "volume/driver.py": {
+                                "sha256": "8f5b7727af8076a9132147c8f75590f81b3509c55b0d3a8b8498c5ec2d6fd8fb"
+                            },
+                            "volume/drivers/storpool.py": {
+                                "sha256": "daf6b9b178bde1788920957454d2a58c26c5779a60278078bb0bfd0a38bbee68"
+                            }
+                        },
+                        "outdated": false
+                    },
+                    "24.1.0.0.0.0": {
+                        "comment": "upstream Caracal snapshot 2024-08-21",
+                        "files": {
+                            "volume/driver.py": {
+                                "sha256": "8f5b7727af8076a9132147c8f75590f81b3509c55b0d3a8b8498c5ec2d6fd8fb"
+                            },
+                            "volume/drivers/storpool.py": {
+                                "sha256": "4a992a7004ec3f02ccfa267b980cd2b145026b7b46dc93bd2729d70e4aa21b69"
+                            }
+                        },
+                        "outdated": true
+                    }
+                },
                 "bobcat": {
                     "23.0.0.8.0.0": {
                         "comment": "StorPool fixes for Bobcat (iSCSI multipath)",
@@ -657,6 +683,56 @@
                 "virt/libvirt/volume/volume.py"
             ],
             "branches": {
+                "caracal": {
+                    "29.0.1.1.0.0": {
+                        "comment": "StorPool fixes for Caracal 29.0.1 (iothread)",
+                        "files": {
+                            "virt/libvirt/driver.py": {
+                                "sha256": "f584abd4ccce15f530755460e4c645b8627921ec330c534e20fec2e4348672b5"
+                            },
+                            "virt/libvirt/config.py": {
+                                "sha256": "6ada499603b6102cf83d7576e8282740fe959193a11e5edb026383480861faca"
+                            },
+                            "conf/libvirt.py": {
+                                "sha256": "fda6f4544d8cfc311a28f0a86b4be85b70cc34ec1e8d390c9d4acd47923e384a"
+                            },
+                            "tests/fixtures/libvirt_data.py": {
+                                "sha256": "97c441c46658d586cba7047731bbec063377403f20294acf5984e3781695c1c9"
+                            },
+                            "tests/unit/virt/libvirt/test_config.py": {
+                                "sha256": "09ddd326552bf5101911d902460ceab632fa8b454832d423aeab88abb9d0918c"
+                            },
+                            "virt/libvirt/volume/volume.py": {
+                                "sha256": "34312f77543be11f56cb00fdf5dbf34ef6d85fafdd648c92c2f2c91b60be4775"
+                            }
+                        },
+                        "outdated": false
+                    },
+                    "29.0.1.0.0.0": {
+                        "comment": "upstream Caracal 29.0.1-0ubuntu1.4",
+                        "files": {
+                            "virt/libvirt/driver.py": {
+                                "sha256": "9468e21df02629722d5d5afe3787cf5c0a7c91d615ebc49804f00b9d99a6e16e"
+                            },
+                            "virt/libvirt/config.py": {
+                                "sha256": "b7ded7d6cd89ceb5784b634ef7fc897c36e0a83243e9be9de78778d58effbaa7"
+                            },
+                            "conf/libvirt.py": {
+                                "sha256": "a9edd329035163f2c414525278735daa346b502d14cba8443a0d3482606220bc"
+                            },
+                            "tests/fixtures/libvirt_data.py": {
+                                "sha256": "b9d1d763825343efb01d158defd1630ac4569923951b1b140a633421bc313fbb"
+                            },
+                            "tests/unit/virt/libvirt/test_config.py": {
+                                "sha256": "5c462b071c31655a63534d28e187bb4d90c148c18fefae5feec22554d605bc55"
+                            },
+                            "virt/libvirt/volume/volume.py": {
+                                "sha256": "b1cdb262372402a82f857df7789269d61d4019328de021aabeedf26a4422094e"
+                            }
+                        },
+                        "outdated": true
+                    }
+                },
                 "bobcat": {
                     "28.0.0.1.0.0": {
                         "comment": "StorPool fixes for Bobcat 28.0.0 (iothread)",
@@ -1334,6 +1410,32 @@
                 "initiator/connectors/storpool.py"
             ],
             "branches": {
+                "caracal": {
+                    "6.7.0.1.0.0": {
+                        "comment": "StorPool updates for Caracal 6.7.0",
+                        "files": {
+                            "initiator/connectors/fibre_channel.py": {
+                                "sha256": "718f8253d4ac697b428c1dca4c622d73227f912ba5cf2baa51c081e767b28523"
+                            },
+                            "initiator/connectors/storpool.py": {
+                                "sha256": "b85eacdb358603ecd976190d96a059d7c5f444803cc4e88d5019b5913dd6e6b5"
+                            }
+                        },
+                        "outdated": false
+                    },
+                    "6.7.0.0.0.0": {
+                        "comment": "upstream Caracal 6.7.0",
+                        "files": {
+                            "initiator/connectors/fibre_channel.py": {
+                                "sha256": "718f8253d4ac697b428c1dca4c622d73227f912ba5cf2baa51c081e767b28523"
+                            },
+                            "initiator/connectors/storpool.py": {
+                                "sha256": "1f24d4f7033c2585678341fb0b114d89e12af6070e758f111c9a505610c3d41c"
+                            }
+                        },
+                        "outdated": true
+                    }
+                },
                 "bobcat": {
                     "6.4.0.2.0.0": {
                         "comment": "StorPool updates for Bobcat 6.4.0 (attach-globalid, raise-on-spopenstack-issues)",
