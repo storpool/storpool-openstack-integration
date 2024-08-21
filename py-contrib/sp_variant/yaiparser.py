@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2021 - 2023  StorPool <support@storpool.com>
+# SPDX-FileCopyrightText: 2021 - 2024  StorPool <support@storpool.com>
 # SPDX-License-Identifier: BSD-2-Clause
 """Yet Another INI-style-file Parser."""
 
@@ -60,22 +60,26 @@ class YAIParser:
             str_line: Final = line.decode("UTF-8")
         except UnicodeDecodeError as err:
             raise VariantYAIError(
-                f"Invalid {self.filename} line, not a valid UTF-8 string: {line!r}: {err}"
+                f"Invalid {self.filename} line, not a valid UTF-8 string: {line!r}: {err}",
             ) from err
         return self._parse_line_str(str_line)
 
     def _parse_line_quoted_single(
-        self, line: str, varname: str, quoted: str, cquot: str
+        self,
+        line: str,
+        varname: str,
+        quoted: str,
+        cquot: str,
     ) -> tuple[str, str] | None:
         """Parse a value enclosed in single quotes."""
         if _SINGLE_QUOTE in quoted:
             raise VariantYAIError(
                 f"Weird {self.filename} line, the quoted content "
-                f"contains the quote character: {line!r}"
+                f"contains the quote character: {line!r}",
             )
         if cquot != _SINGLE_QUOTE:
             raise VariantYAIError(
-                f"Weird {self.filename} line, open/close quote mismatch: {line!r}"
+                f"Weird {self.filename} line, open/close quote mismatch: {line!r}",
             )
 
         return (varname, quoted)
@@ -93,7 +97,7 @@ class YAIParser:
             if idx == len(quoted) - 1:
                 raise VariantYAIError(
                     f"Weird {self.filename} line, backslash at "
-                    f"the end of the quoted string: {line!r}"
+                    f"the end of the quoted string: {line!r}",
                 )
             res += quoted[:idx] + quoted[idx + 1]
             quoted = quoted[idx + 2 :]
@@ -122,7 +126,7 @@ class YAIParser:
             quoted = full
         elif cquot != oquot:
             raise VariantYAIError(
-                f"Weird {self.filename} line, open/close quote mismatch: {line!r}"
+                f"Weird {self.filename} line, open/close quote mismatch: {line!r}",
             )
 
         return self._parse_line_unquoted(line, varname, quoted)

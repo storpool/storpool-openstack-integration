@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2021 - 2023  StorPool <support@storpool.com>
+# SPDX-FileCopyrightText: 2021 - 2024  StorPool <support@storpool.com>
 # SPDX-License-Identifier: BSD-2-Clause
 """Build variant definitions and commands."""
 
@@ -99,7 +99,7 @@ def _detect_from_files(cfg: Config) -> Variant | None:
         except OSError as err:
             if err.errno != errno.ENOENT:
                 raise VariantDetectError(
-                    f"Could not read the {var.detect.filename} file: {err}"
+                    f"Could not read the {var.detect.filename} file: {err}",
                 ) from err
             cfg.diag(f"  - no {var.detect.filename}")
 
@@ -171,17 +171,17 @@ def list_all_packages(var: Variant, patterns: Iterable[str] | None = None) -> li
                 version=fields[1],
                 arch=fields[2],
                 status="installed",
-            )
+            ),
         )
 
     return res
 
 
 __all__ = (
+    "VERSION",
     "Config",
     "Variant",
     "VariantError",
-    "VERSION",
     "detect_variant",
     "get_all_variants",
     "get_all_variants_in_order",
