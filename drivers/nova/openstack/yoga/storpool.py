@@ -54,7 +54,12 @@ class LibvirtStorPoolVolumeDriver(libvirt_volume.LibvirtVolumeDriver):
                   connection_info['data']['volume'], instance=instance)
         conn_info = connection_info['data']
         conn_info['instance'] = instance['uuid']
-        conn_info['is_shelve'] = True if instance['task_state'] == 'shelving_offloading' else False
+        conn_info['is_shelve'] = False
+        if instance['task_state'] in ('shelving',
+                                      'shelving_image_pending_upload',
+                                      'shelving_image_uploading',
+                                      'shelving_offloading'):
+            conn_info['is_shelve'] = True
         self.connector.disconnect_volume(
             conn_info, None, force=force)
         LOG.debug("Detached StorPool volume", instance=instance)
