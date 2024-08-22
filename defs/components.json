@@ -807,6 +807,33 @@
                     }
                 },
                 "yoga": {
+                    "25.2.1.1.1.1": {
+                        "comment": "StorPool updates for Ubuntu cloud archive Yoga 25.2.1 25.2.1-0ubuntu2~cloud0",
+                        "files": {
+                            "virt/libvirt/driver.py": {
+                                "sha256": "f904e578f6b42a6d82c38f5e9cdc787e29c6e88d842466a6fa28893aa8f0b66c"
+                            },
+                            "virt/libvirt/config.py": {
+                                "sha256": "4cb836c743bdf49e7dbf9243a8a654ca8d7edcc0bcec2395a900f1f38f9f4bc4"
+                            },
+                            "conf/libvirt.py": {
+                                "sha256": "c05cb5417d60e4f04b1dd2571522ba9f3596c421ab292f2b68fe92f965a58e96"
+                            },
+                            "tests/fixtures/libvirt_data.py": {
+                                "sha256": "e858b6428bfa6e7d30ae5e693bf53bfc3850e4169fed2150978f762326b63758"
+                            },
+                            "tests/unit/virt/libvirt/test_config.py": {
+                                "sha256": "d4b67b01147aea9e46bf598f7fc6c2e857a722b7b4827bc2e27a3f1897c623e0"
+                            },
+                            "virt/libvirt/volume/volume.py": {
+                                "sha256": "27e7f62d25c29d04ea6f43abe473aec7db729b9defc5f800c6b94c2472b22200"
+                            },
+                            "virt/libvirt/volume/storpool.py": {
+                                "sha256": "2caaa84690052302dd77ef4360de455f46470f1b84b26456e1d16c2969aeb534"
+                            }
+                        },
+                        "outdated": false
+                    },
                     "25.2.1.1.1.0": {
                         "comment": "StorPool updates for Ubuntu cloud archive Yoga 25.2.1 25.2.1-0ubuntu2~cloud0",
                         "files": {
@@ -1407,7 +1434,7 @@
                                 "sha256": "1173adaadf76da6d2b5ceeac6747a118093c2d38cd487adfb375f6f62b506920"
                             }
                         },
-                        "outdated": false
+                        "outdated": true
                     },
                     "5.2.2.4.0.1": {
                         "comment": "StorPool updates for the Ubuntu cloud archive Yoga 5.2.2 (attach-globalid, raise-on-spopenstack-issues, volume-tag)",
