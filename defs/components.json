@@ -1593,7 +1593,7 @@
                                 "sha256": "d80809423c5f5a56500e24a1afba999608aee0870d03a14157509ef92479acd7"
                             }
                         },
-                        "outdated": true
+                        "outdated": false
                     },
                     "4.0.5.0.0.0": {
                         "comment": "upstream os_brick 4.0.5",
