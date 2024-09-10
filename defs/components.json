@@ -1587,7 +1587,7 @@
                         "comment": "StorPool changes for os_brick 4.0.5",
                         "files": {
                             "initiator/connectors/fibre_channel.py": {
-                                "sha256": "11e2b3e35a31cd8ee2869d4afee3782b8f9c1e3253f30f71950cef5277b5b588"
+                                "sha256": "d77d321bb31a2fe4e70adba3e410aa47c9f41662002fc72223f100ee3ba28ef9"
                             },
                             "initiator/connectors/storpool.py": {
                                 "sha256": "d80809423c5f5a56500e24a1afba999608aee0870d03a14157509ef92479acd7"
@@ -1599,10 +1599,10 @@
                         "comment": "upstream os_brick 4.0.5",
                         "files": {
                             "initiator/connectors/fibre_channel.py": {
-                                "sha256": "11e2b3e35a31cd8ee2869d4afee3782b8f9c1e3253f30f71950cef5277b5b588"
+                                "sha256": "d77d321bb31a2fe4e70adba3e410aa47c9f41662002fc72223f100ee3ba28ef9"
                             },
                             "initiator/connectors/storpool.py": {
-                                "sha256": "d77d321bb31a2fe4e70adba3e410aa47c9f41662002fc72223f100ee3ba28ef9"
+                                "sha256": "290bd273a950ab2449d3e06da5a1de5ac6b75631f1f22444c6b9a1bd069bc4ad"
                             }
                         },
                         "outdated": true
