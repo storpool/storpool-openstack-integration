@@ -842,7 +842,7 @@ class StorPoolDriver(driver.VolumeDriver):
         if diff['extra_specs']:
             # Check for the StorPool extra specs. We intentionally ignore any
             # other extra_specs because the cinder scheduler should not even
-            # call us if there's a serious mismatch between the volume types."
+            # call us if there's a serious mismatch between the volume types.
             if diff['extra_specs'].get('volume_backend_name'):
                 v = diff['extra_specs'].get('volume_backend_name')
                 if v[0] != v[1]:
@@ -858,6 +858,12 @@ class StorPoolDriver(driver.VolumeDriver):
                         update['template'] = templ
                     else:
                         update['replication'] = repl
+            if diff['extra_specs'].get(ES_QOS):
+                v = diff['extra_specs'].get(ES_QOS)
+                if v[1] is None:
+                    update['tags']['qc'] = ''
+                elif v[0] != v[1]:
+                    update['tags'].update({'qc': v[1]})
 
         if update:
             name = self._attach.volumeName(volume['id'])

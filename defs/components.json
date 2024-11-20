@@ -13,6 +13,18 @@
             ],
             "branches": {
                 "caracal": {
+                    "24.1.0.2.0.1": {
+                        "comment": "StorPool updates for Caracal 24.1.0",
+                        "files": {
+                            "volume/driver.py": {
+                                "sha256": "8f5b7727af8076a9132147c8f75590f81b3509c55b0d3a8b8498c5ec2d6fd8fb"
+                            },
+                            "volume/drivers/storpool.py": {
+                                "sha256": "0e40a72f829f4d6a9d958f3a4a0765e039e792b5361a21eee7aef870f7609f20"
+                            }
+                        },
+                        "outdated": false
+                    },
                     "24.1.0.2.0.0": {
                         "comment": "StorPool updates for Caracal 24.1.0",
                         "files": {
@@ -23,7 +35,7 @@
                                 "sha256": "39b3f225b0ce5c4c76a44b94f789721b6ceac77e9e2b22c45e9f5b50bc8217cd"
                             }
                         },
-                        "outdated": false
+                        "outdated": true
                     },
                     "24.1.0.1.0.0": {
                         "comment": "StorPool updates for Caracal 24.1.0",
