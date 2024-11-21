@@ -861,9 +861,9 @@ class StorPoolDriver(driver.VolumeDriver):
             if diff['extra_specs'].get(ES_QOS):
                 v = diff['extra_specs'].get(ES_QOS)
                 if v[1] is None:
-                    update['tags']['qc'] = ''
+                    update['tags'] = {'qc': ''}
                 elif v[0] != v[1]:
-                    update['tags'].update({'qc': v[1]})
+                    update['tags'] = {'qc': v[1]}
 
         if update:
             name = self._attach.volumeName(volume['id'])
