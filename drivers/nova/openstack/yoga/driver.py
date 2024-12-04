@@ -979,33 +979,26 @@ class LibvirtDriver(driver.ComputeDriver):
             msg = _("The cpu_models option is required when cpu_mode=custom")
             raise exception.Invalid(msg)
 
-        cpu = vconfig.LibvirtConfigGuestCPU()
-        for model in models:
-            cpu.model = self._get_cpu_model_mapping(model)
-            try:
-                self._compare_cpu(cpu, self._get_cpu_info(), None)
-            except exception.InvalidCPUInfo as e:
-                msg = (_("Configured CPU model: %(model)s is not "
-                         "compatible with host CPU. Please correct your "
-                         "config and try again. %(e)s") % {
-                            'model': model, 'e': e})
-                raise exception.InvalidCPUInfo(msg)
-
-        # Use guest CPU model to check the compatibility between guest CPU and
-        # configured extra_flags
-        cpu = vconfig.LibvirtConfigGuestCPU()
-        cpu.model = self._host.get_capabilities().host.cpu.model
-        for flag in set(x.lower() for x in CONF.libvirt.cpu_model_extra_flags):
-            cpu_feature = self._prepare_cpu_flag(flag)
-            cpu.add_feature(cpu_feature)
-            try:
-                self._compare_cpu(cpu, self._get_cpu_info(), None)
-            except exception.InvalidCPUInfo as e:
-                msg = (_("Configured extra flag: %(flag)s it not correct, or "
-                         "the host CPU does not support this flag. Please "
-                         "correct the config and try again. %(e)s") % {
-                            'flag': flag, 'e': e})
-                raise exception.InvalidCPUInfo(msg)
+        if not CONF.workarounds.skip_cpu_compare_at_startup:
+            # Use guest CPU model to check the compatibility between
+            # guest CPU and configured extra_flags
+            for model in models:
+                cpu = vconfig.LibvirtConfigGuestCPU()
+                cpu.model = self._get_cpu_model_mapping(model)
+                for flag in set(x.lower() for
+                                x in CONF.libvirt.cpu_model_extra_flags):
+                    cpu_feature = self._prepare_cpu_flag(flag)
+                    cpu.add_feature(cpu_feature)
+                try:
+                    self._compare_cpu(cpu, self._get_cpu_info(), None)
+                except exception.InvalidCPUInfo as e:
+                    msg = (_("Configured CPU model: %(model)s "
+                             "and CPU Flags %(flags)s ar not "
+                             "compatible with host CPU. Please correct your "
+                             "config and try again. %(e)s") % {
+                                'model': model, 'e': e,
+                                'flags': CONF.libvirt.cpu_model_extra_flags})
+                    raise exception.InvalidCPUInfo(msg)
 
     def _check_vtpm_support(self) -> None:
         # TODO(efried): A key manager must be configured to create/retrieve
@@ -3282,8 +3275,8 @@ class LibvirtDriver(driver.ComputeDriver):
                                                         format=source_format,
                                                         basename=False)
         disk_delta = out_path + '.delta'
-        libvirt_utils.create_cow_image(src_back_path, disk_delta,
-                                       src_disk_size)
+        libvirt_utils.create_image(
+            disk_delta, 'qcow2', src_disk_size, backing_file=src_back_path)
 
         try:
             self._can_quiesce(instance, image_meta)
@@ -4504,7 +4497,7 @@ class LibvirtDriver(driver.ComputeDriver):
                                                  '%dG' % ephemeral_size,
                                                  specified_fs)
                 return
-            libvirt_utils.create_image('raw', target, '%dG' % ephemeral_size)
+            libvirt_utils.create_image(target, 'raw', f'{ephemeral_size}G')
 
         # Run as root only for block devices.
         disk_api.mkfs(os_type, fs_label, target, run_as_root=is_block_dev,
@@ -4513,7 +4506,7 @@ class LibvirtDriver(driver.ComputeDriver):
     @staticmethod
     def _create_swap(target, swap_mb, context=None):
         """Create a swap file of specified size."""
-        libvirt_utils.create_image('raw', target, '%dM' % swap_mb)
+        libvirt_utils.create_image(target, 'raw', f'{swap_mb}M')
         nova.privsep.fs.unprivileged_mkfs('swap', target)
 
     @staticmethod
@@ -10770,8 +10763,8 @@ class LibvirtDriver(driver.ComputeDriver):
             # create backing file in case of qcow2.
             instance_disk = os.path.join(instance_dir, base)
             if not info['backing_file'] and not os.path.exists(instance_disk):
-                libvirt_utils.create_image(info['type'], instance_disk,
-                                           info['virt_disk_size'])
+                libvirt_utils.create_image(
+                    instance_disk, info['type'], info['virt_disk_size'])
             elif info['backing_file']:
                 # Creating backing file follows same way as spawning instances.
                 cache_name = os.path.basename(info['backing_file'])
