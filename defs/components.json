@@ -1054,6 +1054,7 @@
                     },
                     "25.2.1.0.3.0": {
                         "comment": "Ubuntu cloud archive Yoga 25.2.1 25.2.1-0ubuntu2.7",
+                        "files": {
                             "virt/libvirt/driver.py": {
                                 "sha256": "506fda56558817a5dd1cfbc389c280f243802c45ca05ba14f16a1614a9bb556f"
                             },
