@@ -86,6 +86,10 @@ storpool_opts = [
 CONF = cfg.CONF
 CONF.register_opts(storpool_opts, group=configuration.SHARED_CONF_GROUP)
 
+EXTRA_SPECS_NAMESPACE = 'storpool'
+EXTRA_SPECS_QOS = 'qos_class'
+ES_QOS = EXTRA_SPECS_NAMESPACE + ":" + EXTRA_SPECS_QOS
+
 
 def _extract_cinder_ids(urls):
     ids = []
@@ -145,8 +149,6 @@ class StorPoolDriver(driver.VolumeDriver):
         1.2.3   - Advertise some more driver capabilities.
         2.0.0   - Drop _attach_volume() and _detach_volume(), our os-brick
                   connector will handle this.
-                - Detach temporary snapshots and volumes after copying data
-                  to or from from Glance images.
                 - Drop backup_volume()
                 - Avoid data duplication in create_cloned_volume()
                 - Implement clone_image()
@@ -169,6 +171,15 @@ class StorPoolDriver(driver.VolumeDriver):
     @staticmethod
     def get_driver_options():
         return storpool_opts
+
+    @staticmethod
+    def qos_from_volume(volume):
+        volume_type = volume['volume_type']
+        extra_specs = \
+            volume_types.get_volume_type_extra_specs(volume_type['id'])
+        if extra_specs is not None:
+            return extra_specs.get(ES_QOS)
+        return None
 
     def _backendException(self, e):
         return exception.VolumeBackendAPIException(data=six.text_type(e))
@@ -193,19 +204,21 @@ class StorPoolDriver(driver.VolumeDriver):
         size = int(volume['size']) * units.Gi
         name = self._attach.volumeName(volume['id'])
         template = self._template_from_volume(volume)
+        qos_class = StorPoolDriver.qos_from_volume(volume)
+
+        create_request = {'name': name, 'size': size}
+
+        if template is not None:
+            create_request['template'] = template
+        else:
+            create_request['replication'] = \
+                self.configuration.storpool_replication
+
+        if qos_class is not None:
+            create_request['tags'] = {'qc': qos_class}
+
         try:
-            if template is None:
-                self._attach.api().volumeCreate({
-                    'name': name,
-                    'size': size,
-                    'replication': self.configuration.storpool_replication
-                })
-            else:
-                self._attach.api().volumeCreate({
-                    'name': name,
-                    'size': size,
-                    'template': template
-                })
+            self._attach.api().volumeCreate(create_request)
         except spapi.ApiError as e:
             raise self._backendException(e)
 
@@ -567,12 +580,15 @@ class StorPoolDriver(driver.VolumeDriver):
         size = int(volume['size']) * units.Gi
         volname = self._attach.volumeName(volume['id'])
         name = self._attach.snapshotName('snap', snapshot['id'])
+        qos_class = StorPoolDriver.qos_from_volume(volume)
+
+        create_request = {'name': volname, 'size': size, 'parent': name}
+
+        if qos_class is not None:
+            create_request['tags'] = {'qc': qos_class}
+
         try:
-            self._attach.api().volumeCreate({
-                'name': volname,
-                'size': size,
-                'parent': name
-            })
+            self._attach.api().volumeCreate(create_request)
         except spapi.ApiError as e:
             raise self._backendException(e)
 
@@ -617,6 +633,12 @@ class StorPoolDriver(driver.VolumeDriver):
         refname = self._attach.volumeName(src_vref['id'])
         size = int(volume['size']) * units.Gi
         volname = self._attach.volumeName(volume['id'])
+        qos_class = StorPoolDriver.qos_from_volume(volume)
+
+        clone_request = {'name': volname, 'size': size}
+
+        if qos_class is not None:
+            clone_request['tags'] = {'qc': qos_class}
 
         src_volume = self.db.volume_get(
             context.get_admin_context(),
@@ -631,12 +653,9 @@ class StorPoolDriver(driver.VolumeDriver):
         })
         if template == src_template:
             LOG.info('Using baseOn to clone a volume into the same template')
+            clone_request['baseOn'] = refname
             try:
-                self._attach.api().volumeCreate({
-                    'name': volname,
-                    'size': size,
-                    'baseOn': refname,
-                })
+                self._attach.api().volumeCreate(clone_request)
             except spapi.ApiError as e:
                 raise self._backendException(e)
 
@@ -662,11 +681,8 @@ class StorPoolDriver(driver.VolumeDriver):
                 raise self._backendException(e)
 
             try:
-                self._attach.api().volumeCreate({
-                    'name': volname,
-                    'size': size,
-                    'parent': snapname
-                })
+                clone_request['parent'] = snapname
+                self._attach.api().volumeCreate(clone_request)
             except spapi.ApiError as e:
                 raise self._backendException(e)
 
@@ -800,6 +816,7 @@ class StorPoolDriver(driver.VolumeDriver):
                 constants.ISCSI if self._use_iscsi else constants.STORPOOL
             ),
             # Driver capabilities
+            'clone_across_pools': True,
             'sparse_copy_volume': True,
             # The actual pools data
             'pools': pools
@@ -843,6 +860,11 @@ class StorPoolDriver(driver.VolumeDriver):
                             update['template'] = templ
                         else:
                             update['replication'] = repl
+                elif k == ES_QOS:
+                    if v[1] is None:
+                        update['tags']['qc'] = ''
+                    elif v[0] != v[1]:
+                        update['tags'].update({'qc': v[1]})
                 else:
                     # We ignore any extra specs that we do not know about.
                     # Let's leave it to Cinder's scheduler to not even

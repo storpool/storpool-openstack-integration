@@ -9,7 +9,14 @@
         "cinder": {
             "detect_files_order": [
                 "volume/drivers/storpool.py",
-                "volume/driver.py"
+                "volume/driver.py",
+                "image/cache.py",
+                "interface/volume_driver.py",
+                "tests/unit/image/test_cache.py",
+                "tests/unit/volume/flows/test_create_volume_flow.py",
+                "volume/flows/manager/create_volume.py",
+                "volume/manager.py",
+                "tests/unit/volume/drivers/test_storpool.py"
             ],
             "branches": {
                 "caracal": {
@@ -127,6 +134,72 @@
                     }
                 },
                 "zed": {
+                    "21.3.1.0.0.1": {
+                        "comment": "StorPool updates for Ubuntu cloud archive Zed 21.3.1-0ubuntu1.1~cloud0",
+                        "files": {
+                            "volume/driver.py": {
+                                "sha256": "b321efdba75c06b798e5cb16a733eee0756a63a0aab97ea0b5a79a9512ab98ff"
+                            },
+                            "volume/drivers/storpool.py": {
+                                "sha256": "48fc75a2f9bb4769a3b3e5df811913f4df59eacc6e94d98f3c012c544a23c6d6"
+                            },
+                            "image/cache.py": {
+                                "sha256": "846acf2d07f0b94b2c6ce63e9d3c9cf0da9cac6a6e960f5eb9e4bddc4df41257"
+                            },
+                            "interface/volume_driver.py": {
+                                "sha256": "cfd38d727a4965005ebe635ea0913bca6e4a76f986340f6d2d0de1a28745507a"
+                            },
+                            "tests/unit/image/test_cache.py": {
+                                "sha256": "43494e2c9fac4dfbd7e55c3362efe25c71d07a4a27c5df539929b22b40d0c843"
+                            },
+                            "tests/unit/volume/flows/test_create_volume_flow.py": {
+                                "sha256": "ecc6898a4996ffbdc08ecc6ef972c6dc79a68eea4781812ecba949dfb3631fb6"
+                            },
+                            "volume/flows/manager/create_volume.py": {
+                                "sha256": "0d213ea353b80692aaef8bdf93bebf75416251c9838629790ca7c603bce1e4b5"
+                            },
+                            "volume/manager.py": {
+                                "sha256": "a415fd0530c5e1f2ee60331b145543692e40c9a11b19cdad1944a0abd3714cd6"
+                            },
+                            "tests/unit/volume/drivers/test_storpool.py": {
+                                "sha256": "091a5e2c201af21b702f9799e3043ca641ceaf558a369e83598552182f08ded8"
+                            }
+                        },
+                        "outdated": false
+                    },
+                    "21.3.1.0.0.0": {
+                        "comment": "Ubuntu cloud archive Zed 21.3.1-0ubuntu1.1~cloud0",
+                        "files": {
+                            "volume/driver.py": {
+                                "sha256": "b321efdba75c06b798e5cb16a733eee0756a63a0aab97ea0b5a79a9512ab98ff"
+                            },
+                            "volume/drivers/storpool.py": {
+                                "sha256": "c8fbac23cbe51df51d023054a42a7a51cdac124f05fd36a30c5afc21aa769829"
+                            },
+                            "image/cache.py": {
+                                "sha256": "6a0aa6a30089f24367625ae4f2f6404b22ffe0350176f2d874da75673ccfc232"
+                            },
+                            "interface/volume_driver.py": {
+                                "sha256": "6e7856e458b30b69415700b233ff1762404539841b65e9156568438ca47d6a00"
+                            },
+                            "tests/unit/image/test_cache.py": {
+                                "sha256": "9b1a40b40d3c6a48fce3baed1611e77662b4cf6d7c40adae847492afdaa203e9"
+                            },
+                            "tests/unit/volume/flows/test_create_volume_flow.py": {
+                                "sha256": "349d657c5c28bc9a774cc9fb57539edc61cedbf0904fce43cd927c4d89d7c444"
+                            },
+                            "volume/flows/manager/create_volume.py": {
+                                "sha256": "a598c4fadcb743aa429371b9ba64f69f353c169185d84c22d4d7f978f47f6bec"
+                            },
+                            "volume/manager.py": {
+                                "sha256": "61e0dbf1e80740ffa6a234f1deecd8b07f70d024382790410b8319ca17a94194"
+                            },
+                            "tests/unit/volume/drivers/test_storpool.py": {
+                                "sha256": "060141290534df0f7f8b9ad37899f73fa9c1027296d5055acd48b2f498c34d02"
+                            }
+                        },
+                        "outdated": true
+                    },
                     "21.1.0.8.0.0": {
                         "comment": "StorPool fixes for Yoga (iSCSI multipath)",
                         "files": {
@@ -135,6 +208,27 @@
                             },
                             "volume/drivers/storpool.py": {
                                 "sha256": "dd9ef3a599089a8c6b6e0e19a7c017556504c1e47c07e4b53d3d8a4492757d68"
+                            },
+                            "image/cache.py": {
+                                "sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+                            },
+                            "interface/volume_driver.py": {
+                                "sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+                            },
+                            "tests/unit/image/test_cache.py": {
+                                "sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+                            },
+                            "tests/unit/volume/flows/test_create_volume_flow.py": {
+                                "sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+                            },
+                            "volume/flows/manager/create_volume.py": {
+                                "sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+                            },
+                            "volume/manager.py": {
+                                "sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+                            },
+                            "tests/unit/volume/drivers/test_storpool.py": {
+                                "sha256": "0000000000000000000000000000000000000000000000000000000000000000"
                             }
                         },
                         "outdated": false
@@ -147,6 +241,27 @@
                             },
                             "volume/drivers/storpool.py": {
                                 "sha256": "c8fbac23cbe51df51d023054a42a7a51cdac124f05fd36a30c5afc21aa769829"
+                            },
+                            "image/cache.py": {
+                                "sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+                            },
+                            "interface/volume_driver.py": {
+                                "sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+                            },
+                            "tests/unit/image/test_cache.py": {
+                                "sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+                            },
+                            "tests/unit/volume/flows/test_create_volume_flow.py": {
+                                "sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+                            },
+                            "volume/flows/manager/create_volume.py": {
+                                "sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+                            },
+                            "volume/manager.py": {
+                                "sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+                            },
+                            "tests/unit/volume/drivers/test_storpool.py": {
+                                "sha256": "0000000000000000000000000000000000000000000000000000000000000000"
                             }
                         },
                         "outdated": true
@@ -870,6 +985,60 @@
                     }
                 },
                 "zed": {
+                    "26.2.2.0.0.1": {
+                        "comment": "StorPool updates for Ubuntu cloud archive Zed 26.2.2-0ubuntu1~cloud0",
+                        "files": {
+                            "virt/libvirt/driver.py": {
+                                "sha256": "86f056c132f63b823c58c3efa328625cd72ca53cbca3c942acd090c54a1db347"
+                            },
+                            "virt/libvirt/config.py": {
+                                "sha256": "2e9f0fa9c792bc356badb99f0ffa378f6eefa8da6a2b2da5c8b6fb632a63c4ba"
+                            },
+                            "conf/libvirt.py": {
+                                "sha256": "8ef215829756cb58d386fe7466184b51773e58361ee31102b3bf5cc59b80a2aa"
+                            },
+                            "tests/fixtures/libvirt_data.py": {
+                                "sha256": "97c441c46658d586cba7047731bbec063377403f20294acf5984e3781695c1c9"
+                            },
+                            "tests/unit/virt/libvirt/test_config.py": {
+                                "sha256": "1ad51b1119a920209b1b937c833abeab99dbc4a18bc32bcb341a8d4b97795fd0"
+                            },
+                            "virt/libvirt/volume/volume.py": {
+                                "sha256": "27e7f62d25c29d04ea6f43abe473aec7db729b9defc5f800c6b94c2472b22200"
+                            },
+                            "virt/libvirt/volume/storpool.py": {
+                                "sha256": "f3697f3d96883500df27ed0cf441b9c5122a552aabf149ab427cf68cc79f905f"
+                            }
+                        },
+                        "outdated": false
+                    },
+                    "26.2.2.0.0.0": {
+                        "comment": "Ubuntu cloud archive Zed 26.2.2-0ubuntu1~cloud0",
+                        "files": {
+                            "virt/libvirt/driver.py": {
+                                "sha256": "534e2654ea0ff9ca717ddff961caf0dd1f2dcb08f240d459aedcb3330b532900"
+                            },
+                            "virt/libvirt/config.py": {
+                                "sha256": "f0491bd4bb35d8202ff637975a76ad51a62cd7e5aacff77020fcec9f15baaa31"
+                            },
+                            "conf/libvirt.py": {
+                                "sha256": "c28008d962c6b716bed12745c7a5280109ae2a93bba229bd5b6725d3f31e2c0a"
+                            },
+                            "tests/fixtures/libvirt_data.py": {
+                                "sha256": "b9d1d763825343efb01d158defd1630ac4569923951b1b140a633421bc313fbb"
+                            },
+                            "tests/unit/virt/libvirt/test_config.py": {
+                                "sha256": "928ba37c995fa641b06494daaf70d544a2a5154a94767f35d3aa9951f507d09e"
+                            },
+                            "virt/libvirt/volume/volume.py": {
+                                "sha256": "da9268880d3dc8d7146cea9866fb30855cb528d4179e11b7fa2cf6b7b85acab3"
+                            },
+                            "virt/libvirt/volume/storpool.py": {
+                                "sha256": "e26c3b7a4d36ef9db3063f2910b62e1e8eb139ff022aa6b52ab8da4e1cecb939"
+                            }
+                        },
+                        "outdated": true
+                    },
                     "26.2.0.0.0.90": {
                         "comment": "upstream Zed snapshot 2024-01-16",
                         "files": {
@@ -1603,6 +1772,30 @@
                     }
                 },
                 "zed": {
+                    "6.1.0.0.0.1": {
+                        "comment": "StorPool updates for Ubuntu cloud archive Zed 6.1.0-0ubuntu1.3~cloud0",
+                        "files": {
+                            "initiator/connectors/fibre_channel.py": {
+                                "sha256": "8ed61b07ec9baea762f766932d48afb4821b990d0ecd7cdfcdcd2fd2bdd28243"
+                            },
+                            "initiator/connectors/storpool.py": {
+                                "sha256": "28dcdd13823923665d04b59a8cd04fcedc2b5c0a6c58832b6cbf4f45f0e0b7dd"
+                            }
+                        },
+                        "outdated": false
+                    },
+                    "6.1.0.0.0.0": {
+                        "comment": "Ubuntu cloud archive Zed 6.1.0-0ubuntu1.3~cloud0",
+                        "files": {
+                            "initiator/connectors/fibre_channel.py": {
+                                "sha256": "8ed61b07ec9baea762f766932d48afb4821b990d0ecd7cdfcdcd2fd2bdd28243"
+                            },
+                            "initiator/connectors/storpool.py": {
+                                "sha256": "1f24d4f7033c2585678341fb0b114d89e12af6070e758f111c9a505610c3d41c"
+                            }
+                        },
+                        "outdated": true
+                    },
                     "6.1.1.2.0.0": {
                         "comment": "StorPool Updates for Snapshot 2023-05-30 (attach-globalid, raise-on-spopenstack-issues)",
                         "files": {
