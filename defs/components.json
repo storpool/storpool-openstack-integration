@@ -1440,6 +1440,60 @@
                     }
                 },
                 "xena": {
+                    "24.2.1.1.0.0": {
+                        "comment": "StorPool updates for Ubuntu Cloud Archive Xena 24.2.1-0ubuntu1~cloud1",
+                        "files": {
+                            "virt/libvirt/driver.py": {
+                                "sha256": "de25f089fe76ea184ad4ad60900f53452c8f9ee191426bfe819277d7bfb33294"
+                            },
+                            "virt/libvirt/config.py": {
+                                "sha256": "5400acf62bb61a17c27aba57b0228c39707e50d52ca7e130ed75b9c985207701"
+                            },
+                            "conf/libvirt.py": {
+                                "sha256": "1e93b419538e168566a27301f015c145365f50a652f82d8266d3a284fbcf58b2"
+                            },
+                            "tests/fixtures/libvirt_data.py": {
+                                "sha256": "69a991d5f45cc943ebc5f7b004fafc9031bb1c9b4669ec1a8ad26a18bc67613e"
+                            },
+                            "tests/unit/virt/libvirt/test_config.py": {
+                                "sha256": "790f25e73038e8b181edec49d2b89ceecf3cdf22393180f2eca9b3c3aea0d53e"
+                            },
+                            "virt/libvirt/volume/volume.py": {
+                                "sha256": "d154f8e791504a0a2ada80c03fa22ecda0fb3d38a8271bb7a513ca944f91e017"
+                            },
+                            "virt/libvirt/volume/storpool.py": {
+                                "sha256": "c8027f7ec4543f142481acae72f3dad9330baefcc777b4f53dde2255c9ffdf86"
+                            }
+                        },
+                        "outdated": false
+                    },
+                    "24.2.1.0.0.0": {
+                        "comment": "Ubuntu Cloud Archive Xena 24.2.1-0ubuntu1~cloud1",
+                        "files": {
+                            "virt/libvirt/driver.py": {
+                                "sha256": "f2a258a703eaaff9e97f842663d64fb415262ca0dc18e5d30f3245c38dbb0733"
+                            },
+                            "virt/libvirt/config.py": {
+                                "sha256": "a78241163ce6dc0d929fed131b451a47c043f1cb08dafede61263d40bd5f94c0"
+                            },
+                            "conf/libvirt.py": {
+                                "sha256": "1e93b419538e168566a27301f015c145365f50a652f82d8266d3a284fbcf58b2"
+                            },
+                            "tests/fixtures/libvirt_data.py": {
+                                "sha256": "69a991d5f45cc943ebc5f7b004fafc9031bb1c9b4669ec1a8ad26a18bc67613e"
+                            },
+                            "tests/unit/virt/libvirt/test_config.py": {
+                                "sha256": "790f25e73038e8b181edec49d2b89ceecf3cdf22393180f2eca9b3c3aea0d53e"
+                            },
+                            "virt/libvirt/volume/volume.py": {
+                                "sha256": "d154f8e791504a0a2ada80c03fa22ecda0fb3d38a8271bb7a513ca944f91e017"
+                            },
+                            "virt/libvirt/volume/storpool.py": {
+                                "sha256": "6279f1eaddfcfd70da48cfe3872fa2e7fadb3126d92e2d6839486093189b1edc"
+                            }
+                        },
+                        "outdated": true
+                    },
                     "24.2.0.0.1.0": {
                         "comment": "Ubuntu cloud archive Xena 24.2.0",
                         "files": {
@@ -1450,7 +1504,7 @@
                                 "sha256": "bd9c7cddb3eb1a94e5d1a97de91ae7b93ba726f20a2306a82d9771ea272b1b32"
                             }
                         },
-                        "outdated": false
+                        "outdated": true
                     },
                     "24.1.1.0.1.0": {
                         "comment": "Ubuntu cloud archive Xena 24.1.1",
@@ -1956,6 +2010,32 @@
                     },
                     "5.2.2.0.0.0": {
                         "comment": "upstream Zed 5.2.2",
+                        "files": {
+                            "initiator/connectors/fibre_channel.py": {
+                                "sha256": "11e2b3e35a31cd8ee2869d4afee3782b8f9c1e3253f30f71950cef5277b5b588"
+                            },
+                            "initiator/connectors/storpool.py": {
+                                "sha256": "f8f5de732d4ee1b7879cfe1fb8f0a99ba4e21d62e4b2860cc5e2b5aa8e41ccf9"
+                            }
+                        },
+                        "outdated": true
+                    }
+                },
+                "xena": {
+                    "5.0.3.1.0.0": {
+                        "comment": "StorPool updates for Ubuntu Cloud Archive Xena 5.0.3-0ubuntu1~cloud1",
+                        "files": {
+                            "initiator/connectors/fibre_channel.py": {
+                                "sha256": "11e2b3e35a31cd8ee2869d4afee3782b8f9c1e3253f30f71950cef5277b5b588"
+                            },
+                            "initiator/connectors/storpool.py": {
+                                "sha256": "0d55280677a8423042b4341a5d5e1189c608b9333711712683b06c5c4c361e06"
+                            }
+                        },
+                        "outdated": false
+                    },
+                    "5.0.3.0.0.0": {
+                        "comment": "Ubuntu Cloud Archive Xena 5.0.3-0ubuntu1~cloud1",
                         "files": {
                             "initiator/connectors/fibre_channel.py": {
                                 "sha256": "11e2b3e35a31cd8ee2869d4afee3782b8f9c1e3253f30f71950cef5277b5b588"
