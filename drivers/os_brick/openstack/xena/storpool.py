@@ -88,8 +88,8 @@ class StorPoolConnector(base.BaseLinuxConnector):
             'volsnap': False
         })
         self._attach.sync(req_id, None)
-        return {'type': 'block', 'path': '/dev/storpool/' + volume}
         self._tag_volume_with_server_instance(volume_id, connection_properties.get('instance', None), connection_properties.get('device_name', None))
+        return {'type': 'block', 'path': '/dev/storpool/' + volume}
 
     @utils.connect_volume_undo_prepare_result(unlink_after=True)
     def disconnect_volume(self, connection_properties, device_info,
