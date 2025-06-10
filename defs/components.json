@@ -268,6 +268,39 @@
                     }
                 },
                 "yoga": {
+                    "20.0.1.10.0.0": {
+                        "comment": "StorPool fixes for Yoga (iSCSI multipath, StorPool QoS)",
+                        "files": {
+                            "volume/driver.py": {
+                                "sha256": "fd83b933a061e6dee7edccf4f60d4f165f86dfa2361ceae1acf83f9758b466d0"
+                            },
+                            "volume/drivers/storpool.py": {
+                                "sha256": "e3ccf857046a5b3d7b59f388bba1c725e9ddce8ba35cca5542cb028606794639"
+                            },
+                            "image/cache.py": {
+                                "sha256": "846acf2d07f0b94b2c6ce63e9d3c9cf0da9cac6a6e960f5eb9e4bddc4df41257"
+                            },
+                            "interface/volume_driver.py": {
+                                "sha256": "dc8fe9838fed60777ed9c4ad33a2e7ed6262a2c71ff750c8f198b879fb02c7e8"
+                            },
+                            "tests/unit/image/test_cache.py": {
+                                "sha256": "9b1a40b40d3c6a48fce3baed1611e77662b4cf6d7c40adae847492afdaa203e9"
+                            },
+                            "tests/unit/volume/flows/test_create_volume_flow.py": {
+                                "sha256": "479d580b603bd9df3744a87a15ae4bc7a217b2f4b68251fb6e1f224302284115"
+                            },
+                            "volume/flows/manager/create_volume.py": {
+                                "sha256": "10947bf1a60e94b223ddc0e96f851bda166487fdb02a9e363a3c32e540c1040d"
+                            },
+                            "volume/manager.py": {
+                                "sha256": "9549ee7ab8cd73695ff5be6e15530398b800e8e31b8ba48794c5704d95040966"
+                            },
+                            "tests/unit/volume/drivers/test_storpool.py": {
+                                "sha256": "060141290534df0f7f8b9ad37899f73fa9c1027296d5055acd48b2f498c34d02"
+                            }
+                        },
+                        "outdated": false
+                    },
                     "20.0.1.9.0.0": {
                         "comment": "StorPool fixes for Yoga (iSCSI multipath, StorPool QoS)",
                         "files": {
@@ -299,7 +332,7 @@
                                 "sha256": "060141290534df0f7f8b9ad37899f73fa9c1027296d5055acd48b2f498c34d02"
                             }
                         },
-                        "outdated": false
+                        "outdated": true
                     },
                     "20.3.1.0.0.0": {
                         "comment": "Ubuntu Cloud Archive Yoga 20.3.1-0ubuntu1.6~cloud0",

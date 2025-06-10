@@ -1678,7 +1678,6 @@ class VolumeManager(manager.CleanableManager,
                                        image_volume_meta,
                                        False)
 
-        uri = 'cinder://%s' % image_volume.id
         image_registered = None
 
         # retrieve store information from extra-specs
@@ -1687,7 +1686,9 @@ class VolumeManager(manager.CleanableManager,
 
         if store_id:
             location_metadata['store'] = store_id
-
+            uri = 'cinder://%s/%s' % (store_id, image_volume.id)
+        else:
+            uri = 'cinder://%s' % image_volume.id
         try:
             image_registered = image_service.add_location(
                 ctx, image_meta['id'], uri, location_metadata)
