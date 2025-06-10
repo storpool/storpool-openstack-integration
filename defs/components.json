@@ -134,7 +134,7 @@
                     }
                 },
                 "zed": {
-                    "21.3.1.0.0.1": {
+                    "21.3.1.0.0.2": {
                         "comment": "StorPool updates for Ubuntu cloud archive Zed 21.3.1-0ubuntu1.1~cloud0",
                         "files": {
                             "volume/driver.py": {
@@ -166,6 +166,39 @@
                             }
                         },
                         "outdated": false
+                    },
+                    "21.3.1.0.0.1": {
+                        "comment": "StorPool updates for Ubuntu cloud archive Zed 21.3.1-0ubuntu1.1~cloud0",
+                        "files": {
+                            "volume/driver.py": {
+                                "sha256": "b321efdba75c06b798e5cb16a733eee0756a63a0aab97ea0b5a79a9512ab98ff"
+                            },
+                            "volume/drivers/storpool.py": {
+                                "sha256": "48fc75a2f9bb4769a3b3e5df811913f4df59eacc6e94d98f3c012c544a23c6d6"
+                            },
+                            "image/cache.py": {
+                                "sha256": "846acf2d07f0b94b2c6ce63e9d3c9cf0da9cac6a6e960f5eb9e4bddc4df41257"
+                            },
+                            "interface/volume_driver.py": {
+                                "sha256": "cfd38d727a4965005ebe635ea0913bca6e4a76f986340f6d2d0de1a28745507a"
+                            },
+                            "tests/unit/image/test_cache.py": {
+                                "sha256": "43494e2c9fac4dfbd7e55c3362efe25c71d07a4a27c5df539929b22b40d0c843"
+                            },
+                            "tests/unit/volume/flows/test_create_volume_flow.py": {
+                                "sha256": "ecc6898a4996ffbdc08ecc6ef972c6dc79a68eea4781812ecba949dfb3631fb6"
+                            },
+                            "volume/flows/manager/create_volume.py": {
+                                "sha256": "0d213ea353b80692aaef8bdf93bebf75416251c9838629790ca7c603bce1e4b5"
+                            },
+                            "volume/manager.py": {
+                                "sha256": "f299b6bc8030d55761061ee0a191a7429f38dfc8043f0f82f68e2c32057be059"
+                            },
+                            "tests/unit/volume/drivers/test_storpool.py": {
+                                "sha256": "091a5e2c201af21b702f9799e3043ca641ceaf558a369e83598552182f08ded8"
+                            }
+                        },
+                        "outdated": true
                     },
                     "21.3.1.0.0.0": {
                         "comment": "Ubuntu cloud archive Zed 21.3.1-0ubuntu1.1~cloud0",
