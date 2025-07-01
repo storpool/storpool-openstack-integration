@@ -1463,6 +1463,33 @@
                     }
                 },
                 "yoga": {
+                    "25.2.1.1.1.3": {
+                        "comment": "StorPool updates for Ubuntu cloud archive Yoga 25.2.1 25.2.1-0ubuntu2.3",
+                        "files": {
+                            "virt/libvirt/driver.py": {
+                                "sha256": "c2b672d6c41999dc3c1223441f84b643c76857db42ebd2bf3879e7ba1d286fd7"
+                            },
+                            "virt/libvirt/config.py": {
+                                "sha256": "4cb836c743bdf49e7dbf9243a8a654ca8d7edcc0bcec2395a900f1f38f9f4bc4"
+                            },
+                            "conf/libvirt.py": {
+                                "sha256": "c05cb5417d60e4f04b1dd2571522ba9f3596c421ab292f2b68fe92f965a58e96"
+                            },
+                            "tests/fixtures/libvirt_data.py": {
+                                "sha256": "e858b6428bfa6e7d30ae5e693bf53bfc3850e4169fed2150978f762326b63758"
+                            },
+                            "tests/unit/virt/libvirt/test_config.py": {
+                                "sha256": "d4b67b01147aea9e46bf598f7fc6c2e857a722b7b4827bc2e27a3f1897c623e0"
+                            },
+                            "virt/libvirt/volume/volume.py": {
+                                "sha256": "27e7f62d25c29d04ea6f43abe473aec7db729b9defc5f800c6b94c2472b22200"
+                            },
+                            "virt/libvirt/volume/storpool.py": {
+                                "sha256": "2caaa84690052302dd77ef4360de455f46470f1b84b26456e1d16c2969aeb534"
+                            }
+                        },
+                        "outdated": false
+                    },
                     "25.2.1.1.1.2": {
                         "comment": "StorPool updates for Ubuntu cloud archive Yoga 25.2.1 25.2.1-0ubuntu2.7",
                         "files": {
@@ -1488,7 +1515,7 @@
                                 "sha256": "2caaa84690052302dd77ef4360de455f46470f1b84b26456e1d16c2969aeb534"
                             }
                         },
-                        "outdated": false
+                        "outdated": true
                     },
                     "25.2.1.1.1.1": {
                         "comment": "StorPool updates for Ubuntu cloud archive Yoga 25.2.1 25.2.1-0ubuntu2~cloud0",
@@ -1567,6 +1594,34 @@
                             },
                             "virt/libvirt/volume/storpool.py": {
                                 "sha256": "04f0af14073689025e6466a4abbd9f3f6d18e516613b5669a7b2f5f2ab5e3e24"
+                            }
+                        },
+                        "outdated": true
+                    },
+                    "25.2.1.0.3.1":
+                    {
+                        "comment": "Ubuntu cloud archive Yoga 25.2.1 25.2.1-0ubuntu2.8",
+                        "files": {
+                            "virt/libvirt/driver.py": {
+                                "sha256": "c3be8162048b51b89880d484ab548693e1a3fc160462bc428612572bd7f8bba5"
+                            },
+                            "virt/libvirt/config.py": {
+                                "sha256": "72eec12db54ead373c12b62d326f92b9af2bbc5e1214f5cdf4c6ff89c6f094d2"
+                            },
+                            "conf/libvirt.py": {
+                                "sha256": "4f22303d8fe37ee422de4cd77cbcfce35394670fe3ff3e61176c272045073f32"
+                            },
+                            "tests/fixtures/libvirt_data.py": {
+                                "sha256": "ce51576c5ec56fbcfd8600690003e5efa29207b202e4a7481223be7dd0206d0d"
+                            },
+                            "tests/unit/virt/libvirt/test_config.py": {
+                                "sha256": "c2e7843b6fa3ad5538efcf6c4e02180de01c6e47f211e9f75d8a8ce272a2cf63"
+                            },
+                            "virt/libvirt/volume/volume.py": {
+                                "sha256": "da9268880d3dc8d7146cea9866fb30855cb528d4179e11b7fa2cf6b7b85acab3"
+                            },
+                            "virt/libvirt/volume/storpool.py": {
+                                "sha256": "e26c3b7a4d36ef9db3063f2910b62e1e8eb139ff022aa6b52ab8da4e1cecb939"
                             }
                         },
                         "outdated": true
