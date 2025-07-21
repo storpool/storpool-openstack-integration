@@ -1,0 +1,76 @@
+From 7bc14e6e14d5560ed886afb47fed65d05a6aa186 Mon Sep 17 00:00:00 2001
+From: Biser Milanov <biser.milanov@storpool.com>
+Date: Fri, 2 Jun 2023 17:43:45 +0300
+Subject: StorPool: Raise on spopenstack, SP_OURID issues
+
+The module 'spopenstack' is required for this connector, but is
+installed as needed. Detecting early on if it is missing makes debugging
+faster.
+
+The same is true for the "SP_OURID" configuration item in
+`_attach.config()`.
+
+Change-Id: I6030d433dcf45f496bfee79aa00b2af9b51fd420
+Signed-off-by: Biser Milanov <biser.milanov@storpool.com>
+(cherry picked from commit b290711cfb23603627e9e28c733fceb5184589b5)
+---
+ os_brick/initiator/connectors/storpool.py     | 21 ++++++++++++-------
+ .../initiator/connectors/test_storpool.py     | 10 +++++++++
+ 2 files changed, 23 insertions(+), 8 deletions(-)
+
+diff --git a/os_brick/initiator/connectors/storpool.py b/os_brick/initiator/connectors/storpool.py
+index ea0c51b..fa57267 100644
+--- a/os_brick/initiator/connectors/storpool.py
++++ b/os_brick/initiator/connectors/storpool.py
+@@ -59,14 +59,19 @@ class StorPoolConnector(base.BaseLinuxConnector):
+             raise exception.BrickException(
+                 'Could not import the StorPool API bindings')
+ 
+-        if spopenstack is not None:
+-            try:
+-                self._attach = spopenstack.AttachDB(log=LOG)
+-            except Exception as e:
+-                raise exception.BrickException(
+-                    'Could not initialize the StorPool API bindings: %s' % (e))
+-        else:
+-            self._attach = None
++        if spopenstack is None:
++            raise exception.BrickException(
++                'Could not import the required module "storpool.spopenstack"')
++
++        try:
++            self._attach = spopenstack.AttachDB(log=LOG)
++        except Exception as e:
++            raise exception.BrickException(
++                'Could not initialize the StorPool API bindings: %s' % (e))
++
++        if "SP_OURID" not in self._attach.config():
++            raise exception.BrickException(
++                'Could not read "SP_OURID" from the StorPool configuration"')
+ 
+     def _detach_retry(self, sp_ourid, volume):
+         """Retry detaching.
+diff --git a/os_brick/tests/initiator/connectors/test_storpool.py b/os_brick/tests/initiator/connectors/test_storpool.py
+index 4819768..a127d53 100644
+--- a/os_brick/tests/initiator/connectors/test_storpool.py
++++ b/os_brick/tests/initiator/connectors/test_storpool.py
+@@ -110,6 +110,16 @@ class StorPoolConnectorTestCase(test_connector.ConnectorTestCase):
+             None, execute=self.execute)
+         self.adb = self.connector._attach
+ 
++    def test_raise_if_spopenstack_missing(self):
++        with mock.patch.object(connector, 'spopenstack', None):
++            self.assertRaises(exception.BrickException,
++                              connector.StorPoolConnector, "")
++
++    def test_raise_if_sp_ourid_missing(self):
++        with mock.patch.object(spopenstack.AttachDB, 'config', lambda x: {}):
++            self.assertRaises(exception.BrickException,
++                              connector.StorPoolConnector, "")
++
+     def test_connect_volume(self):
+         volume_name = volumeNameExt(self.fakeProp['volume'])
+         api = mock.MagicMock(spec=['volumesReassignWait', 'volumeInfo'])
+-- 
+2.43.0
+

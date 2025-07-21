@@ -8,6 +8,9 @@ import subprocess
 from . import defs
 
 
+DIVERSION_SUFFIX = ".sp-ospkg"
+
+
 class OSIDivertError(defs.OSIError):
     """An error that occurred while checking whether we can divert a file."""
 
@@ -19,7 +22,7 @@ class OSIDivertError(defs.OSIError):
 
 def get_diverted_name(path: pathlib.Path) -> pathlib.Path:
     """Get the target name of the divert-and-rename operation."""
-    return path.with_name(path.name + ".sp-ospkg")
+    return path.with_name(path.name + DIVERSION_SUFFIX)
 
 
 def has_dpkg_divert(cfg: defs.Config) -> bool:

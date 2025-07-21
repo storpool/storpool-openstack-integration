@@ -1,0 +1,400 @@
+From 5a0c8607a53b8a3e223e4b52244d95da86b34724 Mon Sep 17 00:00:00 2001
+From: Peter Penchev <openstack-dev@storpool.com>
+Date: Wed, 20 Apr 2022 15:47:39 +0300
+Subject: StorPool: create_cloned_volume() improvements
+
+If the source and destination volumes are in the same StorPool template
+(as defined by either the volume type or the global config setting),
+forego the need to create the transient snapshot at all and use
+StorPool's "base this volume on that one" API call (which does the same
+thing internally, but much more efficiently and atomically).
+
+If the destination volume should be in a different StorPool template,
+then make sure that the transient snapshot is also in that template so
+that, if other volumes are cloned from the same source volume later,
+they can all use the same data underneath (the internal workings of
+StorPool will detect that all those snapshots are exactly the same and
+not duplicate any data in the destination template). This will avoid
+data duplication, sometimes with drastic results.
+
+Bump the minimum required version of the "storpool" third-party library
+for snapshotUpdate(template=...) support.
+
+Change-Id: Ib9bb76cf2e2f2b035b92e596b1ef185558b190d6
+Signed-off-by: Biser Milanov <biser.milanov@storpool.com>
+(cherry picked from commit 7a19f6f5bd90168a944fd81900aee36a1764b4b5)
+---
+ .../unit/volume/drivers/test_storpool.py      | 152 +++++++++++++++---
+ cinder/volume/drivers/storpool.py             |  84 ++++++++--
+ 2 files changed, 202 insertions(+), 34 deletions(-)
+
+diff --git a/cinder/tests/unit/volume/drivers/test_storpool.py b/cinder/tests/unit/volume/drivers/test_storpool.py
+index dbe90d6ab..80b68a8af 100644
+--- a/cinder/tests/unit/volume/drivers/test_storpool.py
++++ b/cinder/tests/unit/volume/drivers/test_storpool.py
+@@ -14,6 +14,7 @@
+ #    under the License.
+ 
+ 
++import itertools
+ import re
+ import sys
+ from unittest import mock
+@@ -109,13 +110,33 @@ class MockAPI(object):
+     def snapshotCreate(self, vname, snap):
+         snapshots[snap['name']] = dict(volumes[vname])
+ 
++    def snapshotUpdate(self, snap, data):
++        sdata = snapshots[snap]
++        sdata.update(data)
++
+     def snapshotDelete(self, name):
+         del snapshots[name]
+ 
+-    def volumeCreate(self, v):
+-        if v['name'] in volumes:
++    def volumeCreate(self, vol):
++        name = vol['name']
++        if name in volumes:
+             raise MockApiError('volume already exists')
+-        volumes[v['name']] = v
++        data = dict(vol)
++
++        if 'parent' in vol and 'template' not in vol:
++            sdata = snapshots[vol['parent']]
++            if 'template' in sdata:
++                data['template'] = sdata['template']
++
++        if 'baseOn' in vol and 'template' not in vol:
++            vdata = volumes[vol['baseOn']]
++            if 'template' in vdata:
++                data['template'] = vdata['template']
++
++        if 'template' not in data:
++            data['template'] = None
++
++        volumes[name] = data
+ 
+     def volumeDelete(self, name):
+         del volumes[name]
+@@ -188,6 +209,23 @@ fakeStorPool.sptypes.VolumeRevertDesc = MockVolumeRevertDesc
+ fakeStorPool.sptypes.VolumeUpdateDesc = MockVolumeUpdateDesc
+ 
+ 
++class MockVolumeDB(object):
++    """Simulate a Cinder database with a volume_get() method."""
++
++    def __init__(self, vol_types=None):
++        """Store the specified volume types mapping if necessary."""
++        self.vol_types = vol_types if vol_types is not None else {}
++
++    def volume_get(self, _context, vid):
++        """Get a volume-like structure, only the fields we care about."""
++        # Still, try to at least make sure we know about that volume
++        return {
++            'id': vid,
++            'size': volumes[volumeName(vid)]['size'],
++            'volume_type': self.vol_types.get(vid),
++        }
++
++
+ @ddt.ddt
+ class StorPoolTestCase(test.TestCase):
+ 
+@@ -279,6 +317,11 @@ class StorPoolTestCase(test.TestCase):
+         self.assertListEqual(sorted([volumeName(n) for n in names]),
+                              sorted(data['name'] for data in volumes.values()))
+ 
++    def assertSnapshotNames(self, specs):
++        self.assertListEqual(
++            sorted(snapshotName(spec[0], spec[1]) for spec in specs),
++            sorted(snapshots.keys()))
++
+     @mock_volume_types
+     def test_create_delete_volume(self):
+         self.assertVolumeNames([])
+@@ -291,7 +334,7 @@ class StorPoolTestCase(test.TestCase):
+         self.assertVolumeNames(('1',))
+         v = volumes[volumeName('1')]
+         self.assertEqual(1 * units.Gi, v['size'])
+-        self.assertNotIn('template', v.keys())
++        self.assertIsNone(v['template'])
+         self.assertEqual(3, v['replication'])
+ 
+         caught = False
+@@ -311,7 +354,7 @@ class StorPoolTestCase(test.TestCase):
+         self.assertVolumeNames(('1',))
+         v = volumes[volumeName('1')]
+         self.assertEqual(2 * units.Gi, v['size'])
+-        self.assertNotIn('template', v.keys())
++        self.assertIsNone(v['template'])
+         self.assertEqual(3, v['replication'])
+ 
+         self.driver.create_volume({'id': '2', 'name': 'v2', 'size': 3,
+@@ -319,7 +362,7 @@ class StorPoolTestCase(test.TestCase):
+         self.assertVolumeNames(('1', '2'))
+         v = volumes[volumeName('2')]
+         self.assertEqual(3 * units.Gi, v['size'])
+-        self.assertNotIn('template', v.keys())
++        self.assertIsNone(v['template'])
+         self.assertEqual(3, v['replication'])
+ 
+         self.driver.create_volume({'id': '3', 'name': 'v2', 'size': 4,
+@@ -341,7 +384,7 @@ class StorPoolTestCase(test.TestCase):
+         # Make sure the dictionary is not corrupted somehow...
+         v = volumes[volumeName('1')]
+         self.assertEqual(2 * units.Gi, v['size'])
+-        self.assertNotIn('template', v.keys())
++        self.assertIsNone(v['template'])
+         self.assertEqual(3, v['replication'])
+ 
+         for vid in ('1', '2', '3', '4'):
+@@ -406,16 +449,17 @@ class StorPoolTestCase(test.TestCase):
+         self.driver.extend_volume({'id': '1'}, 2)
+         self.assertEqual(2 * units.Gi, volumes[volumeName('1')]['size'])
+ 
+-        self.driver.create_cloned_volume({'id': '2', 'name': 'clo', 'size': 3},
+-                                         {'id': 1})
++        with mock.patch.object(self.driver, 'db', new=MockVolumeDB()):
++            self.driver.create_cloned_volume(
++                {'id': '2', 'name': 'clo', 'size': 3, 'volume_type': None},
++                {'id': 1})
+         self.assertVolumeNames(('1', '2'))
+         self.assertDictEqual({}, snapshots)
+-        # Note: this would not be true in a real environment (the snapshot will
+-        # have been deleted, the volume would have no parent), but with this
+-        # fake implementation it helps us make sure that the second volume was
+-        # created with the proper options.
+-        self.assertEqual(volumes[volumeName('2')]['parent'],
+-                         snapshotName('clone', '2'))
++        # We do not provide a StorPool template name in either of the volumes'
++        # types, so create_cloned_volume() should take the baseOn shortcut.
++        vol2 = volumes[volumeName('2')]
++        self.assertEqual(vol2['baseOn'], volumeName('1'))
++        self.assertNotIn('parent', vol2)
+ 
+         self.driver.delete_volume({'id': 1})
+         self.driver.delete_volume({'id': 2})
+@@ -423,6 +467,78 @@ class StorPoolTestCase(test.TestCase):
+         self.assertDictEqual({}, volumes)
+         self.assertDictEqual({}, snapshots)
+ 
++    @ddt.data(*itertools.product(
++        [None] + [{'id': key} for key in sorted(volume_types.keys())],
++        [None] + [{'id': key} for key in sorted(volume_types.keys())]))
++    @ddt.unpack
++    @mock_volume_types
++    def test_create_cloned_volume(self, src_type, dst_type):
++        self.assertDictEqual({}, volumes)
++        self.assertDictEqual({}, snapshots)
++
++        src_template = (
++            None
++            if src_type is None
++            else volume_types[src_type['id']].get('storpool_template')
++        )
++        dst_template = (
++            None
++            if dst_type is None
++            else volume_types[dst_type['id']].get('storpool_template')
++        )
++        src_name = 's-none' if src_template is None else 's-' + src_template
++        dst_name = 'd-none' if dst_template is None else 'd-' + dst_template
++
++        snap_name = snapshotName('clone', '2')
++
++        vdata1 = {
++            'id': '1',
++            'name': src_name,
++            'size': 1,
++            'volume_type': src_type,
++        }
++        self.assertEqual(
++            self.driver._template_from_volume(vdata1),
++            src_template)
++        self.driver.create_volume(vdata1)
++        self.assertVolumeNames(('1',))
++
++        vdata2 = {
++            'id': 2,
++            'name': dst_name,
++            'size': 1,
++            'volume_type': dst_type,
++        }
++        self.assertEqual(
++            self.driver._template_from_volume(vdata2),
++            dst_template)
++        with mock.patch.object(self.driver, 'db',
++                               new=MockVolumeDB(vol_types={'1': src_type})):
++            self.driver.create_cloned_volume(vdata2, {'id': '1'})
++        self.assertVolumeNames(('1', '2'))
++        vol2 = volumes[volumeName('2')]
++        self.assertEqual(vol2['template'], dst_template)
++
++        if src_template == dst_template:
++            self.assertEqual(vol2['baseOn'], volumeName('1'))
++            self.assertNotIn('parent', vol2)
++
++            self.assertDictEqual({}, snapshots)
++        else:
++            self.assertNotIn('baseOn', vol2)
++            self.assertEqual(vol2['parent'], snap_name)
++
++            self.assertSnapshotNames((('clone', '2'),))
++            self.assertEqual(snapshots[snap_name]['template'], dst_template)
++
++        self.driver.delete_volume({'id': '1'})
++        self.driver.delete_volume({'id': '2'})
++        if src_template != dst_template:
++            del snapshots[snap_name]
++
++        self.assertDictEqual({}, volumes)
++        self.assertDictEqual({}, snapshots)
++
+     @mock_volume_types
+     def test_config_replication(self):
+         self.assertVolumeNames([])
+@@ -442,7 +558,7 @@ class StorPoolTestCase(test.TestCase):
+         self.assertVolumeNames(('cfgrepl1',))
+         v = volumes[volumeName('cfgrepl1')]
+         self.assertEqual(3, v['replication'])
+-        self.assertNotIn('template', v)
++        self.assertIsNone(v['template'])
+         self.driver.delete_volume({'id': 'cfgrepl1'})
+ 
+         self.driver.configuration.storpool_replication = 2
+@@ -456,7 +572,7 @@ class StorPoolTestCase(test.TestCase):
+         self.assertVolumeNames(('cfgrepl2',))
+         v = volumes[volumeName('cfgrepl2')]
+         self.assertEqual(2, v['replication'])
+-        self.assertNotIn('template', v)
++        self.assertIsNone(v['template'])
+         self.driver.delete_volume({'id': 'cfgrepl2'})
+ 
+         self.driver.create_volume({'id': 'cfgrepl3', 'name': 'v1', 'size': 1,
+@@ -488,7 +604,7 @@ class StorPoolTestCase(test.TestCase):
+         self.assertVolumeNames(('cfgtempl1',))
+         v = volumes[volumeName('cfgtempl1')]
+         self.assertEqual(3, v['replication'])
+-        self.assertNotIn('template', v)
++        self.assertIsNone(v['template'])
+         self.driver.delete_volume({'id': 'cfgtempl1'})
+ 
+         self.driver.create_volume({'id': 'cfgtempl2', 'name': 'v1', 'size': 1,
+diff --git a/cinder/volume/drivers/storpool.py b/cinder/volume/drivers/storpool.py
+index 4e46ba05f..76b86cd02 100644
+--- a/cinder/volume/drivers/storpool.py
++++ b/cinder/volume/drivers/storpool.py
+@@ -19,10 +19,12 @@ import platform
+ 
+ from oslo_config import cfg
+ from oslo_log import log as logging
++from oslo_utils import excutils
+ from oslo_utils import importutils
+ from oslo_utils import units
+ 
+ from cinder.common import constants
++from cinder import context
+ from cinder import exception
+ from cinder.i18n import _
+ from cinder import interface
+@@ -197,30 +199,80 @@ class StorPoolDriver(driver.VolumeDriver):
+ 
+     def create_cloned_volume(self, volume, src_vref):
+         refname = self._attach.volumeName(src_vref['id'])
++        size = int(volume['size']) * units.Gi
++        volname = self._attach.volumeName(volume['id'])
++
++        src_volume = self.db.volume_get(
++            context.get_admin_context(),
++            src_vref['id'],
++        )
++        src_template = self._template_from_volume(src_volume)
++
++        template = self._template_from_volume(volume)
++        LOG.debug('clone volume id %(vol_id)r template %(template)r', {
++            'vol_id': volume['id'],
++            'template': template,
++        })
++        if template == src_template:
++            LOG.info('Using baseOn to clone a volume into the same template')
++            try:
++                self._attach.api().volumeCreate({
++                    'name': volname,
++                    'size': size,
++                    'baseOn': refname,
++                })
++            except spapi.ApiError as e:
++                raise self._backendException(e)
++
++            return None
++
+         snapname = self._attach.snapshotName('clone', volume['id'])
++        LOG.info(
++            'A transient snapshot for a %(src)s -> %(dst)s template change',
++            {'src': src_template, 'dst': template})
+         try:
+             self._attach.api().snapshotCreate(refname, {'name': snapname})
+         except spapi.ApiError as e:
+-            raise self._backendException(e)
++            if e.name != 'objectExists':
++                raise self._backendException(e)
+ 
+-        size = int(volume['size']) * units.Gi
+-        volname = self._attach.volumeName(volume['id'])
+         try:
+-            self._attach.api().volumeCreate({
+-                'name': volname,
+-                'size': size,
+-                'parent': snapname
+-            })
+-        except spapi.ApiError as e:
+-            raise self._backendException(e)
+-        finally:
+             try:
+-                self._attach.api().snapshotDelete(snapname)
++                self._attach.api().snapshotUpdate(
++                    snapname,
++                    {'template': template},
++                )
+             except spapi.ApiError as e:
+-                # ARGH!
+-                LOG.error("Could not delete the temp snapshot %(name)s: "
+-                          "%(msg)s",
+-                          {'name': snapname, 'msg': e})
++                raise self._backendException(e)
++
++            try:
++                self._attach.api().volumeCreate({
++                    'name': volname,
++                    'size': size,
++                    'parent': snapname
++                })
++            except spapi.ApiError as e:
++                raise self._backendException(e)
++
++            try:
++                self._attach.api().snapshotUpdate(
++                    snapname,
++                    {'tags': {'transient': '1.0'}},
++                )
++            except spapi.ApiError as e:
++                raise self._backendException(e)
++        except Exception:
++            with excutils.save_and_reraise_exception():
++                try:
++                    LOG.warning(
++                        'Something went wrong, removing the transient snapshot'
++                    )
++                    self._attach.api().snapshotDelete(snapname)
++                except spapi.ApiError as e:
++                    LOG.error(
++                        'Could not delete the %(name)s snapshot: %(err)s',
++                        {'name': snapname, 'err': str(e)}
++                    )
+ 
+     def create_export(self, context, volume, connector):
+         pass
+-- 
+2.43.0
+

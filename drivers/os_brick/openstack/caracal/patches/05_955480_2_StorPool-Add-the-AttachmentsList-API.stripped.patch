@@ -1,0 +1,28 @@
+From 9752a8d66b25b1527f37c0cca453babc768a29bc Mon Sep 17 00:00:00 2001
+From: Biser Milanov <biser.milanov@storpool.com>
+Date: Mon, 21 Jul 2025 18:24:25 +0300
+Subject: StorPool: Add the AttachmentsList API
+
+Change-Id: I64297a78de470e7570da147ebc4cf53b761ee23e
+Signed-off-by: Biser Milanov <biser.milanov@storpool.com>
+---
+ os_brick/initiator/storpool_utils.py | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/os_brick/initiator/storpool_utils.py b/os_brick/initiator/storpool_utils.py
+index a492d39..5d28de8 100644
+--- a/os_brick/initiator/storpool_utils.py
++++ b/os_brick/initiator/storpool_utils.py
+@@ -165,6 +165,9 @@ class StorPoolAPI:
+     def disks_list(self):
+         return self._api_call('GET', '/ctrl/1.0/DisksList')
+ 
++    def attachments_list(self):
++        return self._api_call('GET', '/ctrl/1.0/MultiCluster/AttachmentsList')
++
+     def volume_templates_list(self):
+         return self._api_call('GET', '/ctrl/1.0/VolumeTemplatesList')
+ 
+-- 
+2.43.0
+

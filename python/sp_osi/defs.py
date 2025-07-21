@@ -4,9 +4,17 @@
 
 import pathlib
 import sys
+from enum import IntEnum
+from enum import auto
 from typing import Callable, Dict, List, NamedTuple
 
 from sp_variant import variant as spvariant
+
+
+class OpenStackVersion(IntEnum):
+    """OpenStack version names."""
+
+    CARACAL = auto()
 
 
 class ComponentFile(NamedTuple):

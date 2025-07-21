@@ -1,0 +1,43 @@
+From 96f9834b81f5481c25d1478720af704a756710b6 Mon Sep 17 00:00:00 2001
+From: Peter Penchev <openstack-dev@storpool.com>
+Date: Tue, 17 Jan 2023 01:20:59 +0200
+Subject: StorPool: fix the "rename volume" unit test emulation
+
+Also update the "name" field of the actual data structure in
+the fake list of volumes.
+
+Change-Id: Iee9e3feea1af4f3d0acdf05ea1b540ecf59e755b
+Signed-off-by: Biser Milanov <biser.milanov@storpool.com>
+(cherry picked from commit 81edb710d97e58cdb2bf5f5375edd992291085bf)
+---
+ cinder/tests/unit/volume/drivers/test_storpool.py | 7 ++++++-
+ 1 file changed, 6 insertions(+), 1 deletion(-)
+
+diff --git a/cinder/tests/unit/volume/drivers/test_storpool.py b/cinder/tests/unit/volume/drivers/test_storpool.py
+index 0eac3d957..442bdbb88 100644
+--- a/cinder/tests/unit/volume/drivers/test_storpool.py
++++ b/cinder/tests/unit/volume/drivers/test_storpool.py
+@@ -134,7 +134,10 @@ class MockAPI(object):
+             volumes[name]['size'] = data['size']
+ 
+         if 'rename' in data and data['rename'] != name:
+-            volumes[data['rename']] = volumes[name]
++            new_name = data['rename']
++            volumes[new_name] = volumes[name]
++            if volumes[new_name]['name'] == name:
++                volumes[new_name]['name'] = new_name
+             del volumes[name]
+ 
+ 
+@@ -258,6 +261,8 @@ class StorPoolTestCase(test.TestCase):
+     def assertVolumeNames(self, names):
+         self.assertListEqual(sorted([volumeName(n) for n in names]),
+                              sorted(volumes.keys()))
++        self.assertListEqual(sorted([volumeName(n) for n in names]),
++                             sorted(data['name'] for data in volumes.values()))
+ 
+     @mock_volume_types
+     def test_create_delete_volume(self):
+-- 
+2.43.0
+

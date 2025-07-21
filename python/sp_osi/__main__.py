@@ -9,7 +9,7 @@ the StorPool driver is up-to-date, and replace it if necessary.
 import argparse
 import os
 import sys
-from typing import Callable, Dict, Mapping, Tuple
+from typing import Any, Callable, Dict, Mapping, Tuple
 
 from sp_variant import variant as spvariant
 
@@ -18,6 +18,7 @@ from . import detect
 from . import groups
 from . import install
 from . import parse
+from . import patch
 from . import u8loc
 
 
@@ -81,6 +82,33 @@ def _dict_union(left: Mapping[str, str], right: Mapping[str, str]) -> Dict[str, 
     return res
 
 
+def setup_patch_mode(subp: Any) -> None:  # noqa: ANN401
+    """Set up the patch-mode of sp-openstack."""
+    subcmd = subp.add_parser("patch", help="The sp-openstack tool working in patch mode")
+    subcmd.add_argument(
+        "--verbose", action="store_true", help="Verbose operation; display diagnostic output"
+    )
+    subcmd.add_argument("--component", required=True, help="The OpenStack component to patch")
+    subcmd.add_argument(
+        "--component-version",
+        choices=[ver.name.lower() for ver in defs.OpenStackVersion],
+        required=True,
+        help="The version of the OpenStack component to patch",
+    )
+    subcmd.add_argument(
+        "--component-destination",
+        required=True,
+        help="The directory of the OpenStack component to patch",
+    )
+
+    patch_subp = subcmd.add_subparsers()
+
+    patch_install = patch_subp.add_parser("install", help="Install the StorPool changes")
+    patch_install.set_defaults(func=patch.install)
+    patch_uninstall = patch_subp.add_parser("uninstall", help="Uninstall the StorPool changes")
+    patch_uninstall.set_defaults(func=patch.uninstall)
+
+
 def parse_args() -> Tuple[defs.Config, Callable[[defs.Config], None]]:  # noqa: C901
     """Parse the command-line arguments."""
     parser = argparse.ArgumentParser(prog="sp-openstack")
@@ -106,7 +134,9 @@ def parse_args() -> Tuple[defs.Config, Callable[[defs.Config], None]]:  # noqa: 
         help="verbose operation; display diagnostic output",
     )
 
-    subp = parser.add_subparsers()
+    subp = parser.add_subparsers(dest="subparser_name")
+
+    setup_patch_mode(subp)
 
     def add_subcommand(
         name: str, handler: Callable[[defs.Config], None], desc: str, *, req_components: bool = True
@@ -136,6 +166,8 @@ def parse_args() -> Tuple[defs.Config, Callable[[defs.Config], None]]:  # noqa: 
     )
 
     args = parser.parse_args()
+    if args.subparser_name == "patch":
+        return args, getattr(args, "func", None)  # type: ignore[return-value]
 
     func = getattr(args, "func", None)
     if func is None:
@@ -165,8 +197,6 @@ def parse_args() -> Tuple[defs.Config, Callable[[defs.Config], None]]:  # noqa: 
         else:
             components = []
 
-    if cfg.components:
-        sys.exit(f"Internal error: unexpected config elements: {cfg!r}")
     cfg = cfg._replace(components=components)
 
     if not cfg.utf8_env:
