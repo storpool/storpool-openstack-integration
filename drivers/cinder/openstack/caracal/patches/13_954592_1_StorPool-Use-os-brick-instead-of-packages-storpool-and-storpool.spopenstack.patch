@@ -1,0 +1,727 @@
+From b6ebcd1fac3cd180a0f373fa82a4dc40fae819a5 Mon Sep 17 00:00:00 2001
+From: Biser Milanov <biser.milanov@storpool.com>
+Date: Mon, 14 Oct 2024 14:25:22 +0300
+Subject: StorPool: Use os-brick instead of packages `storpool` and
+ `storpool.spopenstack`
+
+Stop depending on modules `storpool` and `storpool.spopenstack` for
+access to the StorPool API and reading the StorPool configuration from
+files. Use the new new in-tree implementation introduced in `os-brick`.
+
+Change-Id: Ieb6be04133e1639b3fa6e3a322604b366e909d81
+Signed-off-by: Biser Milanov <biser.milanov@storpool.com>
+(cherry picked from commit 89a7a3bf5fb34198d595aa906cdf3ee9f6647f48)
+---
+ .../unit/volume/drivers/test_storpool.py      | 168 +++++++---------
+ cinder/volume/drivers/storpool.py             | 183 +++++++++---------
+ .../drivers/storpool-volume-driver.rst        |   8 -
+ ...-config-code-in-tree-92cfe30690b78ef1.yaml |   8 +
+ requirements.txt                              |   2 +-
+ 5 files changed, 173 insertions(+), 196 deletions(-)
+ create mode 100644 releasenotes/notes/storpool-move-api-and-config-code-in-tree-92cfe30690b78ef1.yaml
+
+diff --git a/cinder/tests/unit/volume/drivers/test_storpool.py b/cinder/tests/unit/volume/drivers/test_storpool.py
+index 44707d0b8..2015c734d 100644
+--- a/cinder/tests/unit/volume/drivers/test_storpool.py
++++ b/cinder/tests/unit/volume/drivers/test_storpool.py
+@@ -16,21 +16,13 @@
+ 
+ import itertools
+ import re
+-import sys
+ from unittest import mock
+ 
+ import ddt
++from os_brick.initiator import storpool_utils
++from os_brick.tests.initiator import test_storpool_utils
+ from oslo_utils import units
+ 
+-
+-fakeStorPool = mock.Mock()
+-fakeStorPool.spopenstack = mock.Mock()
+-fakeStorPool.spapi = mock.Mock()
+-fakeStorPool.spconfig = mock.Mock()
+-fakeStorPool.sptypes = mock.Mock()
+-sys.modules['storpool'] = fakeStorPool
+-
+-
+ from cinder import exception
+ from cinder.tests.unit import fake_constants
+ from cinder.tests.unit import test
+@@ -64,64 +56,52 @@ def mock_volume_types(f):
+ 
+ 
+ def volumeName(vid):
+-    return 'os--volume--{id}'.format(id=vid)
+-
+-
+-def snapshotName(vtype, vid):
+-    return 'os--snap--{t}--{id}'.format(t=vtype, id=vid)
+-
+-
+-class MockDisk(object):
+-    def __init__(self, diskId):
+-        self.id = diskId
+-        self.generationLeft = -1
+-        self.agCount = 14
+-        self.agFree = 12
+-        self.agAllocated = 1
+-
+-
+-class MockVolume(object):
+-    def __init__(self, v):
+-        self.name = v['name']
+-
+-
+-class MockTemplate(object):
+-    def __init__(self, name):
+-        self.name = name
++    return 'os--volume-{id}'.format(id=vid)
+ 
+ 
+-class MockApiError(Exception):
+-    def __init__(self, msg):
+-        super(MockApiError, self).__init__(msg)
++def snapshotName(vtype, vid, more=None):
++    return 'os--{t}--{m}--snapshot-{id}'.format(
++        t=vtype,
++        m="none" if more is None else more,
++        id=vid
++    )
+ 
+ 
+ class MockAPI(object):
+-    def __init__(self):
+-        self._disks = {diskId: MockDisk(diskId) for diskId in (1, 2, 3, 4)}
+-        self._disks[3].generationLeft = 42
+-
+-        self._templates = [MockTemplate(name) for name in ('ssd', 'hdd')]
+-
+-    def setlog(self, log):
+-        self._log = log
+-
+-    def disksList(self):
++    def __init__(self, *args):
++        self._disks = {}
++        for disk_id in [1, 2, 3, 4]:
++            self._disks[disk_id] = {
++                'id': disk_id,
++                'generationLeft': -1,
++                'agCount': 14,
++                'agFree': 12,
++                'agAllocated': 1
++            }
++        self._disks[3]['generationLeft'] = 42
++
++        self._templates = [{'name': name} for name in ('ssd', 'hdd')]
++
++    def disks_list(self):
+         return self._disks
+ 
+-    def snapshotCreate(self, vname, snap):
++    def snapshot_create(self, vname, snap):
+         snapshots[snap['name']] = dict(volumes[vname])
+ 
+-    def snapshotUpdate(self, snap, data):
++    def snapshot_update(self, snap, data):
+         sdata = snapshots[snap]
+         sdata.update(data)
+ 
+-    def snapshotDelete(self, name):
++    def snapshot_delete(self, name):
+         del snapshots[name]
+ 
+-    def volumeCreate(self, vol):
++    def volume_create(self, vol):
+         name = vol['name']
+         if name in volumes:
+-            raise MockApiError('volume already exists')
++            raise storpool_utils.StorPoolAPIError(
++                'none',
++                {'error': {
++                    'descr': 'volume already exists'}})
+         data = dict(vol)
+ 
+         if 'parent' in vol and 'template' not in vol:
+@@ -139,19 +119,22 @@ class MockAPI(object):
+ 
+         volumes[name] = data
+ 
+-    def volumeDelete(self, name):
++    def volume_delete(self, name):
+         del volumes[name]
+ 
+-    def volumesList(self):
+-        return [MockVolume(v[1]) for v in volumes.items()]
++    def volumes_list(self):
++        the_volumes = []
++        for volume in volumes:
++            the_volumes.append({'name': volume})
++        return the_volumes
+ 
+-    def volumeTemplatesList(self):
++    def volume_templates_list(self):
+         return self._templates
+ 
+-    def volumesReassign(self, json):
++    def volumes_reassign(self, json):
+         pass
+ 
+-    def volumeUpdate(self, name, data):
++    def volume_update(self, name, data):
+         if 'size' in data:
+             volumes[name]['size'] = data['size']
+ 
+@@ -162,54 +145,23 @@ class MockAPI(object):
+                 volumes[new_name]['name'] = new_name
+             del volumes[name]
+ 
+-    def volumeRevert(self, name, data):
++    def volume_revert(self, name, data):
+         if name not in volumes:
+-            raise MockApiError('No such volume {name}'.format(name=name))
++            raise storpool_utils.StorPoolAPIError(
++                'none',
++                {'error': {
++                    'descr': 'No such volume {name}'.format(name=name)}})
+ 
+         snapname = data['toSnapshot']
+         if snapname not in snapshots:
+-            raise MockApiError('No such snapshot {name}'.format(name=snapname))
++            raise storpool_utils.StorPoolAPIError(
++                'none',
++                {'error': {
++                    'descr': 'No such snapshot {name}'.format(name=snapname)}})
+ 
+         volumes[name] = dict(snapshots[snapname])
+ 
+ 
+-class MockAttachDB(object):
+-    def __init__(self, log):
+-        self._api = MockAPI()
+-
+-    def api(self):
+-        return self._api
+-
+-    def volumeName(self, vid):
+-        return volumeName(vid)
+-
+-    def snapshotName(self, vtype, vid):
+-        return snapshotName(vtype, vid)
+-
+-
+-def MockVolumeRevertDesc(toSnapshot):
+-    return {'toSnapshot': toSnapshot}
+-
+-
+-def MockVolumeUpdateDesc(size):
+-    return {'size': size}
+-
+-
+-def MockSPConfig(section = 's01'):
+-    res = {}
+-    m = re.match('^s0*([A-Za-z0-9]+)$', section)
+-    if m:
+-        res['SP_OURID'] = m.group(1)
+-    return res
+-
+-
+-fakeStorPool.spapi.ApiError = MockApiError
+-fakeStorPool.spconfig.SPConfig = MockSPConfig
+-fakeStorPool.spopenstack.AttachDB = MockAttachDB
+-fakeStorPool.sptypes.VolumeRevertDesc = MockVolumeRevertDesc
+-fakeStorPool.sptypes.VolumeUpdateDesc = MockVolumeUpdateDesc
+-
+-
+ class MockVolumeDB(object):
+     """Simulate a Cinder database with a volume_get() method."""
+ 
+@@ -227,7 +179,16 @@ class MockVolumeDB(object):
+         }
+ 
+ 
++def MockSPConfig(section = 's01'):
++    res = {}
++    m = re.match('^s0*([A-Za-z0-9]+)$', section)
++    if m:
++        res['SP_OURID'] = m.group(1)
++    return res
++
++
+ @ddt.ddt
++@mock.patch('os_brick.initiator.storpool_utils.get_conf', MockSPConfig)
+ class StorPoolTestCase(test.TestCase):
+ 
+     def setUp(self):
+@@ -243,7 +204,16 @@ class StorPoolTestCase(test.TestCase):
+ 
+         self.driver = driver.StorPoolDriver(execute=mock_exec,
+                                             configuration=self.cfg)
+-        self.driver.check_for_setup_error()
++
++        with (
++            mock.patch(
++                'os_brick.initiator.storpool_utils.get_conf'
++            ) as get_conf,
++            mock.patch(
++                'os_brick.initiator.storpool_utils.StorPoolAPI', MockAPI)
++        ):
++            get_conf.return_value = test_storpool_utils.SP_CONF
++            self.driver.check_for_setup_error()
+ 
+     @ddt.data(
+         (5, TypeError),
+diff --git a/cinder/volume/drivers/storpool.py b/cinder/volume/drivers/storpool.py
+index a8200a7f1..2dc7bb6be 100644
+--- a/cinder/volume/drivers/storpool.py
++++ b/cinder/volume/drivers/storpool.py
+@@ -17,10 +17,10 @@
+ 
+ import platform
+ 
++from os_brick.initiator import storpool_utils
+ from oslo_config import cfg
+ from oslo_log import log as logging
+ from oslo_utils import excutils
+-from oslo_utils import importutils
+ from oslo_utils import units
+ 
+ from cinder.common import constants
+@@ -34,13 +34,6 @@ from cinder.volume import volume_types
+ 
+ LOG = logging.getLogger(__name__)
+ 
+-storpool = importutils.try_import('storpool')
+-if storpool:
+-    from storpool import spapi
+-    from storpool import spconfig
+-    from storpool import spopenstack
+-    from storpool import sptypes
+-
+ 
+ storpool_opts = [
+     cfg.StrOpt('storpool_template',
+@@ -93,9 +86,13 @@ class StorPoolDriver(driver.VolumeDriver):
+                   add ignore_errors to the internal _detach_volume() method
+         1.2.3   - Advertise some more driver capabilities.
+         2.0.0   - Implement revert_to_snapshot().
++        2.1.0   - Use the new API client in os-brick to communicate with the
++                  StorPool API instead of packages `storpool` and
++                  `storpool.spopenstack`
++
+     """
+ 
+-    VERSION = '2.0.0'
++    VERSION = '2.1.0'
+     CI_WIKI_NAME = 'StorPool_distributed_storage_CI'
+ 
+     def __init__(self, *args, **kwargs):
+@@ -104,7 +101,8 @@ class StorPoolDriver(driver.VolumeDriver):
+         self._sp_config = None
+         self._ourId = None
+         self._ourIdInt = None
+-        self._attach = None
++        self._sp_api = None
++        self._volume_prefix = None
+ 
+     @staticmethod
+     def get_driver_options():
+@@ -131,7 +129,8 @@ class StorPoolDriver(driver.VolumeDriver):
+ 
+     def create_volume(self, volume):
+         size = int(volume['size']) * units.Gi
+-        name = self._attach.volumeName(volume['id'])
++        name = storpool_utils.os_to_sp_volume_name(
++            self._volume_prefix, volume['id'])
+         template = self._template_from_volume(volume)
+ 
+         create_request = {'name': name, 'size': size}
+@@ -142,8 +141,8 @@ class StorPoolDriver(driver.VolumeDriver):
+                 self.configuration.storpool_replication
+ 
+         try:
+-            self._attach.api().volumeCreate(create_request)
+-        except spapi.ApiError as e:
++            self._sp_api.volume_create(create_request)
++        except storpool_utils.StorPoolAPIError as e:
+             raise self._backendException(e)
+ 
+     def _storpool_client_id(self, connector):
+@@ -151,7 +150,7 @@ class StorPoolDriver(driver.VolumeDriver):
+         if hostname == self.host or hostname == CONF.host:
+             hostname = platform.node()
+         try:
+-            cfg = spconfig.SPConfig(section=hostname)
++            cfg = storpool_utils.get_conf(section=hostname)
+             return int(cfg['SP_OURID'])
+         except KeyError:
+             return 65
+@@ -174,30 +173,36 @@ class StorPoolDriver(driver.VolumeDriver):
+         pass
+ 
+     def create_snapshot(self, snapshot):
+-        volname = self._attach.volumeName(snapshot['volume_id'])
+-        name = self._attach.snapshotName('snap', snapshot['id'])
++        volname = storpool_utils.os_to_sp_volume_name(
++            self._volume_prefix, snapshot['volume_id'])
++        name = storpool_utils.os_to_sp_snapshot_name(
++            self._volume_prefix, 'snap', snapshot['id'])
+         try:
+-            self._attach.api().snapshotCreate(volname, {'name': name})
+-        except spapi.ApiError as e:
++            self._sp_api.snapshot_create(volname, {'name': name})
++        except storpool_utils.StorPoolAPIError as e:
+             raise self._backendException(e)
+ 
+     def create_volume_from_snapshot(self, volume, snapshot):
+         size = int(volume['size']) * units.Gi
+-        volname = self._attach.volumeName(volume['id'])
+-        name = self._attach.snapshotName('snap', snapshot['id'])
++        volname = storpool_utils.os_to_sp_volume_name(
++            self._volume_prefix, volume['id'])
++        name = storpool_utils.os_to_sp_snapshot_name(
++            self._volume_prefix, 'snap', snapshot['id'])
+         try:
+-            self._attach.api().volumeCreate({
++            self._sp_api.volume_create({
+                 'name': volname,
+                 'size': size,
+                 'parent': name
+             })
+-        except spapi.ApiError as e:
++        except storpool_utils.StorPoolAPIError as e:
+             raise self._backendException(e)
+ 
+     def create_cloned_volume(self, volume, src_vref):
+-        refname = self._attach.volumeName(src_vref['id'])
++        refname = storpool_utils.os_to_sp_volume_name(
++            self._volume_prefix, src_vref['id'])
+         size = int(volume['size']) * units.Gi
+-        volname = self._attach.volumeName(volume['id'])
++        volname = storpool_utils.os_to_sp_volume_name(
++            self._volume_prefix, volume['id'])
+ 
+         src_volume = self.db.volume_get(
+             context.get_admin_context(),
+@@ -213,50 +218,51 @@ class StorPoolDriver(driver.VolumeDriver):
+         if template == src_template:
+             LOG.info('Using baseOn to clone a volume into the same template')
+             try:
+-                self._attach.api().volumeCreate({
++                self._sp_api.volume_create({
+                     'name': volname,
+                     'size': size,
+                     'baseOn': refname,
+                 })
+-            except spapi.ApiError as e:
++            except storpool_utils.StorPoolAPIError as e:
+                 raise self._backendException(e)
+ 
+             return None
+ 
+-        snapname = self._attach.snapshotName('clone', volume['id'])
++        snapname = storpool_utils.os_to_sp_snapshot_name(
++            self._volume_prefix, 'clone', volume['id'])
+         LOG.info(
+             'A transient snapshot for a %(src)s -> %(dst)s template change',
+             {'src': src_template, 'dst': template})
+         try:
+-            self._attach.api().snapshotCreate(refname, {'name': snapname})
+-        except spapi.ApiError as e:
++            self._sp_api.snapshot_create(refname, {'name': snapname})
++        except storpool_utils.StorPoolAPIError as e:
+             if e.name != 'objectExists':
+                 raise self._backendException(e)
+ 
+         try:
+             try:
+-                self._attach.api().snapshotUpdate(
++                self._sp_api.snapshot_update(
+                     snapname,
+                     {'template': template},
+                 )
+-            except spapi.ApiError as e:
++            except storpool_utils.StorPoolAPIError as e:
+                 raise self._backendException(e)
+ 
+             try:
+-                self._attach.api().volumeCreate({
++                self._sp_api.volume_create({
+                     'name': volname,
+                     'size': size,
+                     'parent': snapname
+                 })
+-            except spapi.ApiError as e:
++            except storpool_utils.StorPoolAPIError as e:
+                 raise self._backendException(e)
+ 
+             try:
+-                self._attach.api().snapshotUpdate(
++                self._sp_api.snapshot_update(
+                     snapname,
+                     {'tags': {'transient': '1.0'}},
+                 )
+-            except spapi.ApiError as e:
++            except storpool_utils.StorPoolAPIError as e:
+                 raise self._backendException(e)
+         except Exception:
+             with excutils.save_and_reraise_exception():
+@@ -264,8 +270,8 @@ class StorPoolDriver(driver.VolumeDriver):
+                     LOG.warning(
+                         'Something went wrong, removing the transient snapshot'
+                     )
+-                    self._attach.api().snapshotDelete(snapname)
+-                except spapi.ApiError as e:
++                    self._sp_api.snapshot_delete(snapname)
++                except storpool_utils.StorPoolAPIError as e:
+                     LOG.error(
+                         'Could not delete the %(name)s snapshot: %(err)s',
+                         {'name': snapname, 'err': str(e)}
+@@ -278,57 +284,59 @@ class StorPoolDriver(driver.VolumeDriver):
+         pass
+ 
+     def delete_volume(self, volume):
+-        name = self._attach.volumeName(volume['id'])
++        name = storpool_utils.os_to_sp_volume_name(
++            self._volume_prefix, volume['id'])
+         try:
+-            self._attach.api().volumesReassign(
+-                json=[{"volume": name, "detach": "all"}])
+-            self._attach.api().volumeDelete(name)
+-        except spapi.ApiError as e:
++            self._sp_api.volumes_reassign([{"volume": name, "detach": "all"}])
++            self._sp_api.volume_delete(name)
++        except storpool_utils.StorPoolAPIError as e:
+             if e.name == 'objectDoesNotExist':
+                 pass
+             else:
+                 raise self._backendException(e)
+ 
+     def delete_snapshot(self, snapshot):
+-        name = self._attach.snapshotName('snap', snapshot['id'])
++        name = storpool_utils.os_to_sp_snapshot_name(
++            self._volume_prefix, 'snap', snapshot['id'])
+         try:
+-            self._attach.api().volumesReassign(
+-                json=[{"snapshot": name, "detach": "all"}])
+-            self._attach.api().snapshotDelete(name)
+-        except spapi.ApiError as e:
++            self._sp_api.volumes_reassign(
++                [{"snapshot": name, "detach": "all"}])
++            self._sp_api.snapshot_delete(name)
++        except storpool_utils.StorPoolAPIError as e:
+             if e.name == 'objectDoesNotExist':
+                 pass
+             else:
+                 raise self._backendException(e)
+ 
+     def check_for_setup_error(self):
+-        if storpool is None:
+-            msg = _('storpool libraries not found')
+-            raise exception.VolumeBackendAPIException(data=msg)
+-
+-        self._attach = spopenstack.AttachDB(log=LOG)
+         try:
+-            self._attach.api()
++            self._sp_config = storpool_utils.get_conf()
++            self._sp_api = storpool_utils.StorPoolAPI(
++                self._sp_config["SP_API_HTTP_HOST"],
++                self._sp_config["SP_API_HTTP_PORT"],
++                self._sp_config["SP_AUTH_TOKEN"])
++            self._volume_prefix = self._sp_config.get(
++                "SP_OPENSTACK_VOLUME_PREFIX", "os")
+         except Exception as e:
+             LOG.error("StorPoolDriver API initialization failed: %s", e)
+             raise
+ 
+     def _update_volume_stats(self):
+         try:
+-            dl = self._attach.api().disksList()
+-            templates = self._attach.api().volumeTemplatesList()
+-        except spapi.ApiError as e:
++            dl = self._sp_api.disks_list()
++            templates = self._sp_api.volume_templates_list()
++        except storpool_utils.StorPoolAPIError as e:
+             raise self._backendException(e)
+         total = 0
+         used = 0
+         free = 0
+         agSize = 512 * units.Mi
+         for (id, desc) in dl.items():
+-            if desc.generationLeft != -1:
++            if desc['generationLeft'] != -1:
+                 continue
+-            total += desc.agCount * agSize
+-            used += desc.agAllocated * agSize
+-            free += desc.agFree * agSize * 4096 / (4096 + 128)
++            total += desc['agCount'] * agSize
++            used += desc['agAllocated'] * agSize
++            free += desc['agFree'] * agSize * 4096 / (4096 + 128)
+ 
+         # Report the free space as if all new volumes will be created
+         # with StorPool replication 3; anything else is rare.
+@@ -347,8 +355,8 @@ class StorPoolDriver(driver.VolumeDriver):
+         pools = [dict(space, pool_name='default')]
+ 
+         pools += [dict(space,
+-                       pool_name='template_' + t.name,
+-                       storpool_template=t.name
++                       pool_name='template_' + t['name'],
++                       storpool_template=t['name']
+                        ) for t in templates]
+ 
+         self._stats = {
+@@ -367,11 +375,11 @@ class StorPoolDriver(driver.VolumeDriver):
+ 
+     def extend_volume(self, volume, new_size):
+         size = int(new_size) * units.Gi
+-        name = self._attach.volumeName(volume['id'])
++        name = storpool_utils.os_to_sp_volume_name(
++            self._volume_prefix, volume['id'])
+         try:
+-            upd = sptypes.VolumeUpdateDesc(size=size)
+-            self._attach.api().volumeUpdate(name, upd)
+-        except spapi.ApiError as e:
++            self._sp_api.volume_update(name, {'size': size})
++        except storpool_utils.StorPoolAPIError as e:
+             raise self._backendException(e)
+ 
+     def ensure_export(self, context, volume):
+@@ -409,11 +417,11 @@ class StorPoolDriver(driver.VolumeDriver):
+                         update['replication'] = repl
+ 
+         if update:
+-            name = self._attach.volumeName(volume['id'])
++            name = storpool_utils.os_to_sp_volume_name(
++                self._volume_prefix, volume['id'])
+             try:
+-                upd = sptypes.VolumeUpdateDesc(**update)
+-                self._attach.api().volumeUpdate(name, upd)
+-            except spapi.ApiError as e:
++                self._sp_api.volume_update(name, **update)
++            except storpool_utils.StorPoolAPIError as e:
+                 raise self._backendException(e)
+ 
+         return True
+@@ -421,10 +429,12 @@ class StorPoolDriver(driver.VolumeDriver):
+     def update_migrated_volume(self, context, volume, new_volume,
+                                original_volume_status):
+         orig_id = volume['id']
+-        orig_name = self._attach.volumeName(orig_id)
++        orig_name = storpool_utils.os_to_sp_volume_name(
++            self._volume_prefix, orig_id)
+         temp_id = new_volume['id']
+-        temp_name = self._attach.volumeName(temp_id)
+-        vols = {v.name: True for v in self._attach.api().volumesList()}
++        temp_name = storpool_utils.os_to_sp_volume_name(
++            self._volume_prefix, temp_id)
++        vols = {v['name']: True for v in self._sp_api.volumes_list()}
+         if temp_name not in vols:
+             LOG.error('StorPool update_migrated_volume(): it seems '
+                       'that the StorPool volume "%(tid)s" was not '
+@@ -444,20 +454,17 @@ class StorPoolDriver(driver.VolumeDriver):
+             try:
+                 LOG.debug('- rename "%(orig)s" to "%(int)s"',
+                           {'orig': orig_name, 'int': int_name})
+-                self._attach.api().volumeUpdate(orig_name,
+-                                                {'rename': int_name})
++                self._sp_api.volume_update(orig_name, {'rename': int_name})
+ 
+                 LOG.debug('- rename "%(temp)s" to "%(orig)s"',
+                           {'temp': temp_name, 'orig': orig_name})
+-                self._attach.api().volumeUpdate(temp_name,
+-                                                {'rename': orig_name})
++                self._sp_api.volume_update(temp_name, {'rename': orig_name})
+ 
+                 LOG.debug('- rename "%(int)s" to "%(temp)s"',
+                           {'int': int_name, 'temp': temp_name})
+-                self._attach.api().volumeUpdate(int_name,
+-                                                {'rename': temp_name})
++                self._sp_api.volume_update(int_name, {'rename': temp_name})
+                 return {'_name_id': None}
+-            except spapi.ApiError as e:
++            except storpool_utils.StorPoolAPIError as e:
+                 LOG.error('StorPool update_migrated_volume(): '
+                           'could not rename a volume: '
+                           '%(err)s',
+@@ -465,10 +472,9 @@ class StorPoolDriver(driver.VolumeDriver):
+                 return {'_name_id': new_volume['_name_id'] or new_volume['id']}
+ 
+         try:
+-            self._attach.api().volumeUpdate(temp_name,
+-                                            {'rename': orig_name})
++            self._sp_api.volume_update(temp_name, {'rename': orig_name})
+             return {'_name_id': None}
+-        except spapi.ApiError as e:
++        except storpool_utils.StorPoolAPIError as e:
+             LOG.error('StorPool update_migrated_volume(): '
+                       'could not rename %(tname)s to %(oname)s: '
+                       '%(err)s',
+@@ -476,12 +482,13 @@ class StorPoolDriver(driver.VolumeDriver):
+             return {'_name_id': new_volume['_name_id'] or new_volume['id']}
+ 
+     def revert_to_snapshot(self, context, volume, snapshot):
+-        volname = self._attach.volumeName(volume['id'])
+-        snapname = self._attach.snapshotName('snap', snapshot['id'])
++        volname = storpool_utils.os_to_sp_volume_name(
++            self._volume_prefix, volume['id'])
++        snapname = storpool_utils.os_to_sp_snapshot_name(
++            self._volume_prefix, 'snap', snapshot['id'])
+         try:
+-            rev = sptypes.VolumeRevertDesc(toSnapshot=snapname)
+-            self._attach.api().volumeRevert(volname, rev)
+-        except spapi.ApiError as e:
++            self._sp_api.volume_revert(volname, {'toSnapshot': snapname})
++        except storpool_utils.StorPoolAPIError as e:
+             LOG.error('StorPool revert_to_snapshot(): could not revert '
+                       'the %(vol_id)s volume to the %(snap_id)s snapshot: '
+                       '%(err)s',
+diff --git a/doc/source/configuration/block-storage/drivers/storpool-volume-driver.rst b/doc/source/configuration/block-storage/drivers/storpool-volume-driver.rst
+index d2c5895a9..e9209b0cc 100644
+--- a/doc/source/configuration/block-storage/drivers/storpool-volume-driver.rst
++++ b/doc/source/configuration/block-storage/drivers/storpool-volume-driver.rst
+@@ -26,14 +26,6 @@ Prerequisites
+   images, then the node running the ``cinder-volume`` service must also have
+   access to the StorPool data network and run the ``storpool_block`` service.
+ 
+-* All nodes that need to access the StorPool API (the compute nodes and
+-  the node running the ``cinder-volume`` service) must have the following
+-  packages installed:
+-
+-  * storpool-config (part of the StorPool installation)
+-  * the storpool Python bindings package
+-  * the storpool.spopenstack Python helper package
+-
+ Configuring the StorPool volume driver
+ --------------------------------------
+ 
+diff --git a/releasenotes/notes/storpool-move-api-and-config-code-in-tree-92cfe30690b78ef1.yaml b/releasenotes/notes/storpool-move-api-and-config-code-in-tree-92cfe30690b78ef1.yaml
+new file mode 100644
+index 000000000..13c2cbd65
+--- /dev/null
++++ b/releasenotes/notes/storpool-move-api-and-config-code-in-tree-92cfe30690b78ef1.yaml
+@@ -0,0 +1,8 @@
++---
++other:
++  - |
++    Use the new implementation in os-brick for communicating with the
++    StorPool API and reading StorPool configuration files.
++
++    The StorPool backend no longer requires the OpenStack nodes to have
++    the Python packages `storpool` and `storpool.spopenstack` installed.
+diff --git a/requirements.txt b/requirements.txt
+index 4bc51d9a5..a46c72898 100644
+--- a/requirements.txt
++++ b/requirements.txt
+@@ -54,7 +54,7 @@ tenacity>=6.3.1 # Apache-2.0
+ WebOb>=1.8.6 # MIT
+ oslo.i18n>=5.1.0 # Apache-2.0
+ oslo.vmware>=3.10.0 # Apache-2.0
+-os-brick>=6.0.0 # Apache-2.0
++os-brick>=6.10.0 # Apache-2.0
+ os-win>=5.5.0 # Apache-2.0
+ tooz>=2.8.0 # Apache-2.0
+ google-api-python-client>=1.11.0 # Apache-2.0
+-- 
+2.43.0
+

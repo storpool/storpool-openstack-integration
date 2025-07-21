@@ -1,0 +1,86 @@
+From d48d70af0cb691ea9670171a8d335611c4b804f8 Mon Sep 17 00:00:00 2001
+From: Biser Milanov <biser.milanov@storpool.com>
+Date: Tue, 22 Jul 2025 13:00:31 +0300
+Subject: StorPool: Pass the instance UUID and device_name to os-brick
+
+Change-Id: Id8da3fbb98952f3f8479b0b5ac4f5ef637f21d28
+Signed-off-by: Biser Milanov <biser.milanov@storpool.com>
+---
+ nova/virt/libvirt/driver.py          | 27 +++++++++++++++++++++++++++
+ nova/virt/libvirt/volume/storpool.py | 15 ++++++++++++---
+ 2 files changed, 39 insertions(+), 3 deletions(-)
+
+diff --git a/nova/virt/libvirt/driver.py b/nova/virt/libvirt/driver.py
+index 7bb9375e23..8817cdb2fd 100644
+--- a/nova/virt/libvirt/driver.py
++++ b/nova/virt/libvirt/driver.py
+@@ -2027,6 +2027,33 @@ class LibvirtDriver(driver.ComputeDriver):
+ 
+     def _connect_volume(self, context, connection_info, instance,
+                         encryption=None):
++        device_name = None
++
++        if 'volume' in connection_info['data']:
++            for bdm in objects.BlockDeviceMappingList.get_by_instance_uuid(
++                    context, instance.uuid):
++                if ('volume_id' in bdm and
++                    bdm['volume_id'] == connection_info['data']['volume']):
++                    if 'device_name' in bdm:
++                        LOG.debug("Volume: %(vol)s is attached at"
++                                  " %(dev)s on VM %(vm)s",
++                                  {
++                                      'vol': bdm['volume_id'],
++                                      'dev': bdm['device_name'],
++                                      'vm': instance.uuid
++                                  })
++                        device_name = bdm['device_name']
++
++        if device_name is None:
++            LOG.info("Could not find the device name for volume"
++                     " %(vol) at VM %(vm)s",
++                     {
++                         'vol': connection_info['data'],
++                         'vm': instance.uuid
++                     })
++
++        connection_info['data']['device_name'] = device_name
++
+         vol_driver = self._get_volume_driver(connection_info)
+         vol_driver.connect_volume(connection_info, instance)
+         try:
+diff --git a/nova/virt/libvirt/volume/storpool.py b/nova/virt/libvirt/volume/storpool.py
+index e6dffca39a..dfbc28b154 100644
+--- a/nova/virt/libvirt/volume/storpool.py
++++ b/nova/virt/libvirt/volume/storpool.py
+@@ -42,7 +42,9 @@ class LibvirtStorPoolVolumeDriver(libvirt_volume.LibvirtVolumeDriver):
+     def connect_volume(self, connection_info, instance):
+         LOG.debug("Attaching StorPool volume %s",
+                   connection_info['data']['volume'], instance=instance)
+-        device_info = self.connector.connect_volume(connection_info['data'])
++        conn_info = connection_info['data']
++        conn_info['instance'] = instance['uuid']
++        device_info = self.connector.connect_volume(conn_info)
+         LOG.debug("Attached StorPool volume %s",
+                   device_info, instance=instance)
+         connection_info['data']['device_path'] = device_info['path']
+@@ -50,8 +52,15 @@ class LibvirtStorPoolVolumeDriver(libvirt_volume.LibvirtVolumeDriver):
+     def disconnect_volume(self, connection_info, instance, force=False):
+         LOG.debug("Detaching StorPool volume %s",
+                   connection_info['data']['volume'], instance=instance)
+-        self.connector.disconnect_volume(
+-            connection_info['data'], None, force=force)
++        conn_info = connection_info['data']
++        conn_info['instance'] = instance['uuid']
++        conn_info['is_shelve'] = False
++        if instance['task_state'] in ('shelving',
++                                      'shelving_image_pending_upload',
++                                      'shelving_image_uploading',
++                                      'shelving_offloading'):
++            conn_info['is_shelve'] = True
++        self.connector.disconnect_volume(conn_info, None, force=force)
+         LOG.debug("Detached StorPool volume", instance=instance)
+ 
+     def extend_volume(self, connection_info, instance, requested_size):
+-- 
+2.43.0
+

@@ -1,0 +1,28 @@
+From f836e7e3e53a3d57a50f74b68da7654423a47afd Mon Sep 17 00:00:00 2001
+From: Peter Penchev <openstack-dev@storpool.com>
+Date: Wed, 22 Jun 2022 10:48:25 +0300
+Subject: StorPool: declare the clone_across_pools capability
+
+Depends-on: blueprint clone-across-pools
+Change-Id: I5338c6c4f53a448e495f695cd64b36b722cd947d
+Signed-off-by: Biser Milanov <biser.milanov@storpool.com>
+(cherry picked from commit c0e31e787f3d5f76aa300972f656fd22fdc76601)
+---
+ cinder/volume/drivers/storpool.py | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/cinder/volume/drivers/storpool.py b/cinder/volume/drivers/storpool.py
+index 76b86cd02..0051442ed 100644
+--- a/cinder/volume/drivers/storpool.py
++++ b/cinder/volume/drivers/storpool.py
+@@ -362,6 +362,7 @@ class StorPoolDriver(driver.VolumeDriver):
+             'driver_version': self.VERSION,
+             'storage_protocol': constants.STORPOOL,
+             # Driver capabilities
++            'clone_across_pools': True,
+             'sparse_copy_volume': True,
+             # The actual pools data
+             'pools': pools
+-- 
+2.43.0
+
