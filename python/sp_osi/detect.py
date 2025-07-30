@@ -3,12 +3,16 @@
 """Detect the currently-installed OpenStack component versions."""
 
 import itertools
+import logging
 import pathlib
 import subprocess
 from typing import Dict, List, NamedTuple
 
 from . import defs
 from . import util
+
+
+LOG = logging.getLogger(__name__)
 
 
 class NotFoundError(defs.OSIError):
@@ -49,27 +53,25 @@ class DetectedComponents(NamedTuple):
     """Indicate whether all the components are on the same version control branch."""
 
 
-def get_python_paths(cfg: defs.Config) -> List[pathlib.Path]:
+def get_python_paths() -> List[pathlib.Path]:
     """Get all the search paths for the Python 3 and 2 interpreters."""
 
     def query_program(prog: str) -> List[pathlib.Path]:
         """Query a Python interpreter for its search paths."""
-        cfg.diag(lambda: f"Querying {prog} for its library search paths")
+        LOG.debug(lambda: f"Querying {prog} for its library search paths")
         cmd = [
             prog,
             "-c",
             "import sys; print('\\n'.join(path for path in sys.path if path))",
         ]
-        cfg.diag(lambda: f"- about to execute {cmd!r}")
+        LOG.debug(lambda: f"- about to execute {cmd!r}")
         try:
             return [
                 pathlib.Path(line)
-                for line in subprocess.check_output(
-                    cmd, encoding="UTF-8", env=cfg.utf8_env
-                ).splitlines()
+                for line in subprocess.check_output(cmd, encoding="UTF-8").splitlines()
             ]
         except FileNotFoundError:
-            cfg.diag(lambda: f"Apparently there is no {prog} on this system")
+            LOG.debug(lambda: f"Apparently there is no {prog} on this system")
             return []
         except (OSError, subprocess.CalledProcessError) as err:
             raise defs.OSIEnvError(f"Could not execute {cmd!r}: {err}") from err
@@ -106,7 +108,7 @@ def detect(cfg: defs.Config) -> DetectedComponents:
         )
     )
 
-    pypaths = get_python_paths(cfg)
+    pypaths = get_python_paths()
     res: Dict[str, DetectedComponent] = {}
     for name, comp in ((name, comps.components[name]) for name in req):
         # pylint: disable=cell-var-from-loop  # yes, we do mean that for .diag()
