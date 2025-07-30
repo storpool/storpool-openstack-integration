@@ -88,17 +88,8 @@ def setup_patch_mode(subp: Any) -> None:  # noqa: ANN401
     subcmd.add_argument(
         "--verbose", action="store_true", help="Verbose operation; display diagnostic output"
     )
-    subcmd.add_argument("--component", required=True, help="The OpenStack component to patch")
     subcmd.add_argument(
-        "--component-version",
-        choices=[ver.name.lower() for ver in defs.OpenStackVersion],
-        required=True,
-        help="The version of the OpenStack component to patch",
-    )
-    subcmd.add_argument(
-        "--component-destination",
-        required=True,
-        help="The directory of the OpenStack component to patch",
+        "--component", type=str, action="append", help="The OpenStack components to process"
     )
 
     patch_subp = subcmd.add_subparsers()
