@@ -130,6 +130,7 @@ from nova.virt.libvirt import vif as libvirt_vif
 from nova.virt.libvirt.volume import fs
 from nova.virt.libvirt.volume import mount
 from nova.virt.libvirt.volume import remotefs
+from nova.virt.libvirt.volume import storpool
 from nova.virt.libvirt.volume import volume
 from nova.virt import netutils
 from nova.volume import cinder
@@ -7724,6 +7725,40 @@ class LibvirtDriver(driver.ComputeDriver):
                 with self._lxc_disk_handler(
                     context, instance, instance.image_meta, block_device_info,
                 ):
+                    block_device_mapping = \
+                        driver.block_device_info_get_mapping(block_device_info)
+
+                    instance_uuid = instance["uuid"]
+                    storpool_volumes = []
+                    storpool_driver = None
+
+                    LOG.info(
+                        "Scanning the block device map of instance %s"
+                        " for StorPool volumes: %s",
+                        instance_uuid,
+                        block_device_mapping)
+
+                    for bdm in block_device_mapping:
+                        connection_info = bdm["connection_info"]
+                        vol_driver = self._get_volume_driver(connection_info)
+                        if isinstance(
+                            vol_driver,
+                            storpool.LibvirtStorPoolVolumeDriver):
+                            LOG.info(
+                                "StorPool volume: %s attached to instance: %s",
+                                connection_info,
+                                instance_uuid)
+                            storpool_driver = vol_driver
+                            storpool_volumes.append(connection_info)
+
+                    if storpool_driver is not None:
+                        LOG.info(
+                            "Ensuring StorPool volumes %s are attached only"
+                            " for instance: %s",
+                            storpool_volumes,
+                            instance_uuid)
+                        storpool_driver.ensure_single_attach(storpool_volumes)
+
                     guest = self._create_guest(
                         context, xml, instance,
                         pause=pause, power_on=power_on,
