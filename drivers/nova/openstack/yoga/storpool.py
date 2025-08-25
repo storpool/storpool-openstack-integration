@@ -32,6 +32,9 @@ class LibvirtStorPoolVolumeDriver(libvirt_volume.LibvirtVolumeDriver):
         self.connector = connector.InitiatorConnector.factory(
             initiator.STORPOOL, utils.get_root_helper())
 
+    def ensure_single_attach(self, volumes):
+        self.connector.ensure_single_attach(volumes)
+
     def get_config(self, connection_info, disk_info):
         """Returns xml for libvirt."""
         conf = super(LibvirtStorPoolVolumeDriver,

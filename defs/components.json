@@ -1335,6 +1335,33 @@
                     }
                 },
                 "zed": {
+                    "26.2.2.1.0.0": {
+                        "comment": "StorPool updates for Ubuntu cloud archive Zed 26.2.2-0ubuntu1~cloud0",
+                        "files": {
+                            "virt/libvirt/driver.py": {
+                                "sha256": "35c7b74099d244d4a432a93e991c658e3d090725e386327874a03b380612a840"
+                            },
+                            "virt/libvirt/config.py": {
+                                "sha256": "2e9f0fa9c792bc356badb99f0ffa378f6eefa8da6a2b2da5c8b6fb632a63c4ba"
+                            },
+                            "conf/libvirt.py": {
+                                "sha256": "8ef215829756cb58d386fe7466184b51773e58361ee31102b3bf5cc59b80a2aa"
+                            },
+                            "tests/fixtures/libvirt_data.py": {
+                                "sha256": "97c441c46658d586cba7047731bbec063377403f20294acf5984e3781695c1c9"
+                            },
+                            "tests/unit/virt/libvirt/test_config.py": {
+                                "sha256": "1ad51b1119a920209b1b937c833abeab99dbc4a18bc32bcb341a8d4b97795fd0"
+                            },
+                            "virt/libvirt/volume/volume.py": {
+                                "sha256": "27e7f62d25c29d04ea6f43abe473aec7db729b9defc5f800c6b94c2472b22200"
+                            },
+                            "virt/libvirt/volume/storpool.py": {
+                                "sha256": "9183c1b44e381b0cca1c461dff5b2147ef8f19c5142ad08adce516c7cd4468f5"
+                            }
+                        },
+                        "outdated": false
+                    },
                     "26.2.2.0.0.1": {
                         "comment": "StorPool updates for Ubuntu cloud archive Zed 26.2.2-0ubuntu1~cloud0",
                         "files": {
@@ -1360,7 +1387,7 @@
                                 "sha256": "f3697f3d96883500df27ed0cf441b9c5122a552aabf149ab427cf68cc79f905f"
                             }
                         },
-                        "outdated": false
+                        "outdated": true
                     },
                     "26.2.2.0.0.0": {
                         "comment": "Ubuntu cloud archive Zed 26.2.2-0ubuntu1~cloud0",
@@ -1463,6 +1490,33 @@
                     }
                 },
                 "yoga": {
+                    "25.2.1.2.0.0": {
+                        "comment": "StorPool updates for Ubuntu cloud archive Yoga 25.2.1 25.2.1-0ubuntu2.3",
+                        "files": {
+                            "virt/libvirt/driver.py": {
+                                "sha256": "474be16d5facda9b23fb05f5a777790db9e36c8c9d8343d05632508a2d4960c1"
+                            },
+                            "virt/libvirt/config.py": {
+                                "sha256": "4cb836c743bdf49e7dbf9243a8a654ca8d7edcc0bcec2395a900f1f38f9f4bc4"
+                            },
+                            "conf/libvirt.py": {
+                                "sha256": "c05cb5417d60e4f04b1dd2571522ba9f3596c421ab292f2b68fe92f965a58e96"
+                            },
+                            "tests/fixtures/libvirt_data.py": {
+                                "sha256": "e858b6428bfa6e7d30ae5e693bf53bfc3850e4169fed2150978f762326b63758"
+                            },
+                            "tests/unit/virt/libvirt/test_config.py": {
+                                "sha256": "d4b67b01147aea9e46bf598f7fc6c2e857a722b7b4827bc2e27a3f1897c623e0"
+                            },
+                            "virt/libvirt/volume/volume.py": {
+                                "sha256": "27e7f62d25c29d04ea6f43abe473aec7db729b9defc5f800c6b94c2472b22200"
+                            },
+                            "virt/libvirt/volume/storpool.py": {
+                                "sha256": "7ea4d00a63d0c08c6c20a9cca3377e4faab39c07ca8f12fa3f8b89ef71366c33"
+                            }
+                        },
+                        "outdated": false
+                    },
                     "25.2.1.1.1.3": {
                         "comment": "StorPool updates for Ubuntu cloud archive Yoga 25.2.1 25.2.1-0ubuntu2.3",
                         "files": {
@@ -1488,7 +1542,7 @@
                                 "sha256": "2caaa84690052302dd77ef4360de455f46470f1b84b26456e1d16c2969aeb534"
                             }
                         },
-                        "outdated": false
+                        "outdated": true
                     },
                     "25.2.1.1.1.2": {
                         "comment": "StorPool updates for Ubuntu cloud archive Yoga 25.2.1 25.2.1-0ubuntu2.7",
@@ -2336,6 +2390,18 @@
                     }
                 },
                 "zed": {
+                    "6.1.0.1.0.0": {
+                        "comment": "StorPool updates for Ubuntu cloud archive Zed 6.1.0-0ubuntu1.3~cloud0",
+                        "files": {
+                            "initiator/connectors/fibre_channel.py": {
+                                "sha256": "8ed61b07ec9baea762f766932d48afb4821b990d0ecd7cdfcdcd2fd2bdd28243"
+                            },
+                            "initiator/connectors/storpool.py": {
+                                "sha256": "ab9fcdc2e21960a67f3b364bac594dd635525302f741be6d29c4a10545625765"
+                            }
+                        },
+                        "outdated": false
+                    },
                     "6.1.0.0.0.1": {
                         "comment": "StorPool updates for Ubuntu cloud archive Zed 6.1.0-0ubuntu1.3~cloud0",
                         "files": {
@@ -2398,6 +2464,18 @@
                     }
                 },
                 "yoga": {
+                    "5.2.2.5.0.0": {
+                        "comment": "StorPool updates for the Ubuntu cloud archive Yoga 5.2.2",
+                        "files": {
+                            "initiator/connectors/fibre_channel.py": {
+                                "sha256": "c8d7fe1221aa5e103dc29eb26ce7e26feb0fce470d65ae8f7e53335f0ca9e0de"
+                            },
+                            "initiator/connectors/storpool.py": {
+                                "sha256": "b13249c2578903ff3ef3e2bf7241f8e32f00b2b104ab2b8445d88c374d94c447"
+                            }
+                        },
+                        "outdated": false
+                    },
                     "5.2.2.4.0.2": {
                         "comment": "StorPool updates for the Ubuntu cloud archive Yoga 5.2.2 (attach-globalid, raise-on-spopenstack-issues, volume-tag)",
                         "files": {
@@ -2408,7 +2486,7 @@
                                 "sha256": "1173adaadf76da6d2b5ceeac6747a118093c2d38cd487adfb375f6f62b506920"
                             }
                         },
-                        "outdated": false
+                        "outdated": true
                     },
                     "5.2.2.4.0.1": {
                         "comment": "StorPool updates for the Ubuntu cloud archive Yoga 5.2.2 (attach-globalid, raise-on-spopenstack-issues, volume-tag)",

@@ -382,3 +382,45 @@ class StorPoolConnector(base.BaseLinuxConnector):
             size = self._get_device_size(path)
             LOG.debug('Last attempt: local size %(size)d', {'size': size})
             return size
+
+    def ensure_single_attach(self, volumes):
+        """Atomically attach the provided volumes only to one compute node"""
+        sp_ourid = self._attach.config()["SP_OURID"]
+        if sp_ourid is None:
+            raise exception.BrickException(
+                "SP_OURID missing, cannot ensure a single attach")
+
+        LOG.info(
+            "Will try to ensure a singe-attach from client: %s"
+            " for volumes: %s",
+            sp_ourid,
+            volumes
+        )
+
+        reassign_data = {
+            "reassign": []
+        }
+
+        for volume in volumes:
+            device_path = volume['data'].get('device_path', None)
+            if device_path is None:
+                raise exception.BrickException(
+                    "Invalid StorPool connection data"
+                    ", no device_path specified.")
+
+            device_path = utils._device_path_from_symlink(device_path)
+            access_mode = volume['data'].get("access_mode")
+            if access_mode not in ("ro", "rw"):
+                raise exception.BrickException(
+                    "Invalid StorPool access_mode: %s" % access_mode)
+
+            reassign_data['reassign'].append({
+                "volume": path_to_volname(pathlib.Path(device_path)),
+                "detach": "all",
+                "force": True,
+                access_mode: [int(sp_ourid)]
+            })
+
+        LOG.info("Will try to VolumesReassignWait() with: %s", reassign_data)
+
+        self._attach.api().volumesReassignWait(reassign_data)
