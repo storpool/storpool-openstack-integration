@@ -89,6 +89,14 @@ def parse_components(
     components_error = False
     comp_names = {}
     for component, release, path in comps:
+        if component not in DETECT_FILES:
+            LOG.error(
+                "Unknown component %s. Valid components are: %s",
+                component,
+                list(DETECT_FILES.keys()),
+            )
+            components_error = True
+            continue
         if component in comp_names:
             LOG.error("This component type has already been provided: %s", component)
             components_error = True
