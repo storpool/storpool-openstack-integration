@@ -159,7 +159,7 @@
                                 "sha256": "0d213ea353b80692aaef8bdf93bebf75416251c9838629790ca7c603bce1e4b5"
                             },
                             "volume/manager.py": {
-                                "sha256": "a415fd0530c5e1f2ee60331b145543692e40c9a11b19cdad1944a0abd3714cd6"
+                                "sha256": "f299b6bc8030d55761061ee0a191a7429f38dfc8043f0f82f68e2c32057be059"
                             },
                             "tests/unit/volume/drivers/test_storpool.py": {
                                 "sha256": "091a5e2c201af21b702f9799e3043ca641ceaf558a369e83598552182f08ded8"
@@ -192,7 +192,7 @@
                                 "sha256": "0d213ea353b80692aaef8bdf93bebf75416251c9838629790ca7c603bce1e4b5"
                             },
                             "volume/manager.py": {
-                                "sha256": "f299b6bc8030d55761061ee0a191a7429f38dfc8043f0f82f68e2c32057be059"
+                                "sha256": "a415fd0530c5e1f2ee60331b145543692e40c9a11b19cdad1944a0abd3714cd6"
                             },
                             "tests/unit/volume/drivers/test_storpool.py": {
                                 "sha256": "091a5e2c201af21b702f9799e3043ca641ceaf558a369e83598552182f08ded8"
