@@ -1,0 +1,82 @@
+From a558d32ae8215a2a4b9ec870f5e7f36549cd9227 Mon Sep 17 00:00:00 2001
+From: Takashi Kajinami <kajinamit@oss.nttdata.com>
+Date: Thu, 1 Feb 2024 16:10:50 +0900
+Subject: Remove six from StorPool driver
+
+Change-Id: I99036381ead331611d69518bdf62006b2eeb6e9b
+Signed-off-by: Biser Milanov <biser.milanov@storpool.com>
+(cherry picked from commit 8201650a9bc8b1b1c2a8646105063d3ad674bc10)
+---
+ cinder/tests/unit/volume/drivers/test_storpool.py | 13 +++++--------
+ cinder/volume/drivers/storpool.py                 |  3 +--
+ 2 files changed, 6 insertions(+), 10 deletions(-)
+
+diff --git a/cinder/tests/unit/volume/drivers/test_storpool.py b/cinder/tests/unit/volume/drivers/test_storpool.py
+index a5f763b96..4c0241eca 100644
+--- a/cinder/tests/unit/volume/drivers/test_storpool.py
++++ b/cinder/tests/unit/volume/drivers/test_storpool.py
+@@ -20,7 +20,6 @@ from unittest import mock
+ 
+ import ddt
+ from oslo_utils import units
+-import six
+ 
+ 
+ fakeStorPool = mock.Mock()
+@@ -266,7 +265,7 @@ class StorPoolTestCase(test.TestCase):
+ 
+         self.driver.create_volume({'id': '1', 'name': 'v1', 'size': 1,
+                                    'volume_type': None})
+-        six.assertCountEqual(self, [volumeName('1')], volumes.keys())
++        self.assertCountEqual([volumeName('1')], volumes.keys())
+         self.assertVolumeNames(('1',))
+         v = volumes[volumeName('1')]
+         self.assertEqual(1 * units.Gi, v['size'])
+@@ -340,9 +339,8 @@ class StorPoolTestCase(test.TestCase):
+                                    'volume_type': None})
+         self.driver.create_volume({'id': '2', 'name': 'v2', 'size': 1,
+                                    'volume_type': None})
+-        six.assertCountEqual(self,
+-                             [volumeName('1'), volumeName('2')],
+-                             volumes.keys())
++        self.assertCountEqual([volumeName('1'), volumeName('2')],
++                              volumes.keys())
+         self.assertVolumeNames(('1', '2',))
+ 
+         # Failure: the "migrated" volume does not even exist
+@@ -362,9 +360,8 @@ class StorPoolTestCase(test.TestCase):
+                                                  {'id': '2', '_name_id': '3'},
+                                                  'available')
+         self.assertDictEqual({'_name_id': None}, res)
+-        six.assertCountEqual(self,
+-                             [volumeName('1'), volumeName('3')],
+-                             volumes.keys())
++        self.assertCountEqual([volumeName('1'), volumeName('3')],
++                              volumes.keys())
+         self.assertVolumeNames(('1', '3',))
+ 
+         for vid in ('1', '3'):
+diff --git a/cinder/volume/drivers/storpool.py b/cinder/volume/drivers/storpool.py
+index bffd9af9a..abfdad160 100644
+--- a/cinder/volume/drivers/storpool.py
++++ b/cinder/volume/drivers/storpool.py
+@@ -21,7 +21,6 @@ from oslo_config import cfg
+ from oslo_log import log as logging
+ from oslo_utils import importutils
+ from oslo_utils import units
+-import six
+ 
+ from cinder.common import constants
+ from cinder import exception
+@@ -109,7 +108,7 @@ class StorPoolDriver(driver.VolumeDriver):
+         return storpool_opts
+ 
+     def _backendException(self, e):
+-        return exception.VolumeBackendAPIException(data=six.text_type(e))
++        return exception.VolumeBackendAPIException(data=str(e))
+ 
+     def _template_from_volume(self, volume):
+         default = self.configuration.storpool_template
+-- 
+2.43.0
+

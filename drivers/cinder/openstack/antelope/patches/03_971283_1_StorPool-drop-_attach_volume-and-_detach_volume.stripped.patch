@@ -1,0 +1,100 @@
+From c1042f8875d4bb347fb3511e4d0948615a38b657 Mon Sep 17 00:00:00 2001
+From: Peter Penchev <openstack-dev@storpool.com>
+Date: Tue, 20 Apr 2021 17:46:41 +0300
+Subject: StorPool: drop _attach_volume() and _detach_volume()
+
+Our os-brick connector already handles the "keep track of which volume
+is attached for what reason" calls to storpool.spopenstack. However,
+we need to explicitly specify the access mode in initialize_connection()
+now, since our os-brick connector does not know how to divine it yet.
+(this will come later with the "attach snapshot" functionality)
+
+Incidentally, this fixes the "create an encrypted volume" flow, since
+our _attach_volume() implementation never actually returned a connector
+in the attachment info...
+
+Change-Id: I5da7ae04b87b4fd52a682a6545060e852174f6c8
+Closes-Bug: #1939241
+Signed-off-by: Biser Milanov <biser.milanov@storpool.com>
+(cherry picked from commit 8a75d036f65a8da335170910f1820308dbfabedb)
+---
+ .../unit/volume/drivers/test_storpool.py      |  4 +-
+ cinder/volume/drivers/storpool.py             | 40 +------------------
+ 2 files changed, 4 insertions(+), 40 deletions(-)
+
+diff --git a/cinder/tests/unit/volume/drivers/test_storpool.py b/cinder/tests/unit/volume/drivers/test_storpool.py
+index 4c0241eca..0eac3d957 100644
+--- a/cinder/tests/unit/volume/drivers/test_storpool.py
++++ b/cinder/tests/unit/volume/drivers/test_storpool.py
+@@ -224,7 +224,9 @@ class StorPoolTestCase(test.TestCase):
+     def test_initialize_connection_good(self, cid, hid, name):
+         c = self.driver.initialize_connection({'id': hid}, {'host': name})
+         self.assertEqual('storpool', c['driver_volume_type'])
+-        self.assertDictEqual({'client_id': cid, 'volume': hid}, c['data'])
++        self.assertDictEqual({'client_id': cid, 'volume': hid,
++                              'access_mode': 'rw'},
++                             c['data'])
+ 
+     def test_noop_functions(self):
+         self.driver.terminate_connection(None, None)
+diff --git a/cinder/volume/drivers/storpool.py b/cinder/volume/drivers/storpool.py
+index abfdad160..d21fb52f6 100644
+--- a/cinder/volume/drivers/storpool.py
++++ b/cinder/volume/drivers/storpool.py
+@@ -167,6 +167,7 @@ class StorPoolDriver(driver.VolumeDriver):
+                 'data': {
+                     'client_id': self._storpool_client_id(connector),
+                     'volume': volume['id'],
++                    'access_mode': 'rw',
+                 }}
+ 
+     def terminate_connection(self, volume, connector, **kwargs):
+@@ -313,45 +314,6 @@ class StorPoolDriver(driver.VolumeDriver):
+             'pools': pools
+         }
+ 
+-    def _attach_volume(self, context, volume, properties, remote=False):
+-        if remote:
+-            return super(StorPoolDriver, self)._attach_volume(
+-                context, volume, properties, remote=remote)
+-        req_id = context.request_id
+-        req = self._attach.get().get(req_id, None)
+-        if req is None:
+-            req = {
+-                'volume': self._attach.volumeName(volume['id']),
+-                'type': 'cinder-attach',
+-                'id': context.request_id,
+-                'rights': 2,
+-                'volsnap': False,
+-                'remove_on_detach': True
+-            }
+-            self._attach.add(req_id, req)
+-        name = req['volume']
+-        self._attach.sync(req_id, None)
+-        return {'device': {'path': '/dev/storpool/' + name,
+-                'storpool_attach_req': req_id}}, volume
+-
+-    def _detach_volume(self, context, attach_info, volume, properties,
+-                       force=False, remote=False, ignore_errors=False):
+-        if remote:
+-            return super(StorPoolDriver, self)._detach_volume(
+-                context, attach_info, volume, properties,
+-                force=force, remote=remote, ignore_errors=ignore_errors)
+-        try:
+-            req_id = attach_info.get('device', {}).get(
+-                'storpool_attach_req', context.request_id)
+-            req = self._attach.get()[req_id]
+-            name = req['volume']
+-            self._attach.sync(req_id, name)
+-            if req.get('remove_on_detach', False):
+-                self._attach.remove(req_id)
+-        except BaseException:
+-            if not ignore_errors:
+-                raise
+-
+     def backup_volume(self, context, backup, backup_service):
+         volume = self.db.volume_get(context, backup['volume_id'])
+         req_id = context.request_id
+-- 
+2.43.0
+

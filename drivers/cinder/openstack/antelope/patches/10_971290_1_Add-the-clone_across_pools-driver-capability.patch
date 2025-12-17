@@ -1,0 +1,327 @@
+From 734c74793b27c91af068907e27f070d733b5b532 Mon Sep 17 00:00:00 2001
+From: Peter Penchev <openstack-dev@storpool.com>
+Date: Wed, 22 Jun 2022 10:04:31 +0300
+Subject: Add the clone_across_pools driver capability
+
+Let drivers declare that they can clone a volume into a different
+pool and relax the checks when creating a volume from an image
+(both with and without the image cache).
+
+Change-Id: Idbac4dae00f9fa03fb14547a204666721bf67d96
+Implements: blueprint clone-across-pools
+Signed-off-by: Biser Milanov <biser.milanov@storpool.com>
+(cherry picked from commit f2427b461867e6c32a3e5573666ead748cd5e1b4)
+---
+ cinder/image/cache.py                         | 11 ++-
+ cinder/interface/volume_driver.py             |  3 +
+ cinder/tests/unit/image/test_cache.py         | 14 ++--
+ .../volume/flows/test_create_volume_flow.py   | 73 +++++++++++++++++++
+ cinder/volume/flows/manager/create_volume.py  |  8 +-
+ cinder/volume/manager.py                      |  3 +-
+ ...e-clone-across-pools-63021bc853e9161a.yaml | 16 ++++
+ 7 files changed, 115 insertions(+), 13 deletions(-)
+ create mode 100644 releasenotes/notes/feature-clone-across-pools-63021bc853e9161a.yaml
+
+diff --git a/cinder/image/cache.py b/cinder/image/cache.py
+index 6d30210a4..a79451bf2 100644
+--- a/cinder/image/cache.py
++++ b/cinder/image/cache.py
+@@ -34,11 +34,13 @@ class ImageVolumeCache(object):
+                  db,
+                  volume_api,
+                  max_cache_size_gb: int = 0,
+-                 max_cache_size_count: int = 0):
++                 max_cache_size_count: int = 0,
++                 clone_across_pools: bool = False):
+         self.db = db
+         self.volume_api = volume_api
+         self.max_cache_size_gb = int(max_cache_size_gb)
+         self.max_cache_size_count = int(max_cache_size_count)
++        self.clone_across_pools = bool(clone_across_pools)
+         self.notifier = rpc.get_notifier('volume', CONF.host)
+ 
+     def get_by_image_volume(self,
+@@ -55,11 +57,12 @@ class ImageVolumeCache(object):
+         self._notify_cache_eviction(context, cache_entry['image_id'],
+                                     cache_entry['host'])
+ 
+-    @staticmethod
+-    def _get_query_filters(volume_ref: objects.Volume) -> dict:
++    def _get_query_filters(self, volume_ref: objects.Volume) -> dict:
+         if volume_ref.is_clustered:
+             return {'cluster_name': volume_ref.cluster_name}
+-        return {'host': volume_ref.host}
++        if not self.clone_across_pools:
++            return {'host': volume_ref.host}
++        return {}
+ 
+     def get_entry(self,
+                   context: context.RequestContext,
+diff --git a/cinder/interface/volume_driver.py b/cinder/interface/volume_driver.py
+index 804698163..cd11df0e0 100644
+--- a/cinder/interface/volume_driver.py
++++ b/cinder/interface/volume_driver.py
+@@ -150,6 +150,9 @@ class VolumeDriverCore(base.CinderInterface):
+         * online_extend_support (Boolean)
+             Whether the backend supports in-use volume extend or not. Defaults
+             to True.
++        * clone_across_pools (Boolean)
++            Whether the backend supports cloning a volume across different
++            pools. Defaults to False.
+ 
+         The returned dict may also contain a list, "pools", which has a similar
+         dict for each pool being used with the backend.
+diff --git a/cinder/tests/unit/image/test_cache.py b/cinder/tests/unit/image/test_cache.py
+index c3aba9b28..b8b704e0d 100644
+--- a/cinder/tests/unit/image/test_cache.py
++++ b/cinder/tests/unit/image/test_cache.py
+@@ -42,11 +42,12 @@ class ImageVolumeCacheTestCase(test.TestCase):
+         self.volume.update(vol_params)
+         self.volume_ovo = objects.Volume(self.context, **vol_params)
+ 
+-    def _build_cache(self, max_gb=0, max_count=0):
++    def _build_cache(self, max_gb=0, max_count=0, clone_across_pools=False):
+         cache = image_cache.ImageVolumeCache(self.mock_db,
+                                              self.mock_volume_api,
+                                              max_gb,
+-                                             max_count)
++                                             max_count,
++                                             clone_across_pools)
+         cache.notifier = self.notifier
+         return cache
+ 
+@@ -91,9 +92,10 @@ class ImageVolumeCacheTestCase(test.TestCase):
+         self.assertEqual(entry['image_id'], msg['payload']['image_id'])
+         self.assertEqual(1, len(self.notifier.notifications))
+ 
+-    @ddt.data(True, False)
+-    def test_get_entry(self, clustered):
+-        cache = self._build_cache()
++    @ddt.data((True, True), (True, False), (False, True), (False, False))
++    @ddt.unpack
++    def test_get_entry(self, clustered, clone_across_pools):
++        cache = self._build_cache(clone_across_pools=clone_across_pools)
+         entry = self._build_entry()
+         image_meta = {
+             'is_public': True,
+@@ -107,7 +109,7 @@ class ImageVolumeCacheTestCase(test.TestCase):
+          image_volume_cache_get_and_update_last_used.return_value) = entry
+         if not clustered:
+             self.volume_ovo.cluster_name = None
+-            expect = {'host': self.volume.host}
++            expect = {} if clone_across_pools else {'host': self.volume.host}
+         else:
+             expect = {'cluster_name': self.volume.cluster_name}
+         found_entry = cache.get_entry(self.context,
+diff --git a/cinder/tests/unit/volume/flows/test_create_volume_flow.py b/cinder/tests/unit/volume/flows/test_create_volume_flow.py
+index b318c50e7..e9dae2f46 100644
+--- a/cinder/tests/unit/volume/flows/test_create_volume_flow.py
++++ b/cinder/tests/unit/volume/flows/test_create_volume_flow.py
+@@ -1060,6 +1060,7 @@ class CreateVolumeFlowManagerTestCase(test.TestCase):
+             self, volume_get_by_id, vol_update, rekey_vol, cleanup_cg):
+         fake_db = mock.MagicMock()
+         fake_driver = mock.MagicMock()
++        fake_driver.capabilities = {}
+         fake_volume_manager = mock.MagicMock()
+         fake_manager = create_volume_manager.CreateVolumeFromSpecTask(
+             fake_volume_manager, fake_db, fake_driver)
+@@ -1085,6 +1086,7 @@ class CreateVolumeFlowManagerTestCase(test.TestCase):
+                                   handle_bootable, cleanup_cg):
+         fake_db = mock.MagicMock()
+         fake_driver = mock.MagicMock()
++        fake_driver.capabilities = {}
+         fake_volume_manager = mock.MagicMock()
+         fake_manager = create_volume_manager.CreateVolumeFromSpecTask(
+             fake_volume_manager, fake_db, fake_driver)
+@@ -1110,6 +1112,7 @@ class CreateVolumeFlowManagerTestCase(test.TestCase):
+                                                  mock_cleanup_cg):
+         fake_db = mock.MagicMock()
+         fake_driver = mock.MagicMock()
++        fake_driver.capabilities = {}
+         fake_volume_manager = mock.MagicMock()
+         fake_manager = create_volume_manager.CreateVolumeFromSpecTask(
+             fake_volume_manager, fake_db, fake_driver)
+@@ -1146,6 +1149,7 @@ class CreateVolumeFlowManagerTestCase(test.TestCase):
+                                                 mock_cleanup_cg):
+         fake_db = mock.MagicMock()
+         fake_driver = mock.MagicMock()
++        fake_driver.capabilities = {}
+         fake_volume_manager = mock.MagicMock()
+         fake_cache = mock.MagicMock()
+         fake_manager = create_volume_manager.CreateVolumeFromSpecTask(
+@@ -1195,6 +1199,7 @@ class CreateVolumeFlowManagerTestCase(test.TestCase):
+                                                     mock_cleanup_cg):
+         fake_db = mock.MagicMock()
+         fake_driver = mock.MagicMock()
++        fake_driver.capabilities = {}
+         fake_volume_manager = mock.MagicMock()
+         fake_manager = create_volume_manager.CreateVolumeFromSpecTask(
+             fake_volume_manager, fake_db, fake_driver)
+@@ -1254,6 +1259,7 @@ class CreateVolumeFlowManagerTestCase(test.TestCase):
+                                 driver_error):
+         fake_db = mock.MagicMock()
+         fake_driver = mock.MagicMock()
++        fake_driver.capabilities = {}
+         fake_volume_manager = mock.MagicMock()
+         backup_host = 'host@backend#pool'
+         test_manager = create_volume_manager.CreateVolumeFromSpecTask(
+@@ -1293,6 +1299,7 @@ class CreateVolumeFlowManagerTestCase(test.TestCase):
+     def test_create_drive_error(self, mock_message_create):
+         fake_db = mock.MagicMock()
+         fake_driver = mock.MagicMock()
++        fake_driver.capabilities = {}
+         fake_volume_manager = mock.MagicMock()
+         fake_manager = create_volume_manager.CreateVolumeFromSpecTask(
+             fake_volume_manager, fake_db, fake_driver)
+@@ -1494,6 +1501,7 @@ class CreateVolumeFlowManagerGlanceCinderBackendCase(test.TestCase):
+             spec=utils.get_file_spec())
+         fake_db = mock.MagicMock()
+         fake_driver = mock.MagicMock()
++        fake_driver.capabilities = {}
+         fake_manager = create_volume_manager.CreateVolumeFromSpecTask(
+             mock.MagicMock(), fake_db, fake_driver)
+         fake_image_service = fake_image.FakeImageService()
+@@ -1520,6 +1528,7 @@ class CreateVolumeFlowManagerGlanceCinderBackendCase(test.TestCase):
+                       'cinder_encryption_key_id': None}
+ 
+         fake_driver.clone_image.return_value = (None, False)
++        fake_db.volume_get_all.return_value = []
+         fake_db.volume_get_all_by_host.return_value = [image_volume]
+ 
+         fake_manager._create_from_image(self.ctxt,
+@@ -1538,6 +1547,69 @@ class CreateVolumeFlowManagerGlanceCinderBackendCase(test.TestCase):
+             self.assertFalse(fake_driver.create_cloned_volume.called)
+         mock_cleanup_cg.assert_called_once_with(volume)
+ 
++    @mock.patch('cinder.volume.flows.manager.create_volume.'
++                'CreateVolumeFromSpecTask.'
++                '_cleanup_cg_in_volume')
++    @mock.patch('cinder.image.image_utils.TemporaryImages.fetch')
++    @mock.patch('cinder.volume.flows.manager.create_volume.'
++                'CreateVolumeFromSpecTask.'
++                '_handle_bootable_volume_glance_meta')
++    @mock.patch('cinder.image.image_utils.qemu_img_info')
++    def test_create_from_image_across(self, mock_qemu_info, handle_bootable,
++                                      mock_fetch_img, mock_cleanup_cg,
++                                      format='raw', owner=None,
++                                      location=True):
++        self.flags(allowed_direct_url_schemes=['cinder'])
++        mock_fetch_img.return_value = mock.MagicMock(
++            spec=utils.get_file_spec())
++        fake_db = mock.MagicMock()
++        fake_driver = mock.MagicMock()
++        fake_driver.capabilities = {'clone_across_pools': True}
++        fake_manager = create_volume_manager.CreateVolumeFromSpecTask(
++            mock.MagicMock(), fake_db, fake_driver)
++        fake_image_service = fake_image.FakeImageService()
++
++        volume = fake_volume.fake_volume_obj(self.ctxt,
++                                             host='host@backend#pool')
++        image_volume = fake_volume.fake_volume_obj(self.ctxt,
++                                                   volume_metadata={})
++        image_id = fakes.IMAGE_ID
++        image_info = imageutils.QemuImgInfo()
++        image_info.virtual_size = '1073741824'
++        mock_qemu_info.return_value = image_info
++
++        url = 'cinder://%s' % image_volume['id']
++        image_location = None
++        if location:
++            image_location = (url, [{'url': url, 'metadata': {}}])
++        image_meta = {'id': image_id,
++                      'container_format': 'bare',
++                      'disk_format': format,
++                      'size': 1024,
++                      'owner': owner or self.ctxt.project_id,
++                      'virtual_size': None,
++                      'cinder_encryption_key_id': None}
++
++        fake_driver.clone_image.return_value = (None, False)
++        fake_db.volume_get_all.return_value = [image_volume]
++        fake_db.volume_get_all_by_host.return_value = []
++
++        fake_manager._create_from_image(self.ctxt,
++                                        volume,
++                                        image_location,
++                                        image_id,
++                                        image_meta,
++                                        fake_image_service)
++        if format == 'raw' and not owner and location:
++            fake_driver.create_cloned_volume.assert_called_once_with(
++                volume, image_volume)
++            handle_bootable.assert_called_once_with(self.ctxt, volume,
++                                                    image_id=image_id,
++                                                    image_meta=image_meta)
++        else:
++            self.assertFalse(fake_driver.create_cloned_volume.called)
++        mock_cleanup_cg.assert_called_once_with(volume)
++
+     LEGACY_URI = 'cinder://%s' % fakes.VOLUME_ID
+     MULTISTORE_URI = 'cinder://fake-store/%s' % fakes.VOLUME_ID
+ 
+@@ -1564,6 +1636,7 @@ class CreateVolumeFlowManagerGlanceCinderBackendCase(test.TestCase):
+             spec=utils.get_file_spec())
+         fake_db = mock.MagicMock()
+         fake_driver = mock.MagicMock()
++        fake_driver.capabilities = {}
+         fake_manager = create_volume_manager.CreateVolumeFromSpecTask(
+             mock.MagicMock(), fake_db, fake_driver)
+         fake_image_service = fake_image.FakeImageService()
+diff --git a/cinder/volume/flows/manager/create_volume.py b/cinder/volume/flows/manager/create_volume.py
+index ac09ed898..7347ac1f8 100644
+--- a/cinder/volume/flows/manager/create_volume.py
++++ b/cinder/volume/flows/manager/create_volume.py
+@@ -741,8 +741,12 @@ class CreateVolumeFromSpecTask(flow_utils.CinderTask):
+         urls = list(set([direct_url]
+                         + [loc.get('url') for loc in locations or []]))
+         image_volume_ids = self._extract_cinder_ids(urls)
+-        image_volumes = self.db.volume_get_all_by_host(
+-            context, volume['host'], filters={'id': image_volume_ids})
++        if self.driver.capabilities.get('clone_across_pools'):
++            image_volumes = self.db.volume_get_all(
++                context, filters={'id': image_volume_ids})
++        else:
++            image_volumes = self.db.volume_get_all_by_host(
++                context, volume['host'], filters={'id': image_volume_ids})
+ 
+         for image_volume in image_volumes:
+             # For the case image volume is stored in the service tenant,
+diff --git a/cinder/volume/manager.py b/cinder/volume/manager.py
+index 0a9e20877..ad9d2e8ff 100644
+--- a/cinder/volume/manager.py
++++ b/cinder/volume/manager.py
+@@ -356,7 +356,8 @@ class VolumeManager(manager.CleanableManager,
+                 self.db,
+                 cinder_volume.API(),
+                 max_cache_size,
+-                max_cache_entries
++                max_cache_entries,
++                self.driver.capabilities.get('clone_across_pools', False)
+             )
+             LOG.info('Image-volume cache enabled for host %(host)s.',
+                      {'host': self.host})
+diff --git a/releasenotes/notes/feature-clone-across-pools-63021bc853e9161a.yaml b/releasenotes/notes/feature-clone-across-pools-63021bc853e9161a.yaml
+new file mode 100644
+index 000000000..a1d79a643
+--- /dev/null
++++ b/releasenotes/notes/feature-clone-across-pools-63021bc853e9161a.yaml
+@@ -0,0 +1,16 @@
++---
++features:
++  - Add the clone_across_pools driver capability
++
++    Drivers can now declare that they can clone a volume into a
++    different pool. Essentially, if this capability is declared, Cinder
++    will skip the check that the pool of the destination volume is the
++    same as the pool of the source volume.
++
++    Some drivers do not have such a restriction and it may be possible
++    to complete the "create volume from image" operation very
++    efficiently instead of falling back to the "attach and dd" option.
++
++    This affects creating a volume from an image with and without the
++    image cache. For more details please check `bp clone_across_pools
++    <https://blueprints.launchpad.net/cinder/+spec/clone-across-pools>`__
+-- 
+2.43.0
+

@@ -1,0 +1,48 @@
+From 085a7d0888b35a8a190aa2a0538aea96e35d024b Mon Sep 17 00:00:00 2001
+From: Biser Milanov <biser.milanov@storpool.com>
+Date: Mon, 5 Aug 2024 16:56:31 +0300
+Subject: StorPool: DRY volumeCreate() in create_volume()
+
+Change-Id: I7387a467bb8e2cbf170a7484dc95ef9f132b6ad0
+Signed-off-by: Biser Milanov <biser.milanov@storpool.com>
+(cherry picked from commit 5566f9a43f5f72b30bf7f9b5fd7fbfc31e748a3f)
+---
+ cinder/volume/drivers/storpool.py | 21 +++++++++------------
+ 1 file changed, 9 insertions(+), 12 deletions(-)
+
+diff --git a/cinder/volume/drivers/storpool.py b/cinder/volume/drivers/storpool.py
+index 0961ef9e4..a8200a7f1 100644
+--- a/cinder/volume/drivers/storpool.py
++++ b/cinder/volume/drivers/storpool.py
+@@ -133,19 +133,16 @@ class StorPoolDriver(driver.VolumeDriver):
+         size = int(volume['size']) * units.Gi
+         name = self._attach.volumeName(volume['id'])
+         template = self._template_from_volume(volume)
++
++        create_request = {'name': name, 'size': size}
++        if template is not None:
++            create_request['template'] = template
++        else:
++            create_request['replication'] = \
++                self.configuration.storpool_replication
++
+         try:
+-            if template is None:
+-                self._attach.api().volumeCreate({
+-                    'name': name,
+-                    'size': size,
+-                    'replication': self.configuration.storpool_replication
+-                })
+-            else:
+-                self._attach.api().volumeCreate({
+-                    'name': name,
+-                    'size': size,
+-                    'template': template
+-                })
++            self._attach.api().volumeCreate(create_request)
+         except spapi.ApiError as e:
+             raise self._backendException(e)
+ 
+-- 
+2.43.0
+

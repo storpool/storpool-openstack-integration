@@ -1,0 +1,136 @@
+From 23ee4542cded19f185a404d16ff9c451775fd031 Mon Sep 17 00:00:00 2001
+From: Biser Milanov <biser.milanov@storpool.com>
+Date: Mon, 21 Jul 2025 18:24:30 +0300
+Subject: StorPool: Tag attached volume with UUID of server instance and disk
+ device name
+
+Change-Id: I1fb79b7837f35d1a2e58faae863080f051d0f652
+Signed-off-by: Biser Milanov <biser.milanov@storpool.com>
+---
+ os_brick/initiator/connectors/storpool.py | 82 +++++++++++++++++++++++
+ 1 file changed, 82 insertions(+)
+
+diff --git a/os_brick/initiator/connectors/storpool.py b/os_brick/initiator/connectors/storpool.py
+index f916ea4..102da14 100644
+--- a/os_brick/initiator/connectors/storpool.py
++++ b/os_brick/initiator/connectors/storpool.py
+@@ -24,6 +24,8 @@ from os_brick.initiator.connectors import base
+ from os_brick.initiator import storpool_utils
+ from os_brick import utils
+ 
++VM_UUID_TAG = 'osvm'
++ATTACHMENT_TAG = 'disk'
+ LOG = logging.getLogger(__name__)
+ 
+ DEV_STORPOOL = pathlib.Path('/dev/storpool')
+@@ -152,6 +154,11 @@ class StorPoolConnector(base.BaseLinuxConnector):
+                 'Communication with the StorPool API '
+                 'failed: %s' % (exc)) from exc
+ 
++        self._tag_volume_with_server_instance(
++            volume_id,
++            connection_properties.get('instance', None),
++            connection_properties.get('device_name', None))
++
+         return {'type': 'block',
+                 'path': str(DEV_STORPOOL_BYID) + '/' + sp_global_id}
+ 
+@@ -187,6 +194,10 @@ class StorPoolConnector(base.BaseLinuxConnector):
+         if client_id is None:
+             raise exception.BrickException(
+                 'Invalid StorPool connection data, no client ID specified.')
++        volume_id = connection_properties.get('volume', None)
++        if volume_id is None:
++            raise exception.BrickException(
++                'Invalid StorPool connection data, no volume ID specified.')
+         device_path = connection_properties.get('device_path', None)
+         if device_path is None:
+             LOG.debug('connection_properties is missing "device_path",'
+@@ -209,6 +220,11 @@ class StorPoolConnector(base.BaseLinuxConnector):
+                 'Communication with the StorPool API '
+                 'failed: %s' % (exc)) from exc
+ 
++        if not connection_properties.get('is_shelve', False):
++            self._untag_volume_with_server_instance(
++                volume_id,
++                connection_properties.get('instance', None))
++
+     def get_search_path(self):
+         return '/dev/storpool'
+ 
+@@ -269,6 +285,72 @@ class StorPoolConnector(base.BaseLinuxConnector):
+                     names.append(entry[prefixlen:])
+         return names
+ 
++    def _volume_attachments(self, volume_name):
++        attachments = self._sp_api.attachments_list()
++        return [volume for volume in
++                attachments if volume['volume'] == volume_name]
++
++    def _tag_volume_with_server_instance(self, volume_uuid,
++                                         instance_uuid=None, device_name=None):
++        if instance_uuid is None:
++            LOG.warning('Instance UUID not provided; will not tag the volume'
++                        ' %(volume)s with a VM', {'volume': volume_uuid})
++            return
++
++        volume_name = storpool_utils.os_to_sp_volume_name(
++            self._volume_prefix, volume_uuid)
++        volume = self._sp_api.volume(volume_name)[0]
++        LOG.debug('Found volume %(volume)s', {'volume': volume})
++
++        if 'tags' in volume and VM_UUID_TAG in volume['tags']:
++            LOG.warning('The tag %(tag)s exists for volume %(volume)s;'
++                        ' will not overwrite',
++                        {'tag': VM_UUID_TAG, 'volume': volume})
++            return
++
++        volume['tags'][VM_UUID_TAG] = instance_uuid
++
++        if device_name is None:
++            LOG.warning('Device name not provided; will not tag the volume'
++                        ' %(volume) with a device', {'volume', volume_uuid})
++        else:
++            volume['tags'][ATTACHMENT_TAG] = pathlib.Path(device_name).name
++
++        self._sp_api.volume_update(volume_name, {'tags': volume['tags']})
++
++    def _untag_volume_with_server_instance(self,
++                                           volume_uuid, instance_uuid=None):
++        if instance_uuid is None:
++            LOG.warning('Instance UUID not provided; will not tag the volume'
++                        ' %(volume)s', {'volume': volume_uuid})
++            return
++
++        volume_name = storpool_utils.os_to_sp_volume_name(
++            self._volume_prefix, volume_uuid)
++        volume = self._sp_api.volume(volume_name)[0]
++        LOG.debug('Found volume %(volume)s', {'volume': volume})
++
++        # Take care when live migration attaches the volume at the src and dst
++        # at the same time
++        if len(self._volume_attachments(volume_name)) > 0:
++            LOG.warning('The volume %(volume)s is still attached somewhere;'
++                        ' will not untag it', {'volume': volume})
++            return
++
++        if 'tags' not in volume or VM_UUID_TAG not in volume['tags']:
++            LOG.warning('The tag %(tag)s does not exist for volume'
++                        ' %(volume)s; will not untag the volume',
++                        {
++                            'tag': VM_UUID_TAG,
++                            'volume': volume
++                        })
++            return
++
++        volume['tags'][VM_UUID_TAG] = ''
++        volume['tags'][ATTACHMENT_TAG] = ''
++
++        self._sp_api.volume_update(volume_name, {'tags': volume['tags']})
++
+     def _get_device_size(self, device):
+         """Get the size in bytes of a volume."""
+         (out, _err) = self._execute('blockdev', '--getsize64',
+-- 
+2.43.0
+

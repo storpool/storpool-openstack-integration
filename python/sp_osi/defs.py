@@ -14,6 +14,7 @@ from sp_variant import variant as spvariant
 class OpenStackVersion(IntEnum):
     """OpenStack version names."""
 
+    ANTELOPE = auto()
     CARACAL = auto()
 
 
