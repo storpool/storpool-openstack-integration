@@ -1,0 +1,46 @@
+From ad2d5b87aca26492fdd759d619ff144d738142a0 Mon Sep 17 00:00:00 2001
+From: Biser Milanov <biser.milanov@storpool.com>
+Date: Wed, 22 Jan 2025 11:45:05 +0200
+Subject: StorPool: Add the iSCSI configuration API
+
+Change-Id: Idfe59f024232c0ba1f4e41611c975eb5ce0d03bb
+Signed-off-by: Biser Milanov <biser.milanov@storpool.com>
+(cherry picked from commit 5f5a8f7563e7ee1f6fc9d8b828a360d5c7c0c1b3)
+---
+ os_brick/initiator/storpool_utils.py            | 6 ++++++
+ releasenotes/notes/notice-37378e268b52ed89.yaml | 9 +++++++++
+ 2 files changed, 15 insertions(+)
+ create mode 100644 releasenotes/notes/notice-37378e268b52ed89.yaml
+
+diff --git a/os_brick/initiator/storpool_utils.py b/os_brick/initiator/storpool_utils.py
+index eec4bd5..a492d39 100644
+--- a/os_brick/initiator/storpool_utils.py
++++ b/os_brick/initiator/storpool_utils.py
+@@ -211,3 +211,9 @@ class StorPoolAPI:
+     def snapshot_delete(self, snapshot):
+         self._api_call(
+             'POST', f'/ctrl/1.0/MultiCluster/SnapshotDelete/{snapshot}')
++
++    def get_iscsi_config(self):
++        return self._api_call('GET', '/ctrl/1.0/iSCSIConfig')
++
++    def post_iscsi_config(self, data):
++        return self._api_call('POST', '/ctrl/1.0/iSCSIConfig', data)
+diff --git a/releasenotes/notes/notice-37378e268b52ed89.yaml b/releasenotes/notes/notice-37378e268b52ed89.yaml
+new file mode 100644
+index 0000000..f5c4142
+--- /dev/null
++++ b/releasenotes/notes/notice-37378e268b52ed89.yaml
+@@ -0,0 +1,9 @@
++---
++features:
++  - |
++    Extend the StorPool API client to support the StorPool iSCSI
++    configuration API functionality.
++upgrade:
++  - |
++    Upgrading to this release is not required; it is an interim version
++    affecting only the StorPool connector.
+-- 
+2.43.0
+

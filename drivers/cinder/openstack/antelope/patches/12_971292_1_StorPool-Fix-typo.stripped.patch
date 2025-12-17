@@ -1,0 +1,28 @@
+From 776517c5a682fdb6eb53dc3a5342b88c95b3c74b Mon Sep 17 00:00:00 2001
+From: Biser Milanov <biser.milanov@storpool.com>
+Date: Wed, 14 Aug 2024 11:22:24 +0300
+Subject: StorPool: Fix typo
+
+Change-Id: I1ef8c60bfca331b9ec7c4789a65788d41db5f172
+Signed-off-by: Biser Milanov <biser.milanov@storpool.com>
+(cherry picked from commit 8d981a323ff59d5d791c2af2da041be1be7fb341)
+---
+ cinder/volume/drivers/storpool.py | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/cinder/volume/drivers/storpool.py b/cinder/volume/drivers/storpool.py
+index 0051442ed..0961ef9e4 100644
+--- a/cinder/volume/drivers/storpool.py
++++ b/cinder/volume/drivers/storpool.py
+@@ -394,7 +394,7 @@ class StorPoolDriver(driver.VolumeDriver):
+         if diff['extra_specs']:
+             # Check for the StorPool extra specs. We intentionally ignore any
+             # other extra_specs because the cinder scheduler should not even
+-            # call us if there's a serious mismatch between the volume types."
++            # call us if there's a serious mismatch between the volume types.
+             if diff['extra_specs'].get('volume_backend_name'):
+                 v = diff['extra_specs'].get('volume_backend_name')
+                 if v[0] != v[1]:
+-- 
+2.43.0
+

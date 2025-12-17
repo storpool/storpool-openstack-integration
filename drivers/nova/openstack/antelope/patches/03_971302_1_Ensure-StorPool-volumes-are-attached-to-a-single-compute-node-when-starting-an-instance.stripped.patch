@@ -1,0 +1,83 @@
+From 782e170009c66315cf45c5a93ca769a8725bdcec Mon Sep 17 00:00:00 2001
+From: Biser Milanov <biser.milanov@storpool.com>
+Date: Thu, 7 Aug 2025 14:04:09 +0300
+Subject: Ensure StorPool volumes are attached to a single compute node when
+ starting an instance
+
+Change-Id: I67d0ea2ede7acf6dc2c53f7f85eb4011ff018e68
+Signed-off-by: Biser Milanov <biser.milanov@storpool.com>
+---
+ nova/virt/libvirt/driver.py          | 35 ++++++++++++++++++++++++++++
+ nova/virt/libvirt/volume/storpool.py |  3 +++
+ 2 files changed, 38 insertions(+)
+
+diff --git a/nova/virt/libvirt/driver.py b/nova/virt/libvirt/driver.py
+index dfd87fde5d..ab1387bf81 100644
+--- a/nova/virt/libvirt/driver.py
++++ b/nova/virt/libvirt/driver.py
+@@ -130,6 +130,7 @@ from nova.virt.libvirt import vif as libvirt_vif
+ from nova.virt.libvirt.volume import fs
+ from nova.virt.libvirt.volume import mount
+ from nova.virt.libvirt.volume import remotefs
++from nova.virt.libvirt.volume import storpool
+ from nova.virt.libvirt.volume import volume
+ from nova.virt import netutils
+ from nova.volume import cinder
+@@ -7778,6 +7779,40 @@ class LibvirtDriver(driver.ComputeDriver):
+                 with self._lxc_disk_handler(
+                     context, instance, instance.image_meta, block_device_info,
+                 ):
++                    block_device_mapping = \
++                        driver.block_device_info_get_mapping(block_device_info)
++
++                    instance_uuid = instance["uuid"]
++                    storpool_volumes = []
++                    storpool_driver = None
++
++                    LOG.info(
++                        "Scanning the block device map of instance %s"
++                        " for StorPool volumes: %s",
++                        instance_uuid,
++                        block_device_mapping)
++
++                    for bdm in block_device_mapping:
++                        connection_info = bdm["connection_info"]
++                        vol_driver = self._get_volume_driver(connection_info)
++                        if isinstance(
++                            vol_driver,
++                            storpool.LibvirtStorPoolVolumeDriver):
++                            LOG.info(
++                                "StorPool volume: %s attached to instance: %s",
++                                connection_info,
++                                instance_uuid)
++                            storpool_driver = vol_driver
++                            storpool_volumes.append(connection_info)
++
++                    if storpool_driver is not None:
++                        LOG.info(
++                            "Ensuring StorPool volumes %s are attached only"
++                            " for instance: %s",
++                            storpool_volumes,
++                            instance_uuid)
++                        storpool_driver.ensure_single_attach(storpool_volumes)
++
+                     guest = self._create_guest(
+                         context, xml, instance,
+                         pause=pause, power_on=power_on,
+diff --git a/nova/virt/libvirt/volume/storpool.py b/nova/virt/libvirt/volume/storpool.py
+index dfbc28b154..249d4c7588 100644
+--- a/nova/virt/libvirt/volume/storpool.py
++++ b/nova/virt/libvirt/volume/storpool.py
+@@ -32,6 +32,9 @@ class LibvirtStorPoolVolumeDriver(libvirt_volume.LibvirtVolumeDriver):
+         self.connector = connector.InitiatorConnector.factory(
+             initiator.STORPOOL, utils.get_root_helper())
+ 
++    def ensure_single_attach(self, volumes):
++        self.connector.ensure_single_attach(volumes)
++
+     def get_config(self, connection_info, disk_info):
+         """Returns xml for libvirt."""
+         conf = super(LibvirtStorPoolVolumeDriver,
+-- 
+2.43.0
+

@@ -1,0 +1,150 @@
+From 1a1b21b59c1c90b5327e646c324bc7644f521626 Mon Sep 17 00:00:00 2001
+From: Peter Penchev <openstack-dev@storpool.com>
+Date: Wed, 9 Sep 2020 21:03:24 +0300
+Subject: Implement revert_to_snapshot() for StorPool.
+
+Use the StorPool API to revert a volume to the specified snapshot
+immediately, without deleting and recreating the volume. This also
+preserves the volume's metadata, such as e.g. SCSI WWN identifier for
+the purposes of recognizing it on VM instances that it has been
+previously attached to.
+
+Change-Id: I3b8126cf1706921eac9556add11c558d973cf272
+Implements: blueprint storpool-revert-to-snapshot
+Signed-off-by: Biser Milanov <biser.milanov@storpool.com>
+(cherry picked from commit 0867c4d3e1a930044cf9d618bf53c36f104d2d3d)
+---
+ .../unit/volume/drivers/test_storpool.py      | 63 +++++++++++++++++++
+ cinder/volume/drivers/storpool.py             | 18 +++++-
+ 2 files changed, 80 insertions(+), 1 deletion(-)
+
+diff --git a/cinder/tests/unit/volume/drivers/test_storpool.py b/cinder/tests/unit/volume/drivers/test_storpool.py
+index 02df8134d..dbe90d6ab 100644
+--- a/cinder/tests/unit/volume/drivers/test_storpool.py
++++ b/cinder/tests/unit/volume/drivers/test_storpool.py
+@@ -140,6 +140,16 @@ class MockAPI(object):
+                 volumes[new_name]['name'] = new_name
+             del volumes[name]
+ 
++    def volumeRevert(self, name, data):
++        if name not in volumes:
++            raise MockApiError('No such volume {name}'.format(name=name))
++
++        snapname = data['toSnapshot']
++        if snapname not in snapshots:
++            raise MockApiError('No such snapshot {name}'.format(name=snapname))
++
++        volumes[name] = dict(snapshots[snapname])
++
+ 
+ class MockAttachDB(object):
+     def __init__(self, log):
+@@ -155,6 +165,10 @@ class MockAttachDB(object):
+         return snapshotName(vtype, vid)
+ 
+ 
++def MockVolumeRevertDesc(toSnapshot):
++    return {'toSnapshot': toSnapshot}
++
++
+ def MockVolumeUpdateDesc(size):
+     return {'size': size}
+ 
+@@ -170,6 +184,7 @@ def MockSPConfig(section = 's01'):
+ fakeStorPool.spapi.ApiError = MockApiError
+ fakeStorPool.spconfig.SPConfig = MockSPConfig
+ fakeStorPool.spopenstack.AttachDB = MockAttachDB
++fakeStorPool.sptypes.VolumeRevertDesc = MockVolumeRevertDesc
+ fakeStorPool.sptypes.VolumeUpdateDesc = MockVolumeUpdateDesc
+ 
+ 
+@@ -524,3 +539,51 @@ class StorPoolTestCase(test.TestCase):
+                          self.driver.get_pool({
+                              'volume_type': volume_type
+                          }))
++
++    def test_volume_revert(self):
++        vol_id = 'rev1'
++        vol_name = volumeName(vol_id)
++        snap_id = 'rev-s1'
++        snap_name = snapshotName('snap', snap_id)
++
++        self.assertVolumeNames([])
++        self.assertDictEqual({}, volumes)
++        self.assertDictEqual({}, snapshots)
++
++        self.driver.create_volume({'id': vol_id, 'name': 'v1', 'size': 1,
++                                   'volume_type': None})
++        self.assertVolumeNames((vol_id,))
++        self.assertDictEqual({}, snapshots)
++
++        self.driver.create_snapshot({'id': snap_id, 'volume_id': vol_id})
++        self.assertVolumeNames((vol_id,))
++        self.assertListEqual([snap_name], sorted(snapshots.keys()))
++        self.assertDictEqual(volumes[vol_name], snapshots[snap_name])
++        self.assertIsNot(volumes[vol_name], snapshots[snap_name])
++
++        self.driver.extend_volume({'id': vol_id}, 2)
++        self.assertVolumeNames((vol_id,))
++        self.assertNotEqual(volumes[vol_name], snapshots[snap_name])
++
++        self.driver.revert_to_snapshot(None, {'id': vol_id}, {'id': snap_id})
++        self.assertVolumeNames((vol_id,))
++        self.assertDictEqual(volumes[vol_name], snapshots[snap_name])
++        self.assertIsNot(volumes[vol_name], snapshots[snap_name])
++
++        self.driver.delete_snapshot({'id': snap_id})
++        self.assertVolumeNames((vol_id,))
++        self.assertDictEqual({}, snapshots)
++
++        self.assertRaisesRegex(exception.VolumeBackendAPIException,
++                               'No such snapshot',
++                               self.driver.revert_to_snapshot, None,
++                               {'id': vol_id}, {'id': snap_id})
++
++        self.driver.delete_volume({'id': vol_id})
++        self.assertDictEqual({}, volumes)
++        self.assertDictEqual({}, snapshots)
++
++        self.assertRaisesRegex(exception.VolumeBackendAPIException,
++                               'No such volume',
++                               self.driver.revert_to_snapshot, None,
++                               {'id': vol_id}, {'id': snap_id})
+diff --git a/cinder/volume/drivers/storpool.py b/cinder/volume/drivers/storpool.py
+index 62e058e14..4e46ba05f 100644
+--- a/cinder/volume/drivers/storpool.py
++++ b/cinder/volume/drivers/storpool.py
+@@ -90,9 +90,10 @@ class StorPoolDriver(driver.VolumeDriver):
+         1.2.2   - Reintroduce the driver into OpenStack Queens,
+                   add ignore_errors to the internal _detach_volume() method
+         1.2.3   - Advertise some more driver capabilities.
++        2.0.0   - Implement revert_to_snapshot().
+     """
+ 
+-    VERSION = '1.2.3'
++    VERSION = '2.0.0'
+     CI_WIKI_NAME = 'StorPool_distributed_storage_CI'
+ 
+     def __init__(self, *args, **kwargs):
+@@ -423,3 +424,18 @@ class StorPoolDriver(driver.VolumeDriver):
+                       '%(err)s',
+                       {'tname': temp_name, 'oname': orig_name, 'err': e})
+             return {'_name_id': new_volume['_name_id'] or new_volume['id']}
++
++    def revert_to_snapshot(self, context, volume, snapshot):
++        volname = self._attach.volumeName(volume['id'])
++        snapname = self._attach.snapshotName('snap', snapshot['id'])
++        try:
++            rev = sptypes.VolumeRevertDesc(toSnapshot=snapname)
++            self._attach.api().volumeRevert(volname, rev)
++        except spapi.ApiError as e:
++            LOG.error('StorPool revert_to_snapshot(): could not revert '
++                      'the %(vol_id)s volume to the %(snap_id)s snapshot: '
++                      '%(err)s',
++                      {'vol_id': volume['id'],
++                       'snap_id': snapshot['id'],
++                       'err': e})
++            raise self._backendException(e)
+-- 
+2.43.0
+

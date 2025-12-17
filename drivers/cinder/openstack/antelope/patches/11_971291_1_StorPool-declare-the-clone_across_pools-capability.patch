@@ -1,0 +1,42 @@
+From a61cfc5d912f3f3f33c2bec8e21ad5d334d4fff1 Mon Sep 17 00:00:00 2001
+From: Peter Penchev <openstack-dev@storpool.com>
+Date: Wed, 22 Jun 2022 10:48:25 +0300
+Subject: StorPool: declare the clone_across_pools capability
+
+Depends-on: blueprint clone-across-pools
+Change-Id: I5338c6c4f53a448e495f695cd64b36b722cd947d
+Signed-off-by: Biser Milanov <biser.milanov@storpool.com>
+(cherry picked from commit c0e31e787f3d5f76aa300972f656fd22fdc76601)
+---
+ cinder/volume/drivers/storpool.py                           | 1 +
+ .../notes/storpool-clone-across-pools-b3f7923dee35503a.yaml | 6 ++++++
+ 2 files changed, 7 insertions(+)
+ create mode 100644 releasenotes/notes/storpool-clone-across-pools-b3f7923dee35503a.yaml
+
+diff --git a/cinder/volume/drivers/storpool.py b/cinder/volume/drivers/storpool.py
+index 76b86cd02..0051442ed 100644
+--- a/cinder/volume/drivers/storpool.py
++++ b/cinder/volume/drivers/storpool.py
+@@ -362,6 +362,7 @@ class StorPoolDriver(driver.VolumeDriver):
+             'driver_version': self.VERSION,
+             'storage_protocol': constants.STORPOOL,
+             # Driver capabilities
++            'clone_across_pools': True,
+             'sparse_copy_volume': True,
+             # The actual pools data
+             'pools': pools
+diff --git a/releasenotes/notes/storpool-clone-across-pools-b3f7923dee35503a.yaml b/releasenotes/notes/storpool-clone-across-pools-b3f7923dee35503a.yaml
+new file mode 100644
+index 000000000..511ac699b
+--- /dev/null
++++ b/releasenotes/notes/storpool-clone-across-pools-b3f7923dee35503a.yaml
+@@ -0,0 +1,6 @@
++---
++features:
++  - |
++    The StorPool driver now declares the "clone across pools" capability,
++    which allows it to create a volume into an arbitrary StorPool-backed
++    volume type from a StorPool-backed Glance image.
+-- 
+2.43.0
+

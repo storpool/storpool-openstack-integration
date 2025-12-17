@@ -1,0 +1,41 @@
+From 68dbdc370e38d50429c91f04847676418e31bb8a Mon Sep 17 00:00:00 2001
+From: Peter Penchev <openstack-dev@storpool.com>
+Date: Mon, 13 Feb 2023 11:15:27 +0200
+Subject: StorPool: cosmetic: comment headings instead of empty lines
+
+Instead of using empty lines to separate semantically different
+sections of the driver capabilities / pools status dictionary,
+put in comments describing the sections.
+
+Change-Id: Id919c9d4a854101c9635c53af4e11d5ea22ea697
+Signed-off-by: Biser Milanov <biser.milanov@storpool.com>
+(cherry picked from commit 0912d760d1329eb3e1ccfc79b99a916e810d0f20)
+---
+ cinder/volume/drivers/storpool.py | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
+
+diff --git a/cinder/volume/drivers/storpool.py b/cinder/volume/drivers/storpool.py
+index 0fec1d490..bffd9af9a 100644
+--- a/cinder/volume/drivers/storpool.py
++++ b/cinder/volume/drivers/storpool.py
+@@ -302,14 +302,15 @@ class StorPoolDriver(driver.VolumeDriver):
+                        ) for t in templates]
+ 
+         self._stats = {
++            # Basic driver properties
+             'volume_backend_name': self.configuration.safe_get(
+                 'volume_backend_name') or 'storpool',
+             'vendor_name': 'StorPool',
+             'driver_version': self.VERSION,
+             'storage_protocol': constants.STORPOOL,
+-
++            # Driver capabilities
+             'sparse_copy_volume': True,
+-
++            # The actual pools data
+             'pools': pools
+         }
+ 
+-- 
+2.43.0
+

@@ -1,0 +1,57 @@
+From ea5ccf4a296662bc06933f74bb89aa05f56566fb Mon Sep 17 00:00:00 2001
+From: Peter Penchev <openstack-dev@storpool.com>
+Date: Mon, 11 May 2020 11:02:53 +0300
+Subject: StorPool driver: remove the obsolete backup_volume()
+
+Follow suit with I984de3df803f12dbb95e3309e668b3fbd519e70f.
+
+Change-Id: Ia172452fd7c96dccfe54789d868fcf7b748322a3
+Signed-off-by: Biser Milanov <biser.milanov@storpool.com>
+(cherry picked from commit b6236a56a917d8f801bf99205a3552a669bcf143)
+---
+ cinder/volume/drivers/storpool.py | 29 -----------------------------
+ 1 file changed, 29 deletions(-)
+
+diff --git a/cinder/volume/drivers/storpool.py b/cinder/volume/drivers/storpool.py
+index d21fb52f6..9414bc62a 100644
+--- a/cinder/volume/drivers/storpool.py
++++ b/cinder/volume/drivers/storpool.py
+@@ -314,35 +314,6 @@ class StorPoolDriver(driver.VolumeDriver):
+             'pools': pools
+         }
+ 
+-    def backup_volume(self, context, backup, backup_service):
+-        volume = self.db.volume_get(context, backup['volume_id'])
+-        req_id = context.request_id
+-        volname = self._attach.volumeName(volume['id'])
+-        name = self._attach.volsnapName(volume['id'], req_id)
+-        try:
+-            self._attach.api().snapshotCreate(volname, {'name': name})
+-        except spapi.ApiError as e:
+-            raise self._backendException(e)
+-        self._attach.add(req_id, {
+-            'volume': name,
+-            'type': 'backup',
+-            'id': req_id,
+-            'rights': 1,
+-            'volsnap': True
+-        })
+-        try:
+-            return super(StorPoolDriver, self).backup_volume(
+-                context, backup, backup_service)
+-        finally:
+-            self._attach.remove(req_id)
+-            try:
+-                self._attach.api().snapshotDelete(name)
+-            except spapi.ApiError as e:
+-                LOG.error(
+-                    'Could not remove the temp snapshot %(name)s for '
+-                    '%(vol)s: %(err)s',
+-                    {'name': name, 'vol': volname, 'err': e})
+-
+     def copy_volume_to_image(self, context, volume, image_service, image_meta):
+         req_id = context.request_id
+         volname = self._attach.volumeName(volume['id'])
+-- 
+2.43.0
+

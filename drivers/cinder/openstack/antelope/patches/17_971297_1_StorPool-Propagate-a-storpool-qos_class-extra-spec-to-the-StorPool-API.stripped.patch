@@ -1,0 +1,467 @@
+From e604d766b23316b90bbe2d624a9c1bf512447a75 Mon Sep 17 00:00:00 2001
+From: Biser Milanov <biser.milanov@storpool.com>
+Date: Mon, 5 Aug 2024 17:24:23 +0300
+Subject: StorPool: Propagate a 'storpool:qos_class' extra spec to the StorPool
+ API
+
+Change-Id: I9c28b4f3106eb8b75664cc489eaeb09e56080831
+Signed-off-by: Biser Milanov <biser.milanov@storpool.com>
+---
+ cinder/tests/unit/fake_constants.py           |   1 +
+ .../unit/volume/drivers/test_storpool.py      | 170 +++++++++++++++---
+ cinder/volume/drivers/storpool.py             |  68 ++++---
+ 3 files changed, 194 insertions(+), 45 deletions(-)
+
+diff --git a/cinder/tests/unit/fake_constants.py b/cinder/tests/unit/fake_constants.py
+index ebdf7b903..fa7499513 100644
+--- a/cinder/tests/unit/fake_constants.py
++++ b/cinder/tests/unit/fake_constants.py
+@@ -82,6 +82,7 @@ VOLUME_TYPE2_ID = 'c4daaf47-c530-4901-b28e-f5f0a359c4e6'
+ VOLUME_TYPE3_ID = 'a3d55d15-eeb1-4816-ada9-bf82decc09b3'
+ VOLUME_TYPE4_ID = '69943076-754d-4da8-8718-0b0117e9cab1'
+ VOLUME_TYPE5_ID = '1c450d81-8aab-459e-b338-a6569139b835'
++VOLUME_TYPE6_ID = '6f9037f4-f232-49f1-94a7-f5e377ba9a96'
+ WILL_NOT_BE_FOUND_ID = 'ce816f65-c5aa-46d6-bd62-5272752d584a'
+ GROUP_TYPE_ID = '29514915-5208-46ab-9ece-1cc4688ad0c1'
+ GROUP_TYPE2_ID = 'f8645498-1323-47a2-9442-5c57724d2e3c'
+diff --git a/cinder/tests/unit/volume/drivers/test_storpool.py b/cinder/tests/unit/volume/drivers/test_storpool.py
+index b21f1582d..e6f4e191d 100644
+--- a/cinder/tests/unit/volume/drivers/test_storpool.py
++++ b/cinder/tests/unit/volume/drivers/test_storpool.py
+@@ -44,7 +44,12 @@ ISCSI_PORTAL_GROUP = 'openstack_pg'
+ volume_types = {
+     fake_constants.VOLUME_TYPE_ID: {},
+     fake_constants.VOLUME_TYPE2_ID: {'storpool_template': 'ssd'},
+-    fake_constants.VOLUME_TYPE3_ID: {'storpool_template': 'hdd'}
++    fake_constants.VOLUME_TYPE3_ID: {'storpool_template': 'hdd'},
++    fake_constants.VOLUME_TYPE4_ID:
++        {'storpool_template': 'ssd2', 'storpool:qos_class': 'tier0'},
++    fake_constants.VOLUME_TYPE5_ID:
++        {'storpool_template': 'hdd2', 'storpool:qos_class': 'tier1'},
++    fake_constants.VOLUME_TYPE6_ID: {'storpool:qos_class': 'tier1'}
+ }
+ volumes = {}
+ snapshots = {}
+@@ -153,6 +158,12 @@ class MockAPI(object):
+         if 'size' in data:
+             volumes[name]['size'] = data['size']
+ 
++        if 'tags' in data:
++            if 'tags' not in volumes[name]:
++                volumes[name]['tags'] = {}
++            for tag_name, tag_value in data['tags'].items():
++                volumes[name]['tags'][tag_name] = tag_value
++
+         if 'rename' in data and data['rename'] != name:
+             new_name = data['rename']
+             volumes[new_name] = volumes[name]
+@@ -405,6 +416,15 @@ class MockIscsiAPI:
+             self._configs.append(new_cfg)
+ 
+ 
++def MockVolumeUpdateDesc(size = None, tags = None):
++    volume_update = {}
++    if size is not None:
++        volume_update['size'] = size
++    if tags is not None:
++        volume_update['tags'] = tags
++    return volume_update
++
++
+ _ISCSI_TEST_CASES = [
+     IscsiTestCase(None, None, False, 4),
+     IscsiTestCase(ISCSI_IQN_OURS, None, False, 2),
+@@ -519,6 +539,20 @@ class StorPoolTestCase(test.TestCase):
+         self.driver.create_export(None, None, {})
+         self.driver.remove_export(None, None)
+ 
++    @ddt.data(*[{'name': 'volume-' + str(key),
++                 'volume_type': {'id': key, 'extra_specs': val}}
++                for key, val in sorted(volume_types.items())])
++    @mock_volume_types
++    def test_get_qos_from_volume(self, volume):
++        expected = None
++        if volume['volume_type']['extra_specs']:
++            expected = (volume['volume_type']['extra_specs']
++                        .get('storpool:qos_class', None))
++
++        actual = driver.StorPoolDriver.qos_from_volume(volume)
++
++        self.assertEqual(expected, actual)
++
+     def test_stats(self):
+         stats = self.driver.get_volume_stats(refresh=True)
+         self.assertEqual('StorPool', stats['vendor_name'])
+@@ -554,25 +588,27 @@ class StorPoolTestCase(test.TestCase):
+ 
+     @mock_volume_types
+     def test_create_delete_volume(self):
++        volume_types_list = [{'id': key, 'extra_specs': val}
++                             for key, val in volume_types.items()]
++
+         self.assertVolumeNames([])
+         self.assertDictEqual({}, volumes)
+         self.assertDictEqual({}, snapshots)
+ 
+         self.driver.create_volume({'id': '1', 'name': 'v1', 'size': 1,
+-                                   'volume_type':
+-                                       {'id': fake_constants.VOLUME_TYPE_ID}})
++                                   'volume_type': volume_types_list[0]})
+         self.assertCountEqual([volumeName('1')], volumes.keys())
+         self.assertVolumeNames(('1',))
+         v = volumes[volumeName('1')]
+         self.assertEqual(1 * units.Gi, v['size'])
+         self.assertIsNone(v['template'])
+         self.assertEqual(3, v['replication'])
++        self.assertIsNone(v.get('tags'))
+ 
+         caught = False
+         try:
+-            self.driver.create_volume(
+-                {'id': '1', 'name': 'v1', 'size': 0,
+-                 'volume_type': {'id': fake_constants.VOLUME_TYPE_ID}})
++            self.driver.create_volume({'id': '1', 'name': 'v1', 'size': 0,
++                                       'volume_type': volume_types_list[0]})
+         except exception.VolumeBackendAPIException:
+             caught = True
+         self.assertTrue(caught)
+@@ -581,41 +617,74 @@ class StorPoolTestCase(test.TestCase):
+         self.assertVolumeNames([])
+         self.assertDictEqual({}, volumes)
+ 
+-        self.driver.create_volume(
+-            {'id': '1', 'name': 'v1', 'size': 2,
+-             'volume_type': {'id': fake_constants.VOLUME_TYPE_ID}})
++        self.driver.create_volume({'id': '1', 'name': 'v1', 'size': 2,
++                                   'volume_type': volume_types_list[0]})
+         self.assertVolumeNames(('1',))
+         v = volumes[volumeName('1')]
+         self.assertEqual(2 * units.Gi, v['size'])
+         self.assertIsNone(v['template'])
+         self.assertEqual(3, v['replication'])
++        self.assertIsNone(v.get('tags'))
+ 
+         self.driver.create_volume({'id': '2', 'name': 'v2', 'size': 3,
+-                                   'volume_type':
+-                                       {'id': fake_constants.VOLUME_TYPE_ID}})
++                                   'volume_type': volume_types_list[0]})
+         self.assertVolumeNames(('1', '2'))
+         v = volumes[volumeName('2')]
+         self.assertEqual(3 * units.Gi, v['size'])
+         self.assertIsNone(v['template'])
+         self.assertEqual(3, v['replication'])
++        self.assertIsNone(v.get('tags'))
+ 
+-        self.driver.create_volume(
+-            {'id': '3', 'name': 'v2', 'size': 4,
+-             'volume_type': {'id': fake_constants.VOLUME_TYPE2_ID}})
++        self.driver.create_volume({'id': '3', 'name': 'v2', 'size': 4,
++                                   'volume_type': volume_types_list[1]})
+         self.assertVolumeNames(('1', '2', '3'))
+         v = volumes[volumeName('3')]
+         self.assertEqual(4 * units.Gi, v['size'])
+         self.assertEqual('ssd', v['template'])
+         self.assertNotIn('replication', v.keys())
++        self.assertIsNone(v.get('tags'))
+ 
+-        self.driver.create_volume(
+-            {'id': '4', 'name': 'v2', 'size': 5,
+-             'volume_type': {'id': fake_constants.VOLUME_TYPE3_ID}})
++        self.driver.create_volume({'id': '4', 'name': 'v2', 'size': 5,
++                                   'volume_type': volume_types_list[2]})
+         self.assertVolumeNames(('1', '2', '3', '4'))
+         v = volumes[volumeName('4')]
+         self.assertEqual(5 * units.Gi, v['size'])
+         self.assertEqual('hdd', v['template'])
+         self.assertNotIn('replication', v.keys())
++        self.assertIsNone(v.get('tags'))
++
++        self.driver.create_volume({'id': '5', 'name': 'v5', 'size': 6,
++                                   'volume_type': volume_types_list[3]})
++        self.assertVolumeNames(('1', '2', '3', '4', '5'))
++        v = volumes[volumeName('5')]
++        self.assertEqual(6 * units.Gi, v['size'])
++        self.assertEqual('ssd2', v['template'])
++        self.assertNotIn('replication', v.keys())
++        self.assertEqual(
++            volume_types_list[3]['extra_specs']['storpool:qos_class'],
++            v['tags']['qc'])
++
++        self.driver.create_volume({'id': '6', 'name': 'v6', 'size': 7,
++                                   'volume_type': volume_types_list[4]})
++        self.assertVolumeNames(('1', '2', '3', '4', '5', '6'))
++        v = volumes[volumeName('6')]
++        self.assertEqual(7 * units.Gi, v['size'])
++        self.assertEqual('hdd2', v['template'])
++        self.assertNotIn('replication', v.keys())
++        self.assertEqual(
++            volume_types_list[4]['extra_specs']['storpool:qos_class'],
++            v['tags']['qc'])
++
++        self.driver.create_volume({'id': '7', 'name': 'v7', 'size': 8,
++                                   'volume_type': volume_types_list[5]})
++        self.assertVolumeNames(('1', '2', '3', '4', '5', '6', '7'))
++        v = volumes[volumeName('7')]
++        self.assertEqual(8 * units.Gi, v['size'])
++        self.assertIsNone(v['template'])
++        self.assertEqual(3, v['replication'])
++        self.assertEqual(
++            volume_types_list[5]['extra_specs']['storpool:qos_class'],
++            v['tags']['qc'])
+ 
+         # Make sure the dictionary is not corrupted somehow...
+         v = volumes[volumeName('1')]
+@@ -623,7 +692,7 @@ class StorPoolTestCase(test.TestCase):
+         self.assertIsNone(v['template'])
+         self.assertEqual(3, v['replication'])
+ 
+-        for vid in ('1', '2', '3', '4'):
++        for vid in ('1', '2', '3', '4', '5', '6', '7'):
+             self.driver.delete_volume({'id': vid})
+         self.assertVolumeNames([])
+         self.assertDictEqual({}, volumes)
+@@ -713,16 +782,26 @@ class StorPoolTestCase(test.TestCase):
+         self.assertDictEqual({}, snapshots)
+ 
+     @ddt.data(*itertools.product(
+-        [{'id': key} for key in sorted(volume_types.keys())],
+-        [{'id': key} for key in sorted(volume_types.keys())]))
++        [
++            {
++                'id': key,
++                'extra_specs': val
++            } for key, val in sorted(volume_types.items())],
++        [
++            {
++                'id': key,
++                'extra_specs': val
++            } for key, val in sorted(volume_types.items())
++        ]
++    ))
+     @ddt.unpack
+     @mock_volume_types
+     def test_create_cloned_volume(self, src_type, dst_type):
+         self.assertDictEqual({}, volumes)
+         self.assertDictEqual({}, snapshots)
+ 
+-        src_template = volume_types[src_type['id']].get('storpool_template')
+-        dst_template = volume_types[dst_type['id']].get('storpool_template')
++        src_template = src_type['extra_specs'].get('storpool_template')
++        dst_template = dst_type['extra_specs'].get('storpool_template')
+         src_name = 's-none' if src_template is None else 's-' + src_template
+         dst_name = 'd-none' if dst_template is None else 'd-' + dst_template
+ 
+@@ -739,6 +818,13 @@ class StorPoolTestCase(test.TestCase):
+             src_template)
+         self.driver.create_volume(vdata1)
+         self.assertVolumeNames(('1',))
++        v = volumes[volumeName('1')]
++        src_qos_class_expected = (
++            src_type['extra_specs'].get('storpool:qos_class'))
++        if src_qos_class_expected is None:
++            self.assertIsNone(v.get('tags'))
++        else:
++            self.assertEqual(src_qos_class_expected, v['tags']['qc'])
+ 
+         vdata2 = {
+             'id': 2,
+@@ -755,6 +841,12 @@ class StorPoolTestCase(test.TestCase):
+         self.assertVolumeNames(('1', '2'))
+         vol2 = volumes[volumeName('2')]
+         self.assertEqual(vol2['template'], dst_template)
++        dst_qos_class_expected = (
++            dst_type['extra_specs'].get('storpool:qos_class'))
++        if dst_qos_class_expected is None:
++            self.assertIsNone(vol2.get('tags'))
++        else:
++            self.assertEqual(dst_qos_class_expected, vol2['tags']['qc'])
+ 
+         if src_template == dst_template:
+             self.assertEqual(vol2['baseOn'], volumeName('1'))
+@@ -1125,3 +1217,37 @@ class StorPoolTestCase(test.TestCase):
+             _target_exists(iapi.get_iscsi_config()['iscsi'], tcase.volume))
+         self.assertFalse(
+             _export_exists(iapi.get_iscsi_config()['iscsi'], tcase.volume))
++
++    @mock_volume_types
++    def test_volume_retype(self):
++        volume_types_list = [{'id': key, 'extra_specs': val}
++                             for key, val in volume_types.items()]
++
++        self.assertVolumeNames([])
++        self.assertDictEqual({}, volumes)
++        self.assertDictEqual({}, snapshots)
++
++        self.driver.create_volume({'id': '1', 'name': 'v1', 'size': 1,
++                                   'volume_type': volume_types_list[0]})
++        self.assertNotIn('tags', volumes[volumeName('1')])
++
++        volume = {'id': '1'}
++        diff = {
++            'encryption': None,
++            'extra_specs': {
++                'storpool:qos_class': [
++                    None,
++                    'tier1'
++                ]
++            }
++        }
++        self.driver.retype(None, volume, None, diff, None)
++        self.assertEqual('tier1', volumes[volumeName('1')]['tags']['qc'])
++
++        diff['extra_specs']['storpool:qos_class'] = ['tier1', 'tier2']
++        self.driver.retype(None, volume, None, diff, None)
++        self.assertEqual('tier2', volumes[volumeName('1')]['tags']['qc'])
++
++        diff['extra_specs']['storpool:qos_class'] = ['tier1', None]
++        self.driver.retype(None, volume, None, diff, None)
++        self.assertEqual('', volumes[volumeName('1')]['tags']['qc'])
+diff --git a/cinder/volume/drivers/storpool.py b/cinder/volume/drivers/storpool.py
+index acfabccd6..1ea4034c5 100644
+--- a/cinder/volume/drivers/storpool.py
++++ b/cinder/volume/drivers/storpool.py
+@@ -77,6 +77,10 @@ storpool_opts = [
+ CONF = cfg.CONF
+ CONF.register_opts(storpool_opts, group=configuration.SHARED_CONF_GROUP)
+ 
++EXTRA_SPECS_NAMESPACE = 'storpool'
++EXTRA_SPECS_QOS = 'qos_class'
++ES_QOS = EXTRA_SPECS_NAMESPACE + ":" + EXTRA_SPECS_QOS
++
+ 
+ class StorPoolConfigurationInvalid(exception.CinderException):
+     message = _("Invalid parameter %(param)s in the %(section)s section "
+@@ -117,9 +121,10 @@ class StorPoolDriver(driver.VolumeDriver):
+                   StorPool API instead of packages `storpool` and
+                   `storpool.spopenstack`
+         2.2.0   - Add iSCSI export support.
++        2.3.0   - Introduce 'storpool:qos_class' extra spec
+     """
+ 
+-    VERSION = '2.2.0'
++    VERSION = '2.3.0'
+     CI_WIKI_NAME = 'StorPool_distributed_storage_CI'
+ 
+     def __init__(self, *args, **kwargs):
+@@ -136,6 +141,15 @@ class StorPoolDriver(driver.VolumeDriver):
+     def get_driver_options():
+         return storpool_opts
+ 
++    @staticmethod
++    def qos_from_volume(volume):
++        volume_type = volume['volume_type']
++        extra_specs = \
++            volume_types.get_volume_type_extra_specs(volume_type['id'])
++        if extra_specs:
++            return extra_specs.get(ES_QOS)
++        return None
++
+     def _backendException(self, e):
+         return exception.VolumeBackendAPIException(data=str(e))
+ 
+@@ -159,14 +173,12 @@ class StorPoolDriver(driver.VolumeDriver):
+         size = int(volume['size']) * units.Gi
+         name = storpool_utils.os_to_sp_volume_name(
+             self._volume_prefix, volume['id'])
+-        template = self._template_from_volume(volume)
++        qos_class = StorPoolDriver.qos_from_volume(volume)
+ 
+         create_request = {'name': name, 'size': size}
+-        if template is not None:
+-            create_request['template'] = template
+-        else:
+-            create_request['replication'] = \
+-                self.configuration.storpool_replication
++
++        if qos_class:
++            create_request['tags'] = {'qc': qos_class}
+ 
+         try:
+             self._sp_api.volume_create(create_request)
+@@ -536,12 +548,15 @@ class StorPoolDriver(driver.VolumeDriver):
+             self._volume_prefix, volume['id'])
+         name = storpool_utils.os_to_sp_snapshot_name(
+             self._volume_prefix, 'snap', snapshot['id'])
++        qos_class = StorPoolDriver.qos_from_volume(volume)
++
++        create_request = {'name': volname, 'size': size, 'parent': name}
++
++        if qos_class:
++            create_request['tags'] = {'qc': qos_class}
++
+         try:
+-            self._sp_api.volume_create({
+-                'name': volname,
+-                'size': size,
+-                'parent': name
+-            })
++            self._sp_api.volume_create(create_request)
+         except storpool_utils.StorPoolAPIError as e:
+             raise self._backendException(e)
+ 
+@@ -552,6 +567,13 @@ class StorPoolDriver(driver.VolumeDriver):
+         volname = storpool_utils.os_to_sp_volume_name(
+             self._volume_prefix, volume['id'])
+ 
++        qos_class = StorPoolDriver.qos_from_volume(volume)
++
++        clone_request = {'name': volname, 'size': size}
++
++        if qos_class:
++            clone_request['tags'] = {'qc': qos_class}
++
+         src_volume = self.db.volume_get(
+             context.get_admin_context(),
+             src_vref['id'],
+@@ -565,12 +587,9 @@ class StorPoolDriver(driver.VolumeDriver):
+         })
+         if template == src_template:
+             LOG.info('Using baseOn to clone a volume into the same template')
++            clone_request['baseOn'] = refname
+             try:
+-                self._sp_api.volume_create({
+-                    'name': volname,
+-                    'size': size,
+-                    'baseOn': refname,
+-                })
++                self._sp_api.volume_create(clone_request)
+             except storpool_utils.StorPoolAPIError as e:
+                 raise self._backendException(e)
+ 
+@@ -597,11 +616,8 @@ class StorPoolDriver(driver.VolumeDriver):
+                 raise self._backendException(e)
+ 
+             try:
+-                self._sp_api.volume_create({
+-                    'name': volname,
+-                    'size': size,
+-                    'parent': snapname
+-                })
++                clone_request['parent'] = snapname
++                self._sp_api.volume_create(clone_request)
+             except storpool_utils.StorPoolAPIError as e:
+                 raise self._backendException(e)
+ 
+@@ -785,12 +801,18 @@ class StorPoolDriver(driver.VolumeDriver):
+                         update['template'] = templ
+                     else:
+                         update['replication'] = repl
++            if diff['extra_specs'].get(ES_QOS):
++                v = diff['extra_specs'].get(ES_QOS)
++                if v[1] is None:
++                    update['tags'] = {'qc': ''}
++                elif v[0] != v[1]:
++                    update['tags'] = {'qc': v[1]}
+ 
+         if update:
+             name = storpool_utils.os_to_sp_volume_name(
+                 self._volume_prefix, volume['id'])
+             try:
+-                self._sp_api.volume_update(name, **update)
++                self._sp_api.volume_update(name, update)
+             except storpool_utils.StorPoolAPIError as e:
+                 raise self._backendException(e)
+ 
+-- 
+2.43.0
+

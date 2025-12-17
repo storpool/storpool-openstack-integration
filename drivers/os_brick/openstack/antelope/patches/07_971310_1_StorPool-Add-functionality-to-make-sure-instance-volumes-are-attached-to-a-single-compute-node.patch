@@ -1,0 +1,65 @@
+From eb89b47f1d78b28bcb074b2c2cbd173a61dcefd6 Mon Sep 17 00:00:00 2001
+From: Biser Milanov <biser.milanov@storpool.com>
+Date: Thu, 7 Aug 2025 14:07:13 +0300
+Subject: StorPool: Add functionality to make sure instance volumes are
+ attached to a single compute node
+
+Change-Id: I29ca0785868690f0a1c225c05de069b6e12225dd
+Signed-off-by: Biser Milanov <biser.milanov@storpool.com>
+---
+ os_brick/initiator/connectors/storpool.py | 42 +++++++++++++++++++++++
+ 1 file changed, 42 insertions(+)
+
+diff --git a/os_brick/initiator/connectors/storpool.py b/os_brick/initiator/connectors/storpool.py
+index 102da14..90179d5 100644
+--- a/os_brick/initiator/connectors/storpool.py
++++ b/os_brick/initiator/connectors/storpool.py
+@@ -403,3 +403,45 @@ class StorPoolConnector(base.BaseLinuxConnector):
+             size = utils.get_device_size(self, path)
+             LOG.debug('Last attempt: local size %(size)d', {'size': size})
+             return size
++
++    def ensure_single_attach(self, volumes):
++        """Atomically attach the provided volumes only to one compute node"""
++        sp_ourid = self._config.get('SP_OURID', None)
++        if sp_ourid is None:
++            raise exception.BrickException(
++                "SP_OURID missing, cannot ensure a single attach")
++
++        LOG.info(
++            "Will try to ensure a singe-attach from client: %s"
++            " for volumes: %s",
++            sp_ourid,
++            volumes
++        )
++
++        reassign_data = {
++            "reassign": []
++        }
++
++        for volume in volumes:
++            device_path = volume['data'].get('device_path', None)
++            if device_path is None:
++                raise exception.BrickException(
++                    "Invalid StorPool connection data"
++                    ", no device_path specified.")
++
++            device_path = utils._device_path_from_symlink(device_path)
++            access_mode = volume['data'].get("access_mode")
++            if access_mode not in ("ro", "rw"):
++                raise exception.BrickException(
++                    "Invalid StorPool access_mode: %s" % access_mode)
++
++            reassign_data['reassign'].append({
++                "volume": path_to_volname(pathlib.Path(device_path)),
++                "detach": "all",
++                "force": True,
++                access_mode: [int(sp_ourid)]
++            })
++
++        LOG.info("Will try to VolumesReassignWait() with: %s", reassign_data)
++
++        self._sp_api.volumes_reassign_wait(reassign_data)
+-- 
+2.43.0
+

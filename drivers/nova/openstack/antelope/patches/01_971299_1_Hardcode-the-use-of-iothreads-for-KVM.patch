@@ -1,0 +1,399 @@
+From a00c657becc021eca4c83964b0ad4a40bd4ebbc5 Mon Sep 17 00:00:00 2001
+From: Peter Penchev <openstack-dev@storpool.com>
+Date: Thu, 15 Jul 2021 19:32:28 +0300
+Subject: Hardcode the use of iothreads for KVM.
+
+Add the iothread_count Nova configuration option that controls
+the libvirt specification for qemu I/O threads to be used.
+If set to a non-zero value (usually 1), the libvirt definition of
+the Nova instance will contain the "iothread" attribute for
+virtio-scsi controllers and for /dev/vd* block devices.
+
+Change-Id: I8f4124c98a4ed81d0048f62d762091afc73a5452
+Signed-off-by: Biser Milanov <biser.milanov@storpool.com>
+---
+ nova/conf/libvirt.py                        |   5 +
+ nova/tests/fixtures/libvirt_data.py         | 100 +++++++++++++++++++-
+ nova/tests/unit/virt/libvirt/test_config.py |  50 ++++++++++
+ nova/virt/libvirt/config.py                 |  34 ++++++-
+ nova/virt/libvirt/driver.py                 |   4 +
+ nova/virt/libvirt/volume/volume.py          |   2 +
+ 6 files changed, 191 insertions(+), 4 deletions(-)
+
+diff --git a/nova/conf/libvirt.py b/nova/conf/libvirt.py
+index 204fe5c4b8..473d42b289 100644
+--- a/nova/conf/libvirt.py
++++ b/nova/conf/libvirt.py
+@@ -218,6 +218,11 @@ Related options:
+   this config option. A more verbose output will help in debugging issues.
+ * ``virt_type``: If you use ``lxc`` as virt_type it will be treated as a
+   single partition image
++"""),
++    cfg.IntOpt('iothread_count',
++               default=1,  # FIXME: change this to 0 before merging
++               help="""
++FIXME: write something sensible here
+ """),
+     cfg.StrOpt('live_migration_scheme',
+                help="""
+diff --git a/nova/tests/fixtures/libvirt_data.py b/nova/tests/fixtures/libvirt_data.py
+index f921a5e2df..19628afdcd 100644
+--- a/nova/tests/fixtures/libvirt_data.py
++++ b/nova/tests/fixtures/libvirt_data.py
+@@ -19,7 +19,7 @@ from nova.objects.fields import Architecture
+ from nova.virt.libvirt import config
+ 
+ 
+-def fake_kvm_guest():
++def fake_kvm_guest(iothread_count=0):
+     obj = config.LibvirtConfigGuest()
+     obj.virt_type = "kvm"
+     obj.memory = 100 * units.Mi
+@@ -90,12 +90,15 @@ def fake_kvm_guest():
+     obj.sysinfo.bios_vendor = "Acme"
+     obj.sysinfo.system_version = "1.0.0"
+ 
++    obj.iothread_count = iothread_count
++
+     # obj.devices[0]
+     disk = config.LibvirtConfigGuestDisk()
+     disk.source_type = "file"
+     disk.source_path = "/tmp/disk-img"
+     disk.target_dev = "vda"
+     disk.target_bus = "virtio"
++    disk.iothread_count = iothread_count
+     obj.add_device(disk)
+ 
+     # obj.devices[1]
+@@ -105,6 +108,7 @@ def fake_kvm_guest():
+     disk.source_path = "/tmp/cdrom-img"
+     disk.target_dev = "sda"
+     disk.target_bus = "sata"
++    disk.iothread_count = iothread_count
+     obj.add_device(disk)
+ 
+     # obj.devices[2]
+@@ -158,6 +162,7 @@ def fake_kvm_guest():
+     controller.type = 'scsi'
+     controller.model = 'virtio-scsi'  # usually set from image meta
+     controller.index = 0
++    controller.iothread_count = iothread_count
+     obj.add_device(controller)
+ 
+     return obj
+@@ -244,7 +249,100 @@ FAKE_KVM_GUEST = """
+           <rate period='12' bytes='34'/>
+           <backend model='random'>/dev/urandom</backend>
+       </rng>
++      <controller type='scsi' index='0' model='virtio-scsi'/>
++    </devices>
++    <launchSecurity type="sev">
++      <policy>0x0033</policy>
++      <cbitpos>47</cbitpos>
++      <reducedPhysBits>1</reducedPhysBits>
++    </launchSecurity>
++  </domain>"""
++
++FAKE_KVM_GUEST_IOTHREAD = """
++  <domain type="kvm">
++    <uuid>b38a3f43-4be2-4046-897f-b67c2f5e0147</uuid>
++    <name>demo</name>
++    <memory>104857600</memory>
++    <memoryBacking>
++      <hugepages>
++        <page size="2048" unit="KiB" nodeset="0-3,5"/>
++        <page size="1048576" unit="KiB" nodeset="4"/>
++      </hugepages>
++    </memoryBacking>
++    <memtune>
++      <hard_limit unit="KiB">496</hard_limit>
++      <soft_limit unit="KiB">672</soft_limit>
++      <swap_hard_limit unit="KiB">1638</swap_hard_limit>
++      <min_guarantee unit="KiB">2970</min_guarantee>
++    </memtune>
++    <numatune>
++      <memory mode="preferred" nodeset="0-3,8"/>
++      <memnode cellid="0" mode="preferred" nodeset="0-1"/>
++      <memnode cellid="1" mode="preferred" nodeset="2-3"/>
++      <memnode cellid="2" mode="preferred" nodeset="8"/>
++    </numatune>
++    <vcpu cpuset="0-1,3-5">2</vcpu>
++    <sysinfo type='smbios'>
++       <bios>
++         <entry name="vendor">Acme</entry>
++       </bios>
++       <system>
++         <entry name="version">1.0.0</entry>
++       </system>
++    </sysinfo>
++    <os>
++      <type>linux</type>
++      <boot dev="hd"/>
++      <boot dev="cdrom"/>
++      <boot dev="fd"/>
++      <smbios mode="sysinfo"/>
++    </os>
++    <features>
++      <acpi/>
++      <apic/>
++      <kvm>
++        <hidden state='on'/>
++      </kvm>
++      <vmcoreinfo/>
++    </features>
++    <cputune>
++      <shares>100</shares>
++      <quota>50000</quota>
++      <period>25000</period>
++    </cputune>
++    <iothreads>2</iothreads>
++    <devices>
++      <disk type="file" device="disk">
++        <driver io="native" iothread="1" />
++        <source file="/tmp/disk-img"/>
++        <target bus="virtio" dev="vda"/>
++      </disk>
++      <disk type="file" device="cdrom">
++        <source file="/tmp/cdrom-img"/>
++        <target bus="sata" dev="sda"/>
++      </disk>
++      <interface type='network'>
++        <mac address='52:54:00:f6:35:8f'/>
++        <model type='virtio'/>
++        <source bridge='virbr0'/>
++      </interface>
++      <memballoon model='virtio'>
++        <stats period='11'/>
++      </memballoon>
++      <input type="mouse" bus="virtio"/>
++      <graphics type="vnc" autoport="yes" keymap="en_US" listen="127.0.0.1"/>
++      <video>
++        <model type='virtio'/>
++      </video>
++      <serial type="file">
++        <source path="/tmp/vm.log"/>
++      </serial>
++      <rng model='virtio'>
++          <rate period='12' bytes='34'/>
++          <backend model='random'>/dev/urandom</backend>
++      </rng>
+       <controller type='scsi' index='0' model='virtio-scsi'>
++        <driver iothread='1' />
+       </controller>
+     </devices>
+     <launchSecurity type="sev">
+diff --git a/nova/tests/unit/virt/libvirt/test_config.py b/nova/tests/unit/virt/libvirt/test_config.py
+index 3d0b5ae685..ebbbe43dc6 100644
+--- a/nova/tests/unit/virt/libvirt/test_config.py
++++ b/nova/tests/unit/virt/libvirt/test_config.py
+@@ -2532,6 +2532,20 @@ class LibvirtConfigGuestTest(LibvirtConfigBaseTest):
+         xml = obj.to_xml()
+         self.assertXmlEqual(fake_libvirt_data.FAKE_KVM_GUEST, xml)
+ 
++<<<<<<< HEAD   (6f8dec Update Nova bdm with updated swap info)
++=======
++    def test_config_kvm_iothread(self):
++        obj = fake_libvirt_data.fake_kvm_guest(iothread_count=2)
++
++        launch_security = config.LibvirtConfigGuestSEVLaunchSecurity()
++        launch_security.cbitpos = 47
++        launch_security.reduced_phys_bits = 1
++        obj.launch_security = launch_security
++
++        xml = obj.to_xml()
++        self.assertXmlEqual(fake_libvirt_data.FAKE_KVM_GUEST_IOTHREAD, xml)
++
++>>>>>>> CHANGE (06cdbe Hardcode the use of iothreads for KVM.)
+     def test_config_uefi(self):
+         obj = config.LibvirtConfigGuest()
+         obj.virt_type = "kvm"
+@@ -2659,6 +2673,29 @@ class LibvirtConfigGuestTest(LibvirtConfigBaseTest):
+               </perf>
+             </domain>""")
+ 
++    def test_config_iothread_count(self):
++        obj = config.LibvirtConfigGuest()
++        obj.virt_type = "kvm"
++        obj.memory = 100 * units.Mi
++        obj.vcpus = 2
++        obj.name = "iothread"
++        obj.uuid = "b38a3f43-4be2-4046-897f-b67c2f5e0147"
++        obj.os_type = "hvm"
++        obj.iothread_count = 2
++        xml = obj.to_xml()
++
++        self.assertXmlEqual(xml, """
++            <domain type="kvm">
++              <uuid>b38a3f43-4be2-4046-897f-b67c2f5e0147</uuid>
++              <name>iothread</name>
++              <memory>104857600</memory>
++              <vcpu>2</vcpu>
++              <os>
++                <type>hvm</type>
++              </os>
++              <iothreads>2</iothreads>
++            </domain>""")
++
+     def test_config_machine_type(self):
+         obj = config.LibvirtConfigGuest()
+         obj.virt_type = "kvm"
+@@ -3581,6 +3618,14 @@ class LibvirtConfigGuestControllerTest(LibvirtConfigBaseTest):
+               <driver iommu="on" />
+             </controller>""")
+ 
++        obj.iothread_count = 2
++
++        xml = obj.to_xml()
++        self.assertXmlEqual(xml, """
++            <controller type='scsi' index='0' model='virtio-scsi'>
++              <driver iommu="on" iothread="1" />
++            </controller>""")
++
+     def test_config_guest_usb_host_controller(self):
+         obj = config.LibvirtConfigGuestUSBHostController()
+         obj.type = 'usb'
+@@ -3589,6 +3634,11 @@ class LibvirtConfigGuestControllerTest(LibvirtConfigBaseTest):
+         xml = obj.to_xml()
+         self.assertXmlEqual(xml, "<controller type='usb' index='0'/>")
+ 
++        obj.iothread_count = 2
++
++        xml = obj.to_xml()
++        self.assertXmlEqual(xml, "<controller type='usb' index='0'/>")
++
+ 
+ class LibvirtConfigGuestWatchdogTest(LibvirtConfigBaseTest):
+     def test_config_watchdog(self):
+diff --git a/nova/virt/libvirt/config.py b/nova/virt/libvirt/config.py
+index 231283b8dd..b3420eb649 100644
+--- a/nova/virt/libvirt/config.py
++++ b/nova/virt/libvirt/config.py
+@@ -1115,6 +1115,7 @@ class LibvirtConfigGuestDisk(LibvirtConfigGuestDevice):
+         self.mirror = None
+         self.encryption = None
+         self.alias = None
++        self.iothread_count = 0
+ 
+     def _format_iotune(self, dev):
+         iotune = etree.Element("iotune")
+@@ -1183,8 +1184,11 @@ class LibvirtConfigGuestDisk(LibvirtConfigGuestDevice):
+ 
+         dev.set("type", self.source_type)
+         dev.set("device", self.source_device)
++        use_iothread = (
++            self.iothread_count > 0 and self.target_dev.startswith("vd")
++        )
+         if any((self.driver_name, self.driver_format, self.driver_cache,
+-                self.driver_discard, self.driver_iommu)):
++                self.driver_discard, self.driver_iommu, use_iothread)):
+             drv = etree.Element("driver")
+             if self.driver_name is not None:
+                 drv.set("name", self.driver_name)
+@@ -1198,6 +1202,10 @@ class LibvirtConfigGuestDisk(LibvirtConfigGuestDevice):
+                 drv.set("io", self.driver_io)
+             if self.driver_iommu:
+                 drv.set("iommu", "on")
++            if use_iothread:
++                drv.set("iothread", "1")
++                # Override for testing purposes
++                drv.set("io", "native")
+             dev.append(drv)
+ 
+         if self.source_type == "file":
+@@ -2170,6 +2178,7 @@ class LibvirtConfigGuestController(LibvirtConfigGuestDevice):
+         self.index = None
+         self.model = None
+         self.driver_iommu = False
++        self.iothread_count = 0
+ 
+     @property
+     def uses_virtio(self):
+@@ -2187,8 +2196,16 @@ class LibvirtConfigGuestController(LibvirtConfigGuestDevice):
+         if self.model:
+             controller.set("model", str(self.model))
+ 
+-        if self.driver_iommu:
+-            controller.append(etree.Element("driver", iommu="on"))
++        use_iothread = self.model == "virtio-scsi" and self.iothread_count > 0
++        if self.driver_iommu or use_iothread:
++            driver = etree.Element("driver")
++
++            if self.driver_iommu:
++                driver.set("iommu", "on")
++            if use_iothread:
++                driver.set("iothread", "1")
++
++            controller.append(driver)
+ 
+         return controller
+ 
+@@ -2930,6 +2947,7 @@ class LibvirtConfigGuest(LibvirtConfigObject):
+         self.idmaps = []
+         self.perf_events = []
+         self.launch_security = None
++        self.iothread_count = 0
+ 
+     def _format_basic_props(self, root):
+         root.append(self._text_node("uuid", self.uuid))
+@@ -3026,6 +3044,14 @@ class LibvirtConfigGuest(LibvirtConfigObject):
+                 features.append(feat.format_dom())
+             root.append(features)
+ 
++    def _format_iothreads(self, root):
++        if self.virt_type != "kvm" or self.iothread_count == 0:
++            return
++
++        iothreads = etree.Element("iothreads")
++        iothreads.text = str(self.iothread_count)
++        root.append(iothreads)
++
+     def _format_devices(self, root):
+         if len(self.devices) == 0:
+             return
+@@ -3077,6 +3103,8 @@ class LibvirtConfigGuest(LibvirtConfigObject):
+         if self.cpu is not None:
+             root.append(self.cpu.format_dom())
+ 
++        self._format_iothreads(root)
++
+         self._format_devices(root)
+ 
+         self._format_idmaps(root)
+diff --git a/nova/virt/libvirt/driver.py b/nova/virt/libvirt/driver.py
+index 7306a1cec0..516070cbac 100644
+--- a/nova/virt/libvirt/driver.py
++++ b/nova/virt/libvirt/driver.py
+@@ -5664,6 +5664,7 @@ class LibvirtDriver(driver.ComputeDriver):
+             scsi_controller.type = 'scsi'
+             scsi_controller.model = hw_scsi_model
+             scsi_controller.index = 0
++            scsi_controller.iothread_count = CONF.libvirt.iothread_count
+             return scsi_controller
+ 
+     def _get_host_sysinfo_serial_hardware(self):
+@@ -7035,6 +7036,9 @@ class LibvirtDriver(driver.ComputeDriver):
+         instance.vcpu_model = self._cpu_config_to_vcpu_model(
+             guest.cpu, instance.vcpu_model)
+ 
++        if CONF.libvirt.virt_type == 'kvm':
++            guest.iothread_count = CONF.libvirt.iothread_count
++
+         if 'root' in disk_mapping:
+             root_device_name = block_device.prepend_dev(
+                 disk_mapping['root']['dev'])
+diff --git a/nova/virt/libvirt/volume/volume.py b/nova/virt/libvirt/volume/volume.py
+index f76c3618b2..cb3105205c 100644
+--- a/nova/virt/libvirt/volume/volume.py
++++ b/nova/virt/libvirt/volume/volume.py
+@@ -51,6 +51,8 @@ class LibvirtBaseVolumeDriver(object):
+             # the QEMU backend supports multiple backends, so tell libvirt
+             # which one to use
+             conf.driver_name = 'qemu'
++            if CONF.libvirt.virt_type == 'kvm':
++                conf.iothread_count = CONF.libvirt.iothread_count
+ 
+         # Support for block size tuning
+         data = {}
+-- 
+2.43.0
+
