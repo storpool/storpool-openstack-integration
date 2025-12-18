@@ -172,7 +172,9 @@ def build_dockerfile(
     files: defs.DataFiles,
     kolla_component: str,
     kolla_service: str,
+    release_name: str,
     extra_components: list[str],
+    patch_components: list[str],
 ) -> defs.BuildSource:
     """Render the Jinja template."""
     legacy_names: Final = cfg.release in LEGACY_RELEASES
@@ -192,14 +194,19 @@ def build_dockerfile(
         "container_name": kolla_container_name,
         "component": kolla_component,
         "extra_components": extra_components,
+        "patch_components": patch_components,
         "registry": defs.KOLLA_REGISTRY,
         "release": cfg.release,
+        "release_name": release_name,
         "sp_osi_name": files.basename,
         "sp_osi_filename": files.tarball.name,
         "sp_osi_version": cfg.sp_osi_version,
     }
+    dockerfile_template = "Dockerfile.j2"
+    if release_name == "antelope":
+        dockerfile_template = "Dockerfile2.j2"
     return defs.BuildSource(
         registry=defs.KOLLA_REGISTRY,
         container_name=kolla_container_name,
-        dockerfile=jenv.get_template("Dockerfile.j2").render(**jvars) + "\n",
+        dockerfile=jenv.get_template(dockerfile_template).render(**jvars) + "\n",
     )
