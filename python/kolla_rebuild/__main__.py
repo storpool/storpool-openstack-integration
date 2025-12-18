@@ -25,9 +25,13 @@ if TYPE_CHECKING:
 
 
 ALL_CONTAINERS: Final = [
-    defs.Container(name="cinder-volume", extra_components=[]),
-    defs.Container(name="nova-compute", extra_components=["os_brick"]),
-    defs.Container(name="glance-api", extra_components=["os_brick"]),
+    defs.Container(
+        name="cinder-volume", extra_components=[], patch_components=["cinder", "os_brick"]
+    ),
+    defs.Container(
+        name="nova-compute", extra_components=["os_brick"], patch_components=["nova", "os_brick"]
+    ),
+    defs.Container(name="glance-api", extra_components=["os_brick"], patch_components=["os_brick"]),
 ]
 
 """The known containers that we want to rebuild."""
@@ -154,14 +158,20 @@ def main(
 ) -> None:
     """Parse command-line options, gather files, invoke docker-build."""
 
-    def build_component(container: defs.Container) -> None:
+    def build_component(container: defs.Container, release_name: str) -> None:
         """Rebuild the container for a single component."""
         parts: Final = container.name.split("-", maxsplit=1)
         if len(parts) != 2:  # noqa: PLR2004  # this will go away with match/case
             sys.exit(f"Internal error: build_component() invoked with {container=!r}")
         kolla_component, kolla_service = parts
         build: Final = prepare.build_dockerfile(
-            cfg, files, kolla_component, kolla_service, container.extra_components
+            cfg,
+            files,
+            kolla_component,
+            kolla_service,
+            release_name,
+            container.extra_components,
+            container.patch_components,
         )
 
         with tempfile.NamedTemporaryFile(
@@ -192,6 +202,7 @@ def main(
             except (OSError, subprocess.CalledProcessError) as err:
                 sys.exit(f"Could not run `{cmd_str}`: {err}")
 
+    release_name = release
     if release not in prepare.ALL_RELEASES:
         sys.exit(
             f"Unsupported release {release!r}, must be one of {' '.join(prepare.ALL_RELEASES)}"
@@ -205,7 +216,7 @@ def main(
     files: Final = prepare.prepare_data_files(cfg, datadir)
 
     for cont in containers:
-        build_component(cont)
+        build_component(cont, release_name)
 
 
 if __name__ == "__main__":

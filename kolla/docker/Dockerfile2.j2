@@ -1,0 +1,40 @@
+# SPDX-FileCopyrightText: 2023  StorPool <support@storpool.com>
+# SPDX-License-Identifier: Apache-2.0
+
+ARG KOLLA_REGISTRY={{ registry }}
+ARG KOLLA_COMPONENT={{ component }}
+
+ARG KOLLA_RELEASE={{ release }}
+ARG SP_OSI_VERSION={{ sp_osi_version }}
+ARG SP_OSI_FILENAME={{ sp_osi_filename }}
+ARG SP_OSI_NAME={{ sp_osi_name }}
+
+ARG OS_RELEASE={{ release_name }}
+
+ARG KOLLA_CONTAINER_NAME={{ container_name }}
+
+FROM ${KOLLA_REGISTRY}/${KOLLA_CONTAINER_NAME}
+
+LABEL maintainer="openstack-dev@storpool.com"
+
+ARG SP_OSI_FILENAME
+ARG SP_OSI_NAME
+ARG KOLLA_COMPONENT
+ARG OS_RELEASE
+
+ADD ${SP_OSI_FILENAME} /opt/sp-osi
+
+USER root
+
+WORKDIR /opt/sp-osi/${SP_OSI_NAME}/
+RUN apt-get update && apt-get install -y patchutils
+{% for component in patch_components %}
+RUN ./sp-openstack patch --verbose --component "{{ component }}","${OS_RELEASE}" install
+{% endfor %}
+RUN ./sp-openstack -v groups -- "${KOLLA_COMPONENT}"
+
+RUN python3 -m pip install 'storpool >= 7.3.0, < 8' 'storpool.spopenstack >= 3.1.0, < 4'
+
+USER ${KOLLA_COMPONENT}
+
+WORKDIR /

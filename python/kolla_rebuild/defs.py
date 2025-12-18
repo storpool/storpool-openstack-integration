@@ -79,3 +79,6 @@ class Container:
 
     extra_components: list[str]
     """List of extra components inside the container"""
+
+    patch_components: list[str]
+    """List of components that will be modified by patching"""
