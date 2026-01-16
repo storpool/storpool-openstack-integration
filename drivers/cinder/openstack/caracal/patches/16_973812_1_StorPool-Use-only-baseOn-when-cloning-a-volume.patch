@@ -1,0 +1,161 @@
+From 25a0182eddf21d467cb9e2e33b1b9f1b8fb9576e Mon Sep 17 00:00:00 2001
+From: Biser Milanov <biser.milanov@storpool.com>
+Date: Fri, 19 Dec 2025 22:52:16 +0200
+Subject: StorPool: Use only baseOn when cloning a volume
+
+Stop creating a transient snapshot when cloning a volume to a different
+placement group.
+
+Change-Id: I6e53df78bcd9226898fdb40d2ae420cbe1f6c9aa
+Signed-off-by: Biser Milanov <biser.milanov@storpool.com>
+---
+ .../unit/volume/drivers/test_storpool.py      | 17 +---
+ cinder/volume/drivers/storpool.py             | 79 ++-----------------
+ 2 files changed, 11 insertions(+), 85 deletions(-)
+
+diff --git a/cinder/tests/unit/volume/drivers/test_storpool.py b/cinder/tests/unit/volume/drivers/test_storpool.py
+index af2e22ef8..d2e250353 100644
+--- a/cinder/tests/unit/volume/drivers/test_storpool.py
++++ b/cinder/tests/unit/volume/drivers/test_storpool.py
+@@ -733,8 +733,6 @@ class StorPoolTestCase(test.TestCase):
+         src_name = 's-none' if src_template is None else 's-' + src_template
+         dst_name = 'd-none' if dst_template is None else 'd-' + dst_template
+ 
+-        snap_name = snapshotName('clone', '2')
+-
+         vdata1 = {
+             'id': '1',
+             'name': src_name,
+@@ -763,22 +761,13 @@ class StorPoolTestCase(test.TestCase):
+         vol2 = volumes[volumeName('2')]
+         self.assertEqual(vol2['template'], dst_template)
+ 
+-        if src_template == dst_template:
+-            self.assertEqual(vol2['baseOn'], volumeName('1'))
+-            self.assertNotIn('parent', vol2)
+-
+-            self.assertDictEqual({}, snapshots)
+-        else:
+-            self.assertNotIn('baseOn', vol2)
+-            self.assertEqual(vol2['parent'], snap_name)
++        self.assertEqual(vol2['baseOn'], volumeName('1'))
++        self.assertNotIn('parent', vol2)
+ 
+-            self.assertSnapshotNames((('clone', '2'),))
+-            self.assertEqual(snapshots[snap_name]['template'], dst_template)
++        self.assertDictEqual({}, snapshots)
+ 
+         self.driver.delete_volume({'id': '1'})
+         self.driver.delete_volume({'id': '2'})
+-        if src_template != dst_template:
+-            del snapshots[snap_name]
+ 
+         self.assertDictEqual({}, volumes)
+         self.assertDictEqual({}, snapshots)
+diff --git a/cinder/volume/drivers/storpool.py b/cinder/volume/drivers/storpool.py
+index bb15e7a29..67b6d419d 100644
+--- a/cinder/volume/drivers/storpool.py
++++ b/cinder/volume/drivers/storpool.py
+@@ -21,11 +21,9 @@ import platform
+ from os_brick.initiator import storpool_utils
+ from oslo_config import cfg
+ from oslo_log import log as logging
+-from oslo_utils import excutils
+ from oslo_utils import units
+ 
+ from cinder.common import constants
+-from cinder import context
+ from cinder import exception
+ from cinder.i18n import _
+ from cinder import interface
+@@ -553,79 +551,18 @@ class StorPoolDriver(driver.VolumeDriver):
+         size = int(volume['size']) * units.Gi
+         volname = storpool_utils.os_to_sp_volume_name(
+             self._volume_prefix, volume['id'])
+-
+-        src_volume = self.db.volume_get(
+-            context.get_admin_context(),
+-            src_vref['id'],
+-        )
+-        src_template = self._template_from_volume(src_volume)
+-
+         template = self._template_from_volume(volume)
+-        LOG.debug('clone volume id %(vol_id)r template %(template)r', {
+-            'vol_id': volume['id'],
+-            'template': template,
+-        })
+-        if template == src_template:
+-            LOG.info('Using baseOn to clone a volume into the same template')
+-            try:
+-                self._sp_api.volume_create({
+-                    'name': volname,
+-                    'size': size,
+-                    'baseOn': refname,
+-                })
+-            except storpool_utils.StorPoolAPIError as e:
+-                raise self._backendException(e)
+ 
+-            return None
+-
+-        snapname = storpool_utils.os_to_sp_snapshot_name(
+-            self._volume_prefix, 'clone', volume['id'])
+-        LOG.info(
+-            'A transient snapshot for a %(src)s -> %(dst)s template change',
+-            {'src': src_template, 'dst': template})
++        LOG.info('Using baseOn to clone the volume %s', refname)
+         try:
+-            self._sp_api.snapshot_create(refname, {'name': snapname})
++            self._sp_api.volume_create({
++                'name': volname,
++                'size': size,
++                'baseOn': refname,
++                'template': template
++            })
+         except storpool_utils.StorPoolAPIError as e:
+-            if e.name != 'objectExists':
+-                raise self._backendException(e)
+-
+-        try:
+-            try:
+-                self._sp_api.snapshot_update(
+-                    snapname,
+-                    {'template': template},
+-                )
+-            except storpool_utils.StorPoolAPIError as e:
+-                raise self._backendException(e)
+-
+-            try:
+-                self._sp_api.volume_create({
+-                    'name': volname,
+-                    'size': size,
+-                    'parent': snapname
+-                })
+-            except storpool_utils.StorPoolAPIError as e:
+-                raise self._backendException(e)
+-
+-            try:
+-                self._sp_api.snapshot_update(
+-                    snapname,
+-                    {'tags': {'transient': '1.0'}},
+-                )
+-            except storpool_utils.StorPoolAPIError as e:
+-                raise self._backendException(e)
+-        except Exception:
+-            with excutils.save_and_reraise_exception():
+-                try:
+-                    LOG.warning(
+-                        'Something went wrong, removing the transient snapshot'
+-                    )
+-                    self._sp_api.snapshot_delete(snapname)
+-                except storpool_utils.StorPoolAPIError as e:
+-                    LOG.error(
+-                        'Could not delete the %(name)s snapshot: %(err)s',
+-                        {'name': snapname, 'err': str(e)}
+-                    )
++            raise self._backendException(e)
+ 
+     def create_export(self, context, volume, connector):
+         if self._connector_wants_iscsi(connector):
+-- 
+2.43.0
+

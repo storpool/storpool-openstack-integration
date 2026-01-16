@@ -134,6 +134,39 @@
                     }
                 },
                 "zed": {
+                    "21.3.1.0.1.0": {
+                        "comment": "StorPool updates for Ubuntu cloud archive Zed 21.3.1-0ubuntu1.1~cloud0",
+                        "files": {
+                            "volume/driver.py": {
+                                "sha256": "b321efdba75c06b798e5cb16a733eee0756a63a0aab97ea0b5a79a9512ab98ff"
+                            },
+                            "volume/drivers/storpool.py": {
+                                "sha256": "78fb891c583c2e96e8a6a89a70f9e20f5536f44e9275c8f434da1b198fd6b9d4"
+                            },
+                            "image/cache.py": {
+                                "sha256": "846acf2d07f0b94b2c6ce63e9d3c9cf0da9cac6a6e960f5eb9e4bddc4df41257"
+                            },
+                            "interface/volume_driver.py": {
+                                "sha256": "cfd38d727a4965005ebe635ea0913bca6e4a76f986340f6d2d0de1a28745507a"
+                            },
+                            "tests/unit/image/test_cache.py": {
+                                "sha256": "43494e2c9fac4dfbd7e55c3362efe25c71d07a4a27c5df539929b22b40d0c843"
+                            },
+                            "tests/unit/volume/flows/test_create_volume_flow.py": {
+                                "sha256": "ecc6898a4996ffbdc08ecc6ef972c6dc79a68eea4781812ecba949dfb3631fb6"
+                            },
+                            "volume/flows/manager/create_volume.py": {
+                                "sha256": "0d213ea353b80692aaef8bdf93bebf75416251c9838629790ca7c603bce1e4b5"
+                            },
+                            "volume/manager.py": {
+                                "sha256": "f299b6bc8030d55761061ee0a191a7429f38dfc8043f0f82f68e2c32057be059"
+                            },
+                            "tests/unit/volume/drivers/test_storpool.py": {
+                                "sha256": "091a5e2c201af21b702f9799e3043ca641ceaf558a369e83598552182f08ded8"
+                            }
+                        },
+                        "outdated": false
+                    },
                     "21.3.1.0.0.2": {
                         "comment": "StorPool updates for Ubuntu cloud archive Zed 21.3.1-0ubuntu1.1~cloud0",
                         "files": {
@@ -165,7 +198,7 @@
                                 "sha256": "091a5e2c201af21b702f9799e3043ca641ceaf558a369e83598552182f08ded8"
                             }
                         },
-                        "outdated": false
+                        "outdated": true
                     },
                     "21.3.1.0.0.1": {
                         "comment": "StorPool updates for Ubuntu cloud archive Zed 21.3.1-0ubuntu1.1~cloud0",
@@ -1335,6 +1368,33 @@
                     }
                 },
                 "zed": {
+                    "26.2.2.1.1.0": {
+                        "comment": "StorPool updates for Ubuntu cloud archive Zed 26.2.2-0ubuntu1~cloud0",
+                        "files": {
+                            "virt/libvirt/driver.py": {
+                                "sha256": "8776aa7ca5a38ddd5c1b19721bdb84d611f2d96881fa16de952c79ff5b849aed"
+                            },
+                            "virt/libvirt/config.py": {
+                                "sha256": "2e9f0fa9c792bc356badb99f0ffa378f6eefa8da6a2b2da5c8b6fb632a63c4ba"
+                            },
+                            "conf/libvirt.py": {
+                                "sha256": "8ef215829756cb58d386fe7466184b51773e58361ee31102b3bf5cc59b80a2aa"
+                            },
+                            "tests/fixtures/libvirt_data.py": {
+                                "sha256": "97c441c46658d586cba7047731bbec063377403f20294acf5984e3781695c1c9"
+                            },
+                            "tests/unit/virt/libvirt/test_config.py": {
+                                "sha256": "1ad51b1119a920209b1b937c833abeab99dbc4a18bc32bcb341a8d4b97795fd0"
+                            },
+                            "virt/libvirt/volume/volume.py": {
+                                "sha256": "27e7f62d25c29d04ea6f43abe473aec7db729b9defc5f800c6b94c2472b22200"
+                            },
+                            "virt/libvirt/volume/storpool.py": {
+                                "sha256": "9183c1b44e381b0cca1c461dff5b2147ef8f19c5142ad08adce516c7cd4468f5"
+                            }
+                        },
+                        "outdated": false
+                    },
                     "26.2.2.1.0.0": {
                         "comment": "StorPool updates for Ubuntu cloud archive Zed 26.2.2-0ubuntu1~cloud0",
                         "files": {
@@ -1360,7 +1420,7 @@
                                 "sha256": "9183c1b44e381b0cca1c461dff5b2147ef8f19c5142ad08adce516c7cd4468f5"
                             }
                         },
-                        "outdated": false
+                        "outdated": true
                     },
                     "26.2.2.0.0.1": {
                         "comment": "StorPool updates for Ubuntu cloud archive Zed 26.2.2-0ubuntu1~cloud0",
