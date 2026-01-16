@@ -72,15 +72,14 @@ storpool_opts = [
     cfg.StrOpt('iscsi_portal_group',
                default=None,
                help='The portal group to export volumes via iSCSI in.'),
-    cfg.StrOpt('storpool_template',
+    cfg.StrOpt('storpool_qos_class',
                default=None,
-               help='The StorPool template for volumes with no type.'),
+               help='The StorPool QoS class for volumes with no QoS class.'),
     cfg.IntOpt('storpool_replication',
                default=3,
                help='The default StorPool chain replication value.  '
-                    'Used when creating a volume with no specified type if '
-                    'storpool_template is not set.  Also used for calculating '
-                    'the apparent free space reported in the stats.'),
+                    'Used for calculating the apparent free space reported in '
+                    'the stats.'),
 ]
 
 CONF = cfg.CONF
@@ -154,9 +153,15 @@ class StorPoolDriver(driver.VolumeDriver):
                 - Implement clone_image()
                 - Implement revert_to_snapshot().
                 - Add support for exporting volumes via iSCSI
+        2.3.0   - Do not use the option 'storpool_replication' when creating or
+                  retyping volumes.
+        2.4.0   - Introduce 'storpool:qos_class' extra spec and the
+                  storpool_qos_class option
+                  Deprecate the storpool_template option
+        2.5.0   - Remove the storpool_template option
     """
 
-    VERSION = '2.0.0'
+    VERSION = '2.5.0'
     CI_WIKI_NAME = 'StorPool_distributed_storage_CI'
 
     def __init__(self, *args, **kwargs):
@@ -172,29 +177,32 @@ class StorPoolDriver(driver.VolumeDriver):
     def get_driver_options():
         return storpool_opts
 
-    @staticmethod
-    def qos_from_volume(volume):
-        volume_type = volume['volume_type']
-        extra_specs = \
-            volume_types.get_volume_type_extra_specs(volume_type['id'])
-        if extra_specs is not None:
-            return extra_specs.get(ES_QOS)
-        return None
-
     def _backendException(self, e):
         return exception.VolumeBackendAPIException(data=six.text_type(e))
 
-    def _template_from_volume(self, volume):
-        default = self.configuration.storpool_template
-        vtype = volume['volume_type']
-        if vtype is not None:
-            specs = volume_types.get_volume_type_extra_specs(vtype['id'])
-            if specs is not None:
-                return specs.get('storpool_template', default)
+    def _get_qos_class(self, volume):
+        default = self.configuration.storpool_qos_class
+        volume_type = volume['volume_type']
+        extra_specs = \
+            volume_types.get_volume_type_extra_specs(volume_type['id'])
+        if extra_specs and ES_QOS in extra_specs:
+            qos = extra_specs[ES_QOS]
+            LOG.debug(
+                "QoS class extra spec for volume %s exists: %s",
+                volume['id'], qos)
+            return qos
+        LOG.debug(
+            "Extra specs or QoS class setting not found"
+            "; returning default QoS class %s", default)
         return default
 
+    def _template_from_storpool_volume(self, volume):
+        storpool_volume_name = self._attach.volumeName(volume['id'])
+        storpool_volume = self._attach.volumeList(storpool_volume_name)
+        return storpool_volume[0].templateName
+
     def get_pool(self, volume):
-        template = self._template_from_volume(volume)
+        template = self._template_from_storpool_volume(volume)
         if template is None:
             return 'default'
         else:
@@ -203,19 +211,15 @@ class StorPoolDriver(driver.VolumeDriver):
     def create_volume(self, volume):
         size = int(volume['size']) * units.Gi
         name = self._attach.volumeName(volume['id'])
-        template = self._template_from_volume(volume)
-        qos_class = StorPoolDriver.qos_from_volume(volume)
+        qos_class = self._get_qos_class(volume)
 
         create_request = {'name': name, 'size': size}
 
-        if template is not None:
-            create_request['template'] = template
-        else:
-            create_request['replication'] = \
-                self.configuration.storpool_replication
+        if not qos_class:
+            raise exception.VolumeBackendAPIException(
+                "Cannot create a volume without a 'qos_class' option set")
 
-        if qos_class is not None:
-            create_request['tags'] = {'qc': qos_class}
+        create_request['tags'] = {'qc': qos_class}
 
         try:
             self._attach.api().volumeCreate(create_request)
@@ -580,12 +584,15 @@ class StorPoolDriver(driver.VolumeDriver):
         size = int(volume['size']) * units.Gi
         volname = self._attach.volumeName(volume['id'])
         name = self._attach.snapshotName('snap', snapshot['id'])
-        qos_class = StorPoolDriver.qos_from_volume(volume)
+        qos_class = self._get_qos_class(volume)
 
         create_request = {'name': volname, 'size': size, 'parent': name}
 
-        if qos_class is not None:
-            create_request['tags'] = {'qc': qos_class}
+        if not qos_class:
+            raise self._backendException(
+                "Cannot create a volume from a snapshot without a qos_class"
+                " set")
+        create_request['tags'] = {'qc': qos_class}
 
         try:
             self._attach.api().volumeCreate(create_request)
@@ -633,78 +640,22 @@ class StorPoolDriver(driver.VolumeDriver):
         refname = self._attach.volumeName(src_vref['id'])
         size = int(volume['size']) * units.Gi
         volname = self._attach.volumeName(volume['id'])
-        qos_class = StorPoolDriver.qos_from_volume(volume)
 
-        clone_request = {'name': volname, 'size': size}
+        qos_class = self._get_qos_class(volume)
 
-        if qos_class is not None:
-            clone_request['tags'] = {'qc': qos_class}
+        clone_request = {'name': volname, 'size': size, 'baseOn': refname}
 
-        src_volume = self.db.volume_get(
-            context.get_admin_context(),
-            src_vref['id'],
-        )
-        src_template = self._template_from_volume(src_volume)
+        if not qos_class:
+            raise self._backendException(
+                "Cannot clone a volume without a qos_class set")
 
-        template = self._template_from_volume(volume)
-        LOG.debug('clone volume id %(vol_id)s template %(template)s', {
-            'vol_id': repr(volume['id']),
-            'template': repr(template),
-        })
-        if template == src_template:
-            LOG.info('Using baseOn to clone a volume into the same template')
-            clone_request['baseOn'] = refname
-            try:
-                self._attach.api().volumeCreate(clone_request)
-            except spapi.ApiError as e:
-                raise self._backendException(e)
+        clone_request['tags'] = {'qc': qos_class}
 
-            return None
-
-        snapname = self._attach.snapshotName('clone', volume['id'])
-        LOG.info(
-            'A transient snapshot for a %(src)s -> %(dst)s template change',
-            {'src': src_template, 'dst': template})
+        LOG.info('Using baseOn to clone the volume %s', refname)
         try:
-            self._attach.api().snapshotCreate(refname, {'name': snapname})
+            self._attach.api().volumeCreate(clone_request)
         except spapi.ApiError as e:
-            if e.name != 'objectExists':
-                raise self._backendException(e)
-
-        try:
-            try:
-                self._attach.api().snapshotUpdate(
-                    snapname,
-                    {'template': template},
-                )
-            except spapi.ApiError as e:
-                raise self._backendException(e)
-
-            try:
-                clone_request['parent'] = snapname
-                self._attach.api().volumeCreate(clone_request)
-            except spapi.ApiError as e:
-                raise self._backendException(e)
-
-            try:
-                self._attach.api().snapshotUpdate(
-                    snapname,
-                    {'tags': {'transient': '1.0'}},
-                )
-            except spapi.ApiError as e:
-                raise self._backendException(e)
-        except Exception:
-            with excutils.save_and_reraise_exception():
-                try:
-                    LOG.warning(
-                        'Something went wrong, removing the transient snapshot'
-                    )
-                    self._attach.api().snapshotDelete(snapname)
-                except spapi.ApiError as e:
-                    LOG.error(
-                        'Could not delete the %(name)s snapshot: %(err)s',
-                        {'name': snapname, 'err': str(e)}
-                    )
+            raise self._backendException(e)
 
     def create_export(self, context, volume, connector):
         if self._connector_wants_iscsi(connector):
@@ -843,8 +794,6 @@ class StorPoolDriver(driver.VolumeDriver):
             LOG.error('Retype of encryption type not supported.')
             return False
 
-        templ = self.configuration.storpool_template
-        repl = self.configuration.storpool_replication
         if diff['extra_specs']:
             for (k, v) in diff['extra_specs'].items():
                 if k == 'volume_backend_name':
@@ -852,18 +801,13 @@ class StorPoolDriver(driver.VolumeDriver):
                         # Retype of a volume backend not supported yet,
                         # the volume needs to be migrated.
                         return False
-                elif k == 'storpool_template':
-                    if v[0] != v[1]:
-                        if v[1] is not None:
-                            update['template'] = v[1]
-                        elif templ is not None:
-                            update['template'] = templ
-                        else:
-                            update['replication'] = repl
                 elif k == ES_QOS:
                     if v[1] is None:
-                        update['tags']['qc'] = ''
-                    elif v[0] != v[1]:
+                        LOG.error(
+                            'The destination volume type requires the extra spec'
+                            ' "storpool:qos_class" to be set')
+                        return False
+                    if v[0] != v[1]:
                         update['tags'].update({'qc': v[1]})
                 else:
                     # We ignore any extra specs that we do not know about.

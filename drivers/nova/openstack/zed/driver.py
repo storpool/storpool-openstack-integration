@@ -1904,6 +1904,7 @@ class LibvirtDriver(driver.ComputeDriver):
         for bdm in objects.BlockDeviceMappingList.get_by_instance_uuid(
                 context, instance.uuid):
             if ('volume_id' in bdm and
+                'volume' in connection_info['data'] and
                 bdm['volume_id'] == connection_info['data']['volume']):
                 if 'device_name' in bdm:
                     LOG.debug("Volume: %(vol)s is attached at"
@@ -1919,7 +1920,7 @@ class LibvirtDriver(driver.ComputeDriver):
             LOG.info("Could not find the device name for volume"
                      " %(vol) at VM %(vm)s",
                      {
-                         'vol': connection_info['data']['volume'],
+                         'vol': connection_info['data'],
                          'vm': instance.uuid
                      })
 
