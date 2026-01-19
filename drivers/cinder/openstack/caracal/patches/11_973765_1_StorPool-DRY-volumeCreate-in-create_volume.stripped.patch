@@ -1,4 +1,4 @@
-From 1dcb98f6e85be9d022ac0d1e831d84a42da078b1 Mon Sep 17 00:00:00 2001
+From d417537b3d9c55e4ef3ac7fbdcdc3b60337820b7 Mon Sep 17 00:00:00 2001
 From: Biser Milanov <biser.milanov@storpool.com>
 Date: Mon, 5 Aug 2024 16:56:31 +0300
 Subject: StorPool: DRY volumeCreate() in create_volume()

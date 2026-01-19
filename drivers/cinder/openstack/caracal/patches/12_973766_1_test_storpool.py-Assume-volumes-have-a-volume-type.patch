@@ -1,4 +1,4 @@
-From 6308e90df4382adfb8e18d6361bda4517efd5d67 Mon Sep 17 00:00:00 2001
+From a53d5ca4f2c8d147c820aa96739ca23118a01146 Mon Sep 17 00:00:00 2001
 From: Biser Milanov <biser.milanov@storpool.com>
 Date: Tue, 13 Aug 2024 17:54:50 +0300
 Subject: test_storpool.py: Assume volumes have a volume type

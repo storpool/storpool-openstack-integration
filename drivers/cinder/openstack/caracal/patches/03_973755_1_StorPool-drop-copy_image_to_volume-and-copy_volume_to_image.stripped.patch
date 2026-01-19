@@ -1,4 +1,4 @@
-From 29a878b66b82d55a3a6d0560ea99ae82b38d0f72 Mon Sep 17 00:00:00 2001
+From 079cc21f1c2ea510913f6926818f581859c76592 Mon Sep 17 00:00:00 2001
 From: Peter Penchev <openstack-dev@storpool.com>
 Date: Mon, 26 Sep 2022 16:04:36 +0300
 Subject: StorPool: drop copy_image_to_volume() and copy_volume_to_image()

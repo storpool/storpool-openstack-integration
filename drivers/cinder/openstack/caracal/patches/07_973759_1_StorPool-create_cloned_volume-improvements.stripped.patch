@@ -1,4 +1,4 @@
-From 5a0c8607a53b8a3e223e4b52244d95da86b34724 Mon Sep 17 00:00:00 2001
+From c1a96b69f4c30cd65f3576cd2029bb9b9e6bedec Mon Sep 17 00:00:00 2001
 From: Peter Penchev <openstack-dev@storpool.com>
 Date: Wed, 20 Apr 2022 15:47:39 +0300
 Subject: StorPool: create_cloned_volume() improvements
@@ -26,11 +26,7 @@ Signed-off-by: Biser Milanov <biser.milanov@storpool.com>
 ---
  .../unit/volume/drivers/test_storpool.py      | 152 +++++++++++++++---
  cinder/volume/drivers/storpool.py             |  84 ++++++++--
- driver-requirements.txt                       |   2 +-
- ...torpool-clone-better-dca90f40c9273de9.yaml |   6 +
- setup.cfg                                     |   4 +-
- 5 files changed, 211 insertions(+), 37 deletions(-)
- create mode 100644 releasenotes/notes/storpool-clone-better-dca90f40c9273de9.yaml
+ 2 files changed, 202 insertions(+), 34 deletions(-)
 
 diff --git a/cinder/tests/unit/volume/drivers/test_storpool.py b/cinder/tests/unit/volume/drivers/test_storpool.py
 index dbe90d6ab..80b68a8af 100644
@@ -399,53 +395,6 @@ index 4e46ba05f..76b86cd02 100644
  
      def create_export(self, context, volume, connector):
          pass
-diff --git a/driver-requirements.txt b/driver-requirements.txt
-index 8cff370ed..aa1211c19 100644
---- a/driver-requirements.txt
-+++ b/driver-requirements.txt
-@@ -42,7 +42,7 @@ infi.dtypes.wwn # PSF
- infi.dtypes.iqn # PSF
- 
- # Storpool
--storpool>=4.0.0 # Apache-2.0
-+storpool>=7.1.0 # Apache-2.0
- storpool.spopenstack>=2.2.1 # Apache-2.0
- 
- # Datera
-diff --git a/releasenotes/notes/storpool-clone-better-dca90f40c9273de9.yaml b/releasenotes/notes/storpool-clone-better-dca90f40c9273de9.yaml
-new file mode 100644
-index 000000000..9d512c831
---- /dev/null
-+++ b/releasenotes/notes/storpool-clone-better-dca90f40c9273de9.yaml
-@@ -0,0 +1,6 @@
-+---
-+features:
-+  - |
-+    StorPool driver: improved the way volumes are cloned into different
-+    StorPool templates (exposed as Cinder storage pools) if requested,
-+    eliminating some data duplication in the underlying StorPool cluster.
-diff --git a/setup.cfg b/setup.cfg
-index 1f6fadeb3..4ee089788 100644
---- a/setup.cfg
-+++ b/setup.cfg
-@@ -87,7 +87,7 @@ all =
-     infinisdk>=103.0.1 # BSD-3
-     purestorage>=1.17.0 # BSD
-     rsd-lib>=1.1.0 # Apache-2.0
--    storpool>=4.0.0 # Apache-2.0
-+    storpool>=7.1.0 # Apache-2.0
-     storpool.spopenstack>=2.2.1 # Apache-2.0
-     dfs-sdk>=1.2.25 # Apache-2.0
-     rbd-iscsi-client>=0.1.8 # Apache-2.0
-@@ -115,7 +115,7 @@ pure =
- rsd =
-     rsd-lib>=1.1.0 # Apache-2.0
- storpool =
--    storpool>=4.0.0 # Apache-2.0
-+    storpool>=7.1.0 # Apache-2.0
-     storpool.spopenstack>=2.2.1 # Apache-2.0
- datera =
-     dfs-sdk>=1.2.25 # Apache-2.0
 -- 
 2.43.0
 

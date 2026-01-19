@@ -1,4 +1,4 @@
-From 593e689157df40734b92bbea59f43c5fa2fbf408 Mon Sep 17 00:00:00 2001
+From 2c12e57ea8957dfc53e31c8228a88edbb9f6a9c2 Mon Sep 17 00:00:00 2001
 From: Peter Penchev <openstack-dev@storpool.com>
 Date: Mon, 11 May 2020 11:02:53 +0300
 Subject: StorPool driver: remove the obsolete backup_volume()

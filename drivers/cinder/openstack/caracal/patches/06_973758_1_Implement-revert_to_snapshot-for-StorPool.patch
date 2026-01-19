@@ -1,4 +1,4 @@
-From a4f0f30e5174e821d93ea0c17d98ee1ba9bb1540 Mon Sep 17 00:00:00 2001
+From b4e5a319bb89e7ed6030b05b8b53aea517c5cd22 Mon Sep 17 00:00:00 2001
 From: Peter Penchev <openstack-dev@storpool.com>
 Date: Wed, 9 Sep 2020 21:03:24 +0300
 Subject: Implement revert_to_snapshot() for StorPool.
