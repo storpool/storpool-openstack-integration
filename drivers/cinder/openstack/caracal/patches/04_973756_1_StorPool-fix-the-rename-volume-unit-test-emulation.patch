@@ -1,4 +1,4 @@
-From 96f9834b81f5481c25d1478720af704a756710b6 Mon Sep 17 00:00:00 2001
+From 45a9dcc0090d663d10cc76f8a0eda110aa6ea1c1 Mon Sep 17 00:00:00 2001
 From: Peter Penchev <openstack-dev@storpool.com>
 Date: Tue, 17 Jan 2023 01:20:59 +0200
 Subject: StorPool: fix the "rename volume" unit test emulation

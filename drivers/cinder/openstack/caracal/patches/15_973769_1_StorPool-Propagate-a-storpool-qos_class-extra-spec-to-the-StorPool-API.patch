@@ -1,4 +1,4 @@
-From c3de0b64da64356319c1d457fcee913e6658034b Mon Sep 17 00:00:00 2001
+From fbb62919a881b500f4d3bdbe0f1c4094dd5122a1 Mon Sep 17 00:00:00 2001
 From: Biser Milanov <biser.milanov@storpool.com>
 Date: Mon, 5 Aug 2024 17:24:23 +0300
 Subject: StorPool: Propagate a 'storpool:qos_class' extra spec to the StorPool
@@ -10,7 +10,9 @@ Signed-off-by: Biser Milanov <biser.milanov@storpool.com>
  cinder/tests/unit/fake_constants.py           |   1 +
  .../unit/volume/drivers/test_storpool.py      | 170 +++++++++++++++---
  cinder/volume/drivers/storpool.py             |  68 ++++---
- 3 files changed, 194 insertions(+), 45 deletions(-)
+ .../storpool-qos-via-qc-17fa862d94d1accb.yaml |   8 +
+ 4 files changed, 202 insertions(+), 45 deletions(-)
+ create mode 100644 releasenotes/notes/storpool-qos-via-qc-17fa862d94d1accb.yaml
 
 diff --git a/cinder/tests/unit/fake_constants.py b/cinder/tests/unit/fake_constants.py
 index ebdf7b903..fa7499513 100644
@@ -462,6 +464,21 @@ index acfabccd6..1ea4034c5 100644
              except storpool_utils.StorPoolAPIError as e:
                  raise self._backendException(e)
  
+diff --git a/releasenotes/notes/storpool-qos-via-qc-17fa862d94d1accb.yaml b/releasenotes/notes/storpool-qos-via-qc-17fa862d94d1accb.yaml
+new file mode 100644
+index 000000000..42e63a364
+--- /dev/null
++++ b/releasenotes/notes/storpool-qos-via-qc-17fa862d94d1accb.yaml
+@@ -0,0 +1,8 @@
++---
++features:
++  - |
++    StorPool driver: Added support for using `StorPool's QoS
++    <https://kb.storpool.com/storpool_misc/qos.html>`__ based on the
++    `qc` StorPool volume tag. The driver will now propagate a
++    'storpool:qos_class' extra spec (if it exists) to the StorPool API
++    when creating and retyping OpenStack volumes.
+\ No newline at end of file
 -- 
 2.43.0
 

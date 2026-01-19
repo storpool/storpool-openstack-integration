@@ -1,4 +1,4 @@
-From b6ebcd1fac3cd180a0f373fa82a4dc40fae819a5 Mon Sep 17 00:00:00 2001
+From 75247fb2e255e64181741515b7c761ca9b6edd5c Mon Sep 17 00:00:00 2001
 From: Biser Milanov <biser.milanov@storpool.com>
 Date: Mon, 14 Oct 2024 14:25:22 +0300
 Subject: StorPool: Use os-brick instead of packages `storpool` and

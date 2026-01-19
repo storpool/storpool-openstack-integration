@@ -1,4 +1,4 @@
-From 3a429b5e9e25eaf03369057030f021d6a4bdb69b Mon Sep 17 00:00:00 2001
+From 15f8a910eae5889c33299984ad0961b589504350 Mon Sep 17 00:00:00 2001
 From: Peter Penchev <openstack-dev@storpool.com>
 Date: Wed, 22 Jun 2022 10:04:31 +0300
 Subject: Add the clone_across_pools driver capability

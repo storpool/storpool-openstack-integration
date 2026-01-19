@@ -1,4 +1,4 @@
-From 27f168a9889b368a9fab649a705f71e4e4e02282 Mon Sep 17 00:00:00 2001
+From 17f3a42c75644e4d6e48edb200158cda6aae954a Mon Sep 17 00:00:00 2001
 From: Peter Penchev <openstack-dev@storpool.com>
 Date: Tue, 20 Apr 2021 17:46:41 +0300
 Subject: StorPool: drop _attach_volume() and _detach_volume()

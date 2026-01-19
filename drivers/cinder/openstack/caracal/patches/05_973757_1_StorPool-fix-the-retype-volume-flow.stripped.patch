@@ -1,4 +1,4 @@
-From 9f128e8bfdf9b0bbc028213732d74cac90a6d976 Mon Sep 17 00:00:00 2001
+From 76cf47df5c40ebb9d0222ab98f2868fcd3658327 Mon Sep 17 00:00:00 2001
 From: Peter Penchev <openstack-dev@storpool.com>
 Date: Wed, 14 Dec 2022 17:55:56 +0200
 Subject: StorPool: fix the retype volume flow
@@ -10,9 +10,7 @@ Signed-off-by: Biser Milanov <biser.milanov@storpool.com>
 ---
  .../unit/volume/drivers/test_storpool.py      | 15 ++--
  cinder/volume/drivers/storpool.py             | 71 +++++++++++++------
- .../notes/bug2002995-e423f17eaddae22d.yaml    |  9 +++
- 3 files changed, 66 insertions(+), 29 deletions(-)
- create mode 100644 releasenotes/notes/bug2002995-e423f17eaddae22d.yaml
+ 2 files changed, 57 insertions(+), 29 deletions(-)
 
 diff --git a/cinder/tests/unit/volume/drivers/test_storpool.py b/cinder/tests/unit/volume/drivers/test_storpool.py
 index 442bdbb88..02df8134d 100644
@@ -146,21 +144,6 @@ index 6c67ae567..62e058e14 100644
 +                      '%(err)s',
 +                      {'tname': temp_name, 'oname': orig_name, 'err': e})
 +            return {'_name_id': new_volume['_name_id'] or new_volume['id']}
-diff --git a/releasenotes/notes/bug2002995-e423f17eaddae22d.yaml b/releasenotes/notes/bug2002995-e423f17eaddae22d.yaml
-new file mode 100644
-index 000000000..9f979790c
---- /dev/null
-+++ b/releasenotes/notes/bug2002995-e423f17eaddae22d.yaml
-@@ -0,0 +1,9 @@
-+---
-+fixes:
-+  - |
-+    StorPool driver `bug #2002995
-+    <https://bugs.launchpad.net/cinder/+bug/2002995>`_: When retyping a
-+    volume on a StorPool backend to a different volume type also on that
-+    StorPool backend but using a different StorPool template, occasionally
-+    the retype operation would fail or the old volume could be left attached
-+    to a StorPool client. This issue has been fixed in this release.
 -- 
 2.43.0
 

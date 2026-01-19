@@ -1,4 +1,4 @@
-From 49852056b168d0964dba402c53e77296f982530f Mon Sep 17 00:00:00 2001
+From ddbe2b0387522ab210a277ea0c8e9d07b189e38f Mon Sep 17 00:00:00 2001
 From: Peter Penchev <openstack-dev@storpool.com>
 Date: Mon, 12 Mar 2018 12:00:10 +0200
 Subject: Add iSCSI export support to the StorPool driver
@@ -28,7 +28,10 @@ Signed-off-by: Biser Milanov <biser.milanov@storpool.com>
 ---
  .../unit/volume/drivers/test_storpool.py      | 441 +++++++++++++++++-
  cinder/volume/drivers/storpool.py             | 386 ++++++++++++++-
- 2 files changed, 816 insertions(+), 11 deletions(-)
+ .../drivers/storpool-volume-driver.rst        |  68 ++-
+ .../storpool-iscsi-cefcfe590a07c5c7.yaml      |  15 +
+ 4 files changed, 895 insertions(+), 15 deletions(-)
+ create mode 100644 releasenotes/notes/storpool-iscsi-cefcfe590a07c5c7.yaml
 
 diff --git a/cinder/tests/unit/volume/drivers/test_storpool.py b/cinder/tests/unit/volume/drivers/test_storpool.py
 index 2015c734d..b21f1582d 100644
@@ -1029,6 +1032,115 @@ index 2dc7bb6be..acfabccd6 100644
                            {'int': int_name, 'temp': temp_name})
                  self._sp_api.volume_update(int_name, {'rename': temp_name})
                  return {'_name_id': None}
+diff --git a/doc/source/configuration/block-storage/drivers/storpool-volume-driver.rst b/doc/source/configuration/block-storage/drivers/storpool-volume-driver.rst
+index e9209b0cc..451cd3ef8 100644
+--- a/doc/source/configuration/block-storage/drivers/storpool-volume-driver.rst
++++ b/doc/source/configuration/block-storage/drivers/storpool-volume-driver.rst
+@@ -19,12 +19,43 @@ Prerequisites
+ * The controller and all the compute nodes must have access to the StorPool
+   API service.
+ 
+-* All nodes where StorPool-backed volumes will be attached must have access to
++* If iSCSI is not being used as a transport (see below), all nodes where
++  StorPool-backed volumes will be attached must have access to
+   the StorPool data network and run the ``storpool_block`` service.
+ 
+-* If StorPool-backed Cinder volumes need to be created directly from Glance
+-  images, then the node running the ``cinder-volume`` service must also have
+-  access to the StorPool data network and run the ``storpool_block`` service.
++* If Glance uses Cinder as its image store, or if StorPool-backed Cinder
++  volumes need to be created directly from Glance images, and iSCSI is not
++  being used as a transport, then the node running the ``cinder-volume``
++  service must also have access to the StorPool data network and run
++  the ``storpool_block`` service.
++
++Using iSCSI as the transport protocol
++-------------------------------------
++
++The StorPool distributed storage system uses its own, highly optimized and
++tailored for its specifics, network protocol for communication between
++the storage servers and the clients (the OpenStack cluster nodes where
++StorPool-backed volumes will be attached). There are cases when granting
++various nodes access to the StorPool data network or installing and
++running the ``storpool_block`` client service on them may pose difficulties.
++The StorPool servers may also expose the user-created volumes and snapshots
++using the standard iSCSI protocol that only requires TCP routing and
++connectivity between the storage servers and the StorPool clients.
++The StorPool Cinder driver may be configured to export volumes and
++snapshots via iSCSI using the ``storpool_iscsi_export_to`` and
++``storpool_iscsi_portal_group`` configuration options.
++
++Additionally, even if e.g. the hypervisor nodes running Nova will use
++the StorPool network protocol and run the ``storpool_block`` service
++(so the ``storpool_iscsi_export_to`` option has its default empty string
++value), the ``storpool_iscsi_cinder_volume`` option configures the
++StorPool Cinder driver so that only the ``cinder-volume`` service will
++use the iSCSI protocol when attaching volumes and snapshots to transfer
++data to and from Glance images.
++
++Multiattach support for StorPool is only enabled if iSCSI is used:
++``storpool_iscsi_export_to`` is set to ``*``, that is, when all StorPool
++volumes will be exported via iSCSI to all initiators.
+ 
+ Configuring the StorPool volume driver
+ --------------------------------------
+@@ -47,6 +78,35 @@ volume backend definition) and per volume type:
+   with the default placement constraints for the StorPool cluster.
+   The default value for the chain replication is 3.
+ 
++In addition, if the iSCSI protocol is used to access the StorPool cluster as
++described in the previous section, the following options may be defined in
++the ``cinder.conf`` volume backend definition:
++
++- ``storpool_iscsi_export_to``: if set to the value ``*``, the StorPool
++  Cinder driver will export volumes and snapshots using the iSCSI
++  protocol instead of the StorPool network protocol. The
++  ``storpool_iscsi_portal_group`` option must also be specified.
++
++- ``storpool_iscsi_portal_group``: if the ``storpool_iscsi_export_to``
++  option is set to the value ``*`` or the
++  ``storpool_iscsi_cinder_volume`` option is turned on, this option
++  specifies the name of the iSCSI portal group that Cinder volumes will
++  be exported to.
++
++- ``storpool_iscsi_cinder_volume``: if enabled, even if the
++  ``storpool_iscsi_export_to`` option has its default empty value, the
++  ``cinder-volume`` service will use iSCSI to attach the volumes and
++  snapshots for transferring data to and from Glance images if Glance is
++  configured to use the Cinder glance_store.
++
++- ``storpool_iscsi_learn_initiator_iqns``: if enabled, the StorPool
++  Cinder driver will automatically use the StorPool API to create
++  definitions for new initiators in the StorPool cluster's
++  configuration. This is the default behavior of the driver; it may be
++  disabled in the rare case if, e.g. because of site policy, OpenStack
++  iSCSI initiators (e.g. Nova hypervisors) need to be explicitly allowed
++  to use the StorPool iSCSI targets.
++
+ Using the StorPool volume driver
+ --------------------------------
+ 
+diff --git a/releasenotes/notes/storpool-iscsi-cefcfe590a07c5c7.yaml b/releasenotes/notes/storpool-iscsi-cefcfe590a07c5c7.yaml
+new file mode 100644
+index 000000000..3863e4099
+--- /dev/null
++++ b/releasenotes/notes/storpool-iscsi-cefcfe590a07c5c7.yaml
+@@ -0,0 +1,15 @@
++features:
++  - |
++    StorPool driver: Added support for exporting the StorPool-backed
++    volumes using the iSCSI protocol, so that the Cinder volume service
++    and/or the Nova or Glance consumers do not need to have the StorPool
++    block device third-party service installed. See the StorPool driver
++    section in the Cinder documentation for more information on the
++    ``storpool_iscsi_export_to``, ``storpool_iscsi_portal_group``,
++    ``storpool_iscsi_cinder_volume``, and
++    ``storpool_iscsi_learn_initiator_iqns`` options.
++
++    .. note::
++       Multiattach support for StorPool is now only enabled if
++       ``storpool_iscsi_export_to`` is set to ``*``, that is, when all
++       StorPool volumes will be exported via iSCSI to all initiators.
 -- 
 2.43.0
 
