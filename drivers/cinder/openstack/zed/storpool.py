@@ -75,11 +75,16 @@ storpool_opts = [
     cfg.StrOpt('storpool_qos_class',
                default=None,
                help='The StorPool QoS class for volumes with no QoS class.'),
+    cfg.StrOpt('storpool_template',
+               default=None,
+               help='The StorPool template for volumes with no type.'),
     cfg.IntOpt('storpool_replication',
                default=3,
                help='The default StorPool chain replication value.  '
                     'Used for calculating the apparent free space reported in '
                     'the stats.'),
+    cfg.IntOpt('storpool_template_to_qos_transition',
+               default=1)
 ]
 
 CONF = cfg.CONF
@@ -157,11 +162,9 @@ class StorPoolDriver(driver.VolumeDriver):
                   retyping volumes.
         2.4.0   - Introduce 'storpool:qos_class' extra spec and the
                   storpool_qos_class option
-                  Deprecate the storpool_template option
-        2.5.0   - Remove the storpool_template option
     """
 
-    VERSION = '2.5.0'
+    VERSION = '2.4.0'
     CI_WIKI_NAME = 'StorPool_distributed_storage_CI'
 
     def __init__(self, *args, **kwargs):
@@ -191,6 +194,12 @@ class StorPoolDriver(driver.VolumeDriver):
                 "QoS class extra spec for volume %s exists: %s",
                 volume['id'], qos)
             return qos
+        elif self.configuration.storpool_template_to_qos_transition:
+            template = self._template_from_volume(volume)
+            LOG.debug(
+                "QoS class setting not found, but transition mode enabled."
+                " Returning volume template as QoS: %s", template)
+            return template
         LOG.debug(
             "Extra specs or QoS class setting not found"
             "; returning default QoS class %s", default)
@@ -200,6 +209,15 @@ class StorPoolDriver(driver.VolumeDriver):
         storpool_volume_name = self._attach.volumeName(volume['id'])
         storpool_volume = self._attach.volumeList(storpool_volume_name)
         return storpool_volume[0].templateName
+
+    def _template_from_volume(self, volume):
+        default = self.configuration.storpool_template
+        vtype = volume['volume_type']
+        if vtype is not None:
+            specs = volume_types.get_volume_type_extra_specs(vtype['id'])
+            if specs is not None:
+                return specs.get('storpool_template', default)
+        return default
 
     def get_pool(self, volume):
         template = self._template_from_storpool_volume(volume)
@@ -794,6 +812,7 @@ class StorPoolDriver(driver.VolumeDriver):
             LOG.error('Retype of encryption type not supported.')
             return False
 
+        templ = self.configuration.storpool_template
         if diff['extra_specs']:
             for (k, v) in diff['extra_specs'].items():
                 if k == 'volume_backend_name':
@@ -801,13 +820,21 @@ class StorPoolDriver(driver.VolumeDriver):
                         # Retype of a volume backend not supported yet,
                         # the volume needs to be migrated.
                         return False
+                elif k == 'storpool_template':
+                    if v[0] != v[1]:
+                        if v[1] is not None:
+                            update['template'] = v[1]
+                        elif templ is not None:
+                            update['template'] = templ
                 elif k == ES_QOS:
-                    if v[1] is None:
+                    if v[1] is None and not self.configuration.storpool_template_to_qos_transition:
                         LOG.error(
                             'The destination volume type requires the extra spec'
                             ' "storpool:qos_class" to be set')
                         return False
                     if v[0] != v[1]:
+                        if 'tags' not in update:
+                            update['tags'] = {}
                         update['tags'].update({'qc': v[1]})
                 else:
                     # We ignore any extra specs that we do not know about.
@@ -815,6 +842,27 @@ class StorPoolDriver(driver.VolumeDriver):
                     # get this far if there is any serious mismatch between
                     # the volume types.
                     pass
+
+        if self.configuration.storpool_template_to_qos_transition:
+            if 'template' in update:
+                LOG.debug('Retyping volume %s set a template, using template as qc: %s', volume['id'], update['template'])
+                if 'tags' not in update:
+                    update['tags'] = {}
+                update['tags']['qc'] = update['template']
+
+            if 'tags' not in update or 'qc' not in update['tags'] or not update['tags']['qc']:
+                LOG.debug('qc is missing, and retyping volume %s did not set a template, using the default template %s', volume['id'], templ)
+                if 'tags' not in update:
+                    update['tags'] = {}
+                update['tags']['qc'] = templ
+
+            if 'template' in update:
+                del update['template']
+
+        if not update['tags']['qc']:
+            LOG.error('The destination volume type requires the extra spec'
+                     ' "storpool:qos_class" to be set')
+            return False
 
         if update:
             name = self._attach.volumeName(volume['id'])
