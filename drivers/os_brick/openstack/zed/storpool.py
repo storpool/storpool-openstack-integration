@@ -302,7 +302,7 @@ class StorPoolConnector(base.BaseLinuxConnector):
         volume.tags[VM_UUID_TAG] = instance_uuid
 
         if device_name is None:
-            LOG.debug('Device name not provided; will not tag the volume %(volume) with a device', {'volume', volume_uuid})
+            LOG.debug('Device name not provided; will not tag the volume %(volume)s with a device', {'volume': volume_uuid})
         else:
             volume.tags[ATTACHMENT_TAG] = pathlib.Path(device_name).name
 
