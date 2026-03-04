@@ -864,6 +864,15 @@ class StorPoolDriver(driver.VolumeDriver):
                      ' "storpool:qos_class" to be set')
             return False
 
+        name = self._attach.volumeName(volume['id'])
+        volume_tags = self._attach.api().volumeList(name)[0].tags
+        for tag in ['disk', 'osvm']:
+            if tag in volume_tags.keys():
+                LOG.debug('Migrating tag %s=%s for volume %s', tag, volume_tags[tag], name)
+                if 'tags' not in update:
+                    update['tags'] = {}
+                update['tags'][tag] = volume_tags[tag]
+
         if update:
             name = self._attach.volumeName(volume['id'])
             try:
