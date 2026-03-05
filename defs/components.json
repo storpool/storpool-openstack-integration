@@ -138,10 +138,10 @@
                         "comment": "StorPool updates for Ubuntu cloud archive Zed 21.3.1-0ubuntu1.1~cloud0",
                         "files": {
                             "volume/driver.py": {
-                                "sha256": "b810c15e53df9d2a619bf4e07a4e6281ec132ded634162d7bcdcd182533ba044"
+                                "sha256": "b321efdba75c06b798e5cb16a733eee0756a63a0aab97ea0b5a79a9512ab98ff"
                             },
                             "volume/drivers/storpool.py": {
-                                "sha256": "1a98319acf00a1b1c4132c7901ee06ae4686e2401aa9a4e64eab2b4e6aa9b9d7"
+                                "sha256": "b810c15e53df9d2a619bf4e07a4e6281ec132ded634162d7bcdcd182533ba044"
                             },
                             "image/cache.py": {
                                 "sha256": "846acf2d07f0b94b2c6ce63e9d3c9cf0da9cac6a6e960f5eb9e4bddc4df41257"
