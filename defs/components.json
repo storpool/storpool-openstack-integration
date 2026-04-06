@@ -2483,6 +2483,18 @@
                     }
                 },
                 "zed": {
+                    "6.1.0.2.0.0": {
+                        "comment": "StorPool updates for Ubuntu cloud archive Zed 6.1.0-0ubuntu1.3~cloud0",
+                        "files": {
+                            "initiator/connectors/fibre_channel.py": {
+                                "sha256": "8ed61b07ec9baea762f766932d48afb4821b990d0ecd7cdfcdcd2fd2bdd28243"
+                            },
+                            "initiator/connectors/storpool.py": {
+                                "sha256": "9be4c3e148b66d6963435d074d5a9413121a69ed117ad7e470cb938f705420a8"
+                            }
+                        },
+                        "outdated": false
+                    },
                     "6.1.0.1.0.0": {
                         "comment": "StorPool updates for Ubuntu cloud archive Zed 6.1.0-0ubuntu1.3~cloud0",
                         "files": {
@@ -2493,7 +2505,7 @@
                                 "sha256": "ab9fcdc2e21960a67f3b364bac594dd635525302f741be6d29c4a10545625765"
                             }
                         },
-                        "outdated": false
+                        "outdated": true
                     },
                     "6.1.0.0.0.1": {
                         "comment": "StorPool updates for Ubuntu cloud archive Zed 6.1.0-0ubuntu1.3~cloud0",
