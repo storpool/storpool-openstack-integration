@@ -1,0 +1,152 @@
+From 680ad2216a479737d9c2115b6e0541bada29fae7 Mon Sep 17 00:00:00 2001
+From: Biser Milanov <biser.milanov@storpool.com>
+Date: Wed, 1 Apr 2026 15:15:48 +0300
+Subject: StorPool: Use template to set tag 'qc' instead of template
+
+Change-Id: Ie5431980ddec9e897cd04be9f72b016eece8c3c9
+Signed-off-by: Biser Milanov <biser.milanov@storpool.com>
+---
+ .../unit/volume/drivers/test_storpool.py      | 22 +++++++++----------
+ cinder/volume/drivers/storpool.py             | 10 +++++----
+ 2 files changed, 17 insertions(+), 15 deletions(-)
+
+diff --git a/cinder/tests/unit/volume/drivers/test_storpool.py b/cinder/tests/unit/volume/drivers/test_storpool.py
+index d2e250353..ecbf55b77 100644
+--- a/cinder/tests/unit/volume/drivers/test_storpool.py
++++ b/cinder/tests/unit/volume/drivers/test_storpool.py
+@@ -566,7 +566,7 @@ class StorPoolTestCase(test.TestCase):
+         self.assertVolumeNames(('1',))
+         v = volumes[volumeName('1')]
+         self.assertEqual(1 * units.Gi, v['size'])
+-        self.assertEqual('nvme', v['template'])
++        self.assertEqual('nvme', v['tags']['qc'])
+         self.assertNotIn('replication', v.keys())
+ 
+         caught = False
+@@ -588,7 +588,7 @@ class StorPoolTestCase(test.TestCase):
+         self.assertVolumeNames(('1',))
+         v = volumes[volumeName('1')]
+         self.assertEqual(2 * units.Gi, v['size'])
+-        self.assertEqual('nvme', v['template'])
++        self.assertEqual('nvme', v['tags']['qc'])
+         self.assertNotIn('replication', v.keys())
+ 
+         self.driver.create_volume({'id': '2', 'name': 'v2', 'size': 3,
+@@ -597,7 +597,7 @@ class StorPoolTestCase(test.TestCase):
+         self.assertVolumeNames(('1', '2'))
+         v = volumes[volumeName('2')]
+         self.assertEqual(3 * units.Gi, v['size'])
+-        self.assertEqual('nvme', v['template'])
++        self.assertEqual('nvme', v['tags']['qc'])
+         self.assertNotIn('replication', v.keys())
+ 
+         self.driver.create_volume(
+@@ -606,7 +606,7 @@ class StorPoolTestCase(test.TestCase):
+         self.assertVolumeNames(('1', '2', '3'))
+         v = volumes[volumeName('3')]
+         self.assertEqual(4 * units.Gi, v['size'])
+-        self.assertEqual('ssd', v['template'])
++        self.assertEqual('ssd', v['tags']['qc'])
+         self.assertNotIn('replication', v.keys())
+ 
+         self.driver.create_volume(
+@@ -615,13 +615,13 @@ class StorPoolTestCase(test.TestCase):
+         self.assertVolumeNames(('1', '2', '3', '4'))
+         v = volumes[volumeName('4')]
+         self.assertEqual(5 * units.Gi, v['size'])
+-        self.assertEqual('hdd', v['template'])
++        self.assertEqual('hdd', v['tags']['qc'])
+         self.assertNotIn('replication', v.keys())
+ 
+         # Make sure the dictionary is not corrupted somehow...
+         v = volumes[volumeName('1')]
+         self.assertEqual(2 * units.Gi, v['size'])
+-        self.assertEqual('nvme', v['template'])
++        self.assertEqual('nvme', v['tags']['qc'])
+         self.assertNotIn('replication', v.keys())
+ 
+         for vid in ('1', '2', '3', '4'):
+@@ -759,7 +759,7 @@ class StorPoolTestCase(test.TestCase):
+             self.driver.create_cloned_volume(vdata2, {'id': '1'})
+         self.assertVolumeNames(('1', '2'))
+         vol2 = volumes[volumeName('2')]
+-        self.assertEqual(vol2['template'], dst_template)
++        self.assertEqual(vol2['tags']['qc'], dst_template)
+ 
+         self.assertEqual(vol2['baseOn'], volumeName('1'))
+         self.assertNotIn('parent', vol2)
+@@ -810,7 +810,7 @@ class StorPoolTestCase(test.TestCase):
+         self.assertVolumeNames(('cfgtempl1',))
+         v = volumes[volumeName('cfgtempl1')]
+         self.assertNotIn(v, 'replication')
+-        self.assertEqual('nvme', v['template'])
++        self.assertEqual('nvme', v['tags']['qc'])
+         self.driver.delete_volume({'id': 'cfgtempl1'})
+ 
+         self.driver.create_volume(
+@@ -819,7 +819,7 @@ class StorPoolTestCase(test.TestCase):
+         self.assertVolumeNames(('cfgtempl2',))
+         v = volumes[volumeName('cfgtempl2')]
+         self.assertNotIn('replication', v)
+-        self.assertEqual('ssd', v['template'])
++        self.assertEqual('ssd', v['tags']['qc'])
+         self.driver.delete_volume({'id': 'cfgtempl2'})
+ 
+         save_template = self.driver.configuration.storpool_template
+@@ -835,7 +835,7 @@ class StorPoolTestCase(test.TestCase):
+         self.assertVolumeNames(('cfgtempl3',))
+         v = volumes[volumeName('cfgtempl3')]
+         self.assertNotIn('replication', v)
+-        self.assertEqual('hdd', v['template'])
++        self.assertEqual('hdd', v['tags']['qc'])
+         self.driver.delete_volume({'id': 'cfgtempl3'})
+         volume_types[fake_constants.VOLUME_TYPE_ID]['storpool_template'] = \
+             save_volume_template
+@@ -846,7 +846,7 @@ class StorPoolTestCase(test.TestCase):
+         self.assertVolumeNames(('cfgtempl4',))
+         v = volumes[volumeName('cfgtempl4')]
+         self.assertNotIn('replication', v)
+-        self.assertEqual('ssd', v['template'])
++        self.assertEqual('ssd', v['tags']['qc'])
+         self.driver.delete_volume({'id': 'cfgtempl4'})
+ 
+         self.driver.configuration.storpool_template = save_template
+diff --git a/cinder/volume/drivers/storpool.py b/cinder/volume/drivers/storpool.py
+index 67b6d419d..9001fee54 100644
+--- a/cinder/volume/drivers/storpool.py
++++ b/cinder/volume/drivers/storpool.py
+@@ -166,7 +166,7 @@ class StorPoolDriver(driver.VolumeDriver):
+                 "Cannot create a volume without a configured StorPool"
+                 " template.")
+ 
+-        create_request['template'] = template
++        create_request['tags'] = {'qc': template}
+ 
+         try:
+             self._sp_api.volume_create(create_request)
+@@ -559,7 +559,9 @@ class StorPoolDriver(driver.VolumeDriver):
+                 'name': volname,
+                 'size': size,
+                 'baseOn': refname,
+-                'template': template
++                'tags': {
++                    'qc': template
++                }
+             })
+         except storpool_utils.StorPoolAPIError as e:
+             raise self._backendException(e)
+@@ -718,9 +720,9 @@ class StorPoolDriver(driver.VolumeDriver):
+                 v = diff['extra_specs'].get('storpool_template')
+                 if v[0] != v[1]:
+                     if v[1] is not None:
+-                        update['template'] = v[1]
++                        update['tags'] = {'qc': v[1]}
+                     elif templ is not None:
+-                        update['template'] = templ
++                        update['tags'] = {'qc': templ}
+                     else:
+                         raise self._backendException(
+                             "Cannot retype a volume to a type that is missing"
+-- 
+2.43.0
+
