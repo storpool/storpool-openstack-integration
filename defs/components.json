@@ -1335,6 +1335,33 @@
                     }
                 },
                 "zed": {
+                    "26.2.2.1.1.0": {
+                        "comment": "StorPool updates for Ubuntu cloud archive Zed 26.2.2-0ubuntu1~cloud0",
+                        "files": {
+                            "virt/libvirt/driver.py": {
+                                "sha256": "20fcaaa0b30cb8c2e766988843e68ab64c58d8c2b0f2d90a4a932bad324d7b48"
+                            },
+                            "virt/libvirt/config.py": {
+                                "sha256": "2e9f0fa9c792bc356badb99f0ffa378f6eefa8da6a2b2da5c8b6fb632a63c4ba"
+                            },
+                            "conf/libvirt.py": {
+                                "sha256": "8ef215829756cb58d386fe7466184b51773e58361ee31102b3bf5cc59b80a2aa"
+                            },
+                            "tests/fixtures/libvirt_data.py": {
+                                "sha256": "97c441c46658d586cba7047731bbec063377403f20294acf5984e3781695c1c9"
+                            },
+                            "tests/unit/virt/libvirt/test_config.py": {
+                                "sha256": "1ad51b1119a920209b1b937c833abeab99dbc4a18bc32bcb341a8d4b97795fd0"
+                            },
+                            "virt/libvirt/volume/volume.py": {
+                                "sha256": "27e7f62d25c29d04ea6f43abe473aec7db729b9defc5f800c6b94c2472b22200"
+                            },
+                            "virt/libvirt/volume/storpool.py": {
+                                "sha256": "9183c1b44e381b0cca1c461dff5b2147ef8f19c5142ad08adce516c7cd4468f5"
+                            }
+                        },
+                        "outdated": false
+                    },
                     "26.2.2.1.0.0": {
                         "comment": "StorPool updates for Ubuntu cloud archive Zed 26.2.2-0ubuntu1~cloud0",
                         "files": {
@@ -1360,7 +1387,7 @@
                                 "sha256": "9183c1b44e381b0cca1c461dff5b2147ef8f19c5142ad08adce516c7cd4468f5"
                             }
                         },
-                        "outdated": false
+                        "outdated": true
                     },
                     "26.2.2.0.0.1": {
                         "comment": "StorPool updates for Ubuntu cloud archive Zed 26.2.2-0ubuntu1~cloud0",
