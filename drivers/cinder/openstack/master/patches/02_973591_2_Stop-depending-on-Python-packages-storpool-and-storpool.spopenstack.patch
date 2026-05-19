@@ -1,0 +1,49 @@
+From c39aef4c072e1d9018251b8f4a81f069465ab853 Mon Sep 17 00:00:00 2001
+From: Biser Milanov <biser.milanov@storpool.com>
+Date: Thu, 8 Jan 2026 17:38:43 +0200
+Subject: Stop depending on Python packages storpool and storpool.spopenstack
+
+Since [1] got merged the Python packages 'storpool' and
+'storpool.spopenstack' are no longer required for communication with a
+StorPool system.
+
+[1]: https://review.opendev.org/c/openstack/cinder/+/933078
+
+Change-Id: I01a7a52bc48be5aa86535a2844866c57a9cc3274
+Signed-off-by: Biser Milanov <biser.milanov@storpool.com>
+---
+ driver-requirements.txt | 4 ----
+ pyproject.toml          | 2 --
+ 2 files changed, 6 deletions(-)
+
+diff --git a/driver-requirements.txt b/driver-requirements.txt
+index 8d78e3087..5d60a5097 100644
+--- a/driver-requirements.txt
++++ b/driver-requirements.txt
+@@ -41,10 +41,6 @@ capacity # BSD
+ infi.dtypes.wwn # PSF
+ infi.dtypes.iqn # PSF
+ 
+-# Storpool
+-storpool>=7.1.0 # Apache-2.0
+-storpool.spopenstack>=2.2.1 # Apache-2.0
+-
+ # Datera
+ dfs_sdk>=1.2.25 # Apache-2.0
+ 
+diff --git a/pyproject.toml b/pyproject.toml
+index 4eb0f976e..6a667c24d 100644
+--- a/pyproject.toml
++++ b/pyproject.toml
+@@ -87,8 +87,6 @@ all = [
+     "infinisdk>=103.0.1", # BSD-3
+     "py-pure-client>=1.47.0", # BSD
+     "rsd-lib>=1.1.0", # Apache-2.0
+-    "storpool>=7.1.0", # Apache-2.0
+-    "storpool.spopenstack>=2.2.1", # Apache-2.0
+     "dfs-sdk>=1.2.25", # Apache-2.0
+     "rbd-iscsi-client>=0.1.8", # Apache-2.0
+     "python-linstor>=1.7.0", # LGPLv3
+-- 
+2.43.0
+
